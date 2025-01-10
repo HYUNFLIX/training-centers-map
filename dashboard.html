@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연수원 관리 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- 네비게이션 바 -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-semibold">연수원 관리</span>
+                </div>
+                <div class="flex items-center">
+                    <button id="logoutBtn" class="text-gray-600 hover:text-gray-900">로그아웃</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 연수원 추가 버튼 -->
+        <div class="mb-6">
+            <button id="addCenterBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                새 연수원 추가
+            </button>
+        </div>
+
+        <!-- 연수원 목록 테이블 -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연수원명</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">위치</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">기본정보</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">평점</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="centersList" class="bg-white divide-y divide-gray-200">
+                    <!-- JavaScript로 동적 생성됨 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 연수원 추가/수정 모달 -->
+    <div id="centerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modalTitle">연수원 추가</h3>
+            <form id="centerForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">연수원명</label>
+                    <input type="text" id="centerName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">지점/위치</label>
+                    <input type="text" id="centerBranch" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">기본정보</label>
+                    <input type="text" id="centerBasicInfo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">네이버 지도 링크</label>
+                    <input type="url" id="centerNaverLink" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">웹사이트 링크</label>
+                    <input type="url" id="centerWebsite" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">위도</label>
+                        <input type="number" id="centerLat" step="any" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">경도</label>
+                        <input type="number" id="centerLng" step="any" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" id="cancelBtn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">취소</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase 설정
+        const firebaseConfig = {
+            // Firebase 콘솔에서 복사한 설정값 붙여넣기
+			  apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
+  authDomain: "training-centers-map.firebaseapp.com",
+  projectId: "training-centers-map",
+  storageBucket: "training-centers-map.firebasestorage.app",
+  messagingSenderId: "943690141587",
+  appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // 인증 상태 확인
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = '/admin/login.html';
+            }
+        });
+
+        // 연수원 목록 로드
+        async function loadCenters() {
+            const centersList = document.getElementById('centersList');
+            centersList.innerHTML = '';
+
+            const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+            querySnapshot.forEach((doc) => {
+                const center = doc.data();
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${center.name}</div>
+                        <div class="text-sm text-gray-500">${center.branch}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${center.location.lat}, ${center.location.lng}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-900">${center.basicInfo}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${center.rating?.average || '-'} (${center.rating?.count || 0})</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editCenter('${doc.id}')">수정</button>
+                        <button class="text-red-600 hover:text-red-900" onclick="deleteCenter('${doc.id}')">삭제</button>
+                    </td>
+                `;
+                centersList.appendChild(row);
+            });
+        }
+
+        // 모달 관련 함수들
+        const modal = document.getElementById('centerModal');
+        const centerForm = document.getElementById('centerForm');
+        let currentCenterId = null;
+
+        window.editCenter = async (centerId) => {
+            currentCenterId = centerId;
+            const doc = await getDoc(doc(db, "trainingCenters", centerId));
+            const center = doc.data();
+            
+            document.getElementById('centerName').value = center.name;
+            document.getElementById('centerBranch').value = center.branch;
+            document.getElementById('centerBasicInfo').value = center.basicInfo;
+            document.getElementById('centerNaverLink').value = center.links.naver;
+            document.getElementById('centerWebsite').value = center.links.website;
+            document.getElementById('centerLat').value = center.location.lat;
+            document.getElementById('centerLng').value = center.location.lng;
+            
+            document.getElementById('modalTitle').textContent = '연수원 수정';
+            modal.classList.remove('hidden');
+        };
+
+        window.deleteCenter = async (centerId) => {
+            if (confirm('정말 삭제하시겠습니까?')) {
+                await deleteDoc(doc(db, "trainingCenters", centerId));
+                loadCenters();
+            }
+        };
+
+        // 이벤트 리스너 설정
+        document.getElementById('addCenterBtn').addEventListener('click', () => {
+            currentCenterId = null;
+            centerForm.reset();
+            document.getElementById('modalTitle').textContent = '연수원 추가';
+            modal.classList.remove('hidden');
+        });
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        centerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const centerData = {
+                name: document.getElementById('centerName').value,
+                branch: document.getElementById('centerBranch').value,
+                basicInfo: document.getElementById('centerBasicInfo').value,
+                links: {
+                    naver: document.getElementById('centerNaverLink').value,
+                    website: document.getElementById('centerWebsite').value
+                },
+                location: {
+                    lat: parseFloat(document.getElementById('centerLat').value),
+                    lng: parseFloat(document.getElementById('centerLng').value)
+                },
+                updatedAt: new Date()
+            };
+
+            if (currentCenterId) {
+                await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
+            } else {
+                centerData.createdAt = new Date();
+                await addDoc(collection(db, "trainingCenters"), centerData);
+            }
+
+            modal.classList.add('hidden');
+            loadCenters();
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = '/admin/login.html';
+            });
+        });
+
+        // 초기 로드
+        loadCenters();
+    </script>
+</body>
+</html>
