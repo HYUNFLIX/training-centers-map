@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>전국 연수원 지도</title>
+    <meta charset="UTF-8">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <style>
@@ -36,6 +37,17 @@
             color: #666;
             margin-top: 5px;
         }
+        .links {
+            margin-top: 10px;
+        }
+        .links a {
+            color: #0066cc;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -48,21 +60,22 @@
 
         // Firebase 설정
         const firebaseConfig = {
-            // Firebase 콘솔에서 복사한 설정값 붙여넣기
-              apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-  authDomain: "training-centers-map.firebaseapp.com",
-  projectId: "training-centers-map",
-  storageBucket: "training-centers-map.firebasestorage.app",
-  messagingSenderId: "943690141587",
-  appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
+            apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
+            authDomain: "training-centers-map.firebaseapp.com",
+            projectId: "training-centers-map",
+            storageBucket: "training-centers-map.firebasestorage.app",
+            messagingSenderId: "943690141587",
+            appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
         };
 
         // Firebase 초기화
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        console.log("Firebase 초기화 완료");
 
         // 지도 초기화
         const map = L.map('map').setView([36.5, 127.5], 7);
+        console.log("지도 초기화 완료");
 
         // OpenStreetMap 타일 레이어 추가
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -72,6 +85,7 @@
 
         // 평점 컴포넌트 생성
         function createRatingComponent(center, docId) {
+            console.log("평점 컴포넌트 생성:", docId, center);
             const ratingDiv = document.createElement('div');
             ratingDiv.className = 'rating';
             
@@ -88,7 +102,14 @@
             
             const ratingInfo = document.createElement('div');
             ratingInfo.className = 'rating-info';
-            ratingInfo.textContent = `평점: ${center.rating?.average?.toFixed(1) || '-'} (${center.rating?.count || 0}명)`;
+            
+            // 평점 정보 안전하게 표시
+            const average = center.rating && typeof center.rating.average === 'number' ? 
+                          Number(center.rating.average).toFixed(1) : '0.0';
+            const count = center.rating && typeof center.rating.count === 'number' ? 
+                         center.rating.count : 0;
+            
+            ratingInfo.textContent = `평점: ${average} (${count}명)`;
             
             ratingDiv.appendChild(starsDiv);
             ratingDiv.appendChild(ratingInfo);
@@ -98,6 +119,7 @@
 
         // 평점 부여 함수
         async function rateCenter(centerId, score) {
+            console.log("평점 부여:", centerId, score);
             try {
                 const centerRef = doc(db, "trainingCenters", centerId);
                 const centerDoc = await getDoc(centerRef);
@@ -112,51 +134,71 @@
                     'rating.count': newCount
                 });
 
+                console.log("평점 업데이트 완료:", newAverage, newCount);
+
                 // UI 업데이트
                 const ratingInfo = document.querySelector(`[data-center-id="${centerId}"] .rating-info`);
                 if (ratingInfo) {
                     ratingInfo.textContent = `평점: ${newAverage.toFixed(1)} (${newCount}명)`;
                 }
+
+                // 별점 UI 업데이트
+                const stars = document.querySelectorAll(`[data-center-id="${centerId}"] .star`);
+                stars.forEach((star, index) => {
+                    if (index < score) {
+                        star.classList.add('active');
+                    }
+                });
             } catch (error) {
-                console.error("Error updating rating:", error);
+                console.error("평점 업데이트 중 에러:", error);
             }
         }
 
         // 연수원 데이터 로드 및 마커 생성
         async function loadCenters() {
-            const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-            
-            querySnapshot.forEach((doc) => {
-                const center = doc.data();
-                const marker = L.circleMarker([center.location.lat, center.location.lng], {
-                    radius: 8,
-                    fillColor: '#3388ff',
-                    color: "#000",
-                    weight: 1,
-                    opacity: 1,
-                    fillOpacity: 0.8
-                }).addTo(map);
-
-                // 팝업 콘텐츠 생성
-                const popupContent = document.createElement('div');
-                popupContent.className = 'popup-content';
-                popupContent.setAttribute('data-center-id', doc.id);
+            try {
+                console.log("데이터 로드 시작");
+                const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+                console.log("데이터 가져옴:", querySnapshot.size, "개의 문서");
                 
-                popupContent.innerHTML = `
-                    <h3>${center.name}</h3>
-                    <p>${center.branch}</p>
-                    <p>${center.basicInfo}</p>
-                    <div class="links">
-                        <a href="${center.links.naver}" target="_blank">네이버 지도</a> | 
-                        <a href="${center.links.website}" target="_blank">웹사이트</a>
-                    </div>
-                `;
+                querySnapshot.forEach((doc) => {
+                    const center = doc.data();
+                    console.log("연수원 데이터:", center);
 
-                // 평점 컴포넌트 추가
-                popupContent.appendChild(createRatingComponent(center, doc.id));
+                    const marker = L.circleMarker([center.location.lat, center.location.lng], {
+                        radius: 8,
+                        fillColor: '#3388ff',
+                        color: "#000",
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
 
-                marker.bindPopup(popupContent);
-            });
+                    // 팝업 콘텐츠 생성
+                    const popupContent = document.createElement('div');
+                    popupContent.className = 'popup-content';
+                    popupContent.setAttribute('data-center-id', doc.id);
+                    
+                    popupContent.innerHTML = `
+                        <h3>${center.name}</h3>
+                        <p>${center.branch}</p>
+                        <p>${center.basicInfo}</p>
+                        <div class="links">
+                            <a href="${center.links.naver}" target="_blank">네이버 지도</a> | 
+                            <a href="${center.links.website}" target="_blank">웹사이트</a>
+                        </div>
+                    `;
+
+                    // 평점 컴포넌트 추가
+                    const ratingComponent = createRatingComponent(center, doc.id);
+                    popupContent.appendChild(ratingComponent);
+
+                    marker.bindPopup(popupContent);
+                    console.log("마커 및 팝업 생성 완료");
+                });
+            } catch (error) {
+                console.error("데이터 로드 중 에러:", error);
+            }
         }
 
         // 초기 데이터 로드
