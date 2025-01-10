@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연수원 지도 관리자</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .login-error {
+            display: none;
+            color: red;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
+            <div>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    관리자 로그인
+                </h2>
+            </div>
+            <form class="mt-8 space-y-6" id="loginForm">
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="email" class="sr-only">이메일</label>
+                        <input id="email" name="email" type="email" required 
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                            placeholder="이메일">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">비밀번호</label>
+                        <input id="password" name="password" type="password" required 
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                            placeholder="비밀번호">
+                    </div>
+                </div>
+
+                <div id="loginError" class="login-error text-center text-sm">
+                    로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.
+                </div>
+
+                <div>
+                    <button type="submit" 
+                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        로그인
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Firebase 설정
+        const firebaseConfig = {
+  apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
+  authDomain: "training-centers-map.firebaseapp.com",
+  projectId: "training-centers-map",
+  storageBucket: "training-centers-map.firebasestorage.app",
+  messagingSenderId: "943690141587",
+  appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // 로그인 폼 제출 처리
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorElement = document.getElementById('loginError');
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                // 로그인 성공
+                window.location.href = '/admin/dashboard.html';
+            } catch (error) {
+                // 로그인 실패
+                errorElement.style.display = 'block';
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
