@@ -9,16 +9,58 @@
             height: 600px; 
             width: 100%;
         }
-        .legend {
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
+        .popup-content {
+            min-width: 200px;
+        }
+        .rating {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .stars {
+            display: flex;
+            gap: 5px;
+            margin: 5px 0;
+        }
+        .star {
+            cursor: pointer;
+            font-size: 20px;
+            color: #ccc;
+        }
+        .star.active {
+            color: #ffd700;
+        }
+        .rating-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
     <div id="map"></div>
-    <script>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase 설정
+        const firebaseConfig = {
+            // Firebase 콘솔에서 복사한 설정값 붙여넣기
+              apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
+  authDomain: "training-centers-map.firebaseapp.com",
+  projectId: "training-centers-map",
+  storageBucket: "training-centers-map.firebasestorage.app",
+  messagingSenderId: "943690141587",
+  appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         // 지도 초기화
         const map = L.map('map').setView([36.5, 127.5], 7);
 
@@ -28,84 +70,97 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // 연수원 데이터
-        const trainingCenters = [
-            {
-                name: "국가공무원인재개발원",
-                location: [36.8597, 127.4354],
-                type: "공공기관",
-                address: "충북 진천군"
-            },
-            {
-                name: "삼성인력개발원",
-                location: [37.2904, 127.1872],
-                type: "기업",
-                address: "경기도 용인시"
-            },
-            {
-                name: "현대인재개발원",
-                location: [37.2342, 127.2177],
-                type: "기업",
-                address: "경기도 용인시"
-            },
-            {
-                name: "LG인화원",
-                location: [37.2841, 127.4494],
-                type: "기업",
-                address: "경기도 이천시"
-            },
-            {
-                name: "네이버 커넥트원",
-                location: [37.8813, 127.7298],
-                type: "기업",
-                address: "강원도 춘천시"
+        // 평점 컴포넌트 생성
+        function createRatingComponent(center, docId) {
+            const ratingDiv = document.createElement('div');
+            ratingDiv.className = 'rating';
+            
+            const starsDiv = document.createElement('div');
+            starsDiv.className = 'stars';
+            
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('span');
+                star.className = 'star';
+                star.innerHTML = '★';
+                star.onclick = () => rateCenter(docId, i);
+                starsDiv.appendChild(star);
             }
-        ];
+            
+            const ratingInfo = document.createElement('div');
+            ratingInfo.className = 'rating-info';
+            ratingInfo.textContent = `평점: ${center.rating?.average?.toFixed(1) || '-'} (${center.rating?.count || 0}명)`;
+            
+            ratingDiv.appendChild(starsDiv);
+            ratingDiv.appendChild(ratingInfo);
+            
+            return ratingDiv;
+        }
 
-        // 마커 색상 설정
-        const markerColors = {
-            "공공기관": "red",
-            "기업": "blue"
-        };
+        // 평점 부여 함수
+        async function rateCenter(centerId, score) {
+            try {
+                const centerRef = doc(db, "trainingCenters", centerId);
+                const centerDoc = await getDoc(centerRef);
+                const centerData = centerDoc.data();
+                
+                const currentRating = centerData.rating || { average: 0, count: 0 };
+                const newCount = currentRating.count + 1;
+                const newAverage = ((currentRating.average * currentRating.count) + score) / newCount;
+                
+                await updateDoc(centerRef, {
+                    'rating.average': newAverage,
+                    'rating.count': newCount
+                });
 
-        // 범례 추가
-        const legend = L.control({position: 'bottomright'});
-        legend.onAdd = function (map) {
-            const div = L.DomUtil.create('div', 'legend');
-            div.innerHTML += '<h4>연수원 유형</h4>';
-            for (const type in markerColors) {
-                div.innerHTML += 
-                    `<div>
-                        <span style="background-color: ${markerColors[type]}; 
-                                   width: 10px; 
-                                   height: 10px; 
-                                   display: inline-block;
-                                   margin-right: 5px;"></span>
-                        ${type}
-                    </div>`;
+                // UI 업데이트
+                const ratingInfo = document.querySelector(`[data-center-id="${centerId}"] .rating-info`);
+                if (ratingInfo) {
+                    ratingInfo.textContent = `평점: ${newAverage.toFixed(1)} (${newCount}명)`;
+                }
+            } catch (error) {
+                console.error("Error updating rating:", error);
             }
-            return div;
-        };
-        legend.addTo(map);
+        }
 
-        // 마커 추가
-        trainingCenters.forEach(center => {
-            const marker = L.circleMarker(center.location, {
-                radius: 8,
-                fillColor: markerColors[center.type],
-                color: "#000",
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(map);
+        // 연수원 데이터 로드 및 마커 생성
+        async function loadCenters() {
+            const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+            
+            querySnapshot.forEach((doc) => {
+                const center = doc.data();
+                const marker = L.circleMarker([center.location.lat, center.location.lng], {
+                    radius: 8,
+                    fillColor: '#3388ff',
+                    color: "#000",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
 
-            // 팝업 추가
-            marker.bindPopup(`
-                <b>${center.name}</b><br>
-                유형: ${center.type}<br>
-                주소: ${center.address}
-            `);
-        });
+                // 팝업 콘텐츠 생성
+                const popupContent = document.createElement('div');
+                popupContent.className = 'popup-content';
+                popupContent.setAttribute('data-center-id', doc.id);
+                
+                popupContent.innerHTML = `
+                    <h3>${center.name}</h3>
+                    <p>${center.branch}</p>
+                    <p>${center.basicInfo}</p>
+                    <div class="links">
+                        <a href="${center.links.naver}" target="_blank">네이버 지도</a> | 
+                        <a href="${center.links.website}" target="_blank">웹사이트</a>
+                    </div>
+                `;
+
+                // 평점 컴포넌트 추가
+                popupContent.appendChild(createRatingComponent(center, doc.id));
+
+                marker.bindPopup(popupContent);
+            });
+        }
+
+        // 초기 데이터 로드
+        loadCenters().catch(console.error);
     </script>
 </body>
 </html>
