@@ -52,41 +52,60 @@
     </div>
 
     <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<!-- Firebase SDK 부분 수정 -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Firebase 설정
-        const firebaseConfig = {
-  apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-  authDomain: "training-centers-map.firebaseapp.com",
-  projectId: "training-centers-map",
-  storageBucket: "training-centers-map.firebasestorage.app",
-  messagingSenderId: "943690141587",
-  appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
-        };
+    const firebaseConfig = {
+        // Firebase 설정 정보
+    };
 
-        // Firebase 초기화
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-        // 로그인 폼 제출 처리
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorElement = document.getElementById('loginError');
+    // 이미 로그인된 상태인지 체크
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // 이미 로그인된 경우 대시보드로 리다이렉트
+            window.location.href = '/admin/dashboard.html';
+        }
+    });
 
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                // 로그인 성공
-                window.location.href = '/admin/dashboard.html';
-            } catch (error) {
-                // 로그인 실패
-                errorElement.style.display = 'block';
-                console.error('Error:', error);
-            }
-        });
-    </script>
+    // 로그인 폼 제출 처리
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const errorElement = document.getElementById('loginError');
+        
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            // 로그인 성공
+            window.location.href = '/admin/dashboard.html';
+        } catch (error) {
+            // 로그인 실패 시 더 자세한 에러 메시지 표시
+            errorElement.textContent = getErrorMessage(error.code);
+            errorElement.style.display = 'block';
+            console.error('Error:', error);
+        }
+    });
+
+    // 에러 메시지 생성 함수
+    function getErrorMessage(errorCode) {
+        switch (errorCode) {
+            case 'auth/invalid-email':
+                return '유효하지 않은 이메일 주소입니다.';
+            case 'auth/user-disabled':
+                return '해당 계정이 비활성화되었습니다.';
+            case 'auth/user-not-found':
+                return '등록되지 않은 이메일입니다.';
+            case 'auth/wrong-password':
+                return '잘못된 비밀번호입니다.';
+            default:
+                return '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.';
+        }
+    }
+</script>
 </body>
 </html>
