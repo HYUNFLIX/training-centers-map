@@ -361,6 +361,24 @@ window.handleLogout = handleLogout;
 window.submitReview = submitReview;
 
 // 인증 상태 변경 감지
+// 인증 상태 변경 감지
 auth.onAuthStateChanged((user) => {
     currentUser = user;
     const loginSections = document.querySelectorAll('.login-section');
+    loginSections.forEach(section => {
+        if (user) {
+            section.innerHTML = `
+                <button class="review-submit">리뷰 작성</button>
+            `;
+        } else {
+            section.innerHTML = `
+                <button class="google-login-btn" onclick="handleGoogleLogin()">
+                    Google로 로그인하여 리뷰 작성
+                </button>
+            `;
+        }
+    });
+});
+
+// 초기 데이터 로드
+loadCenters().catch(console.error);
