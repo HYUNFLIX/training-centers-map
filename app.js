@@ -37,7 +37,7 @@ function initMap() {
 async function loadCenters(map) {
     try {
         const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-        const markers = [];
+        let markers = [];
 
         querySnapshot.forEach((doc) => {
             const center = doc.data();
@@ -45,20 +45,27 @@ async function loadCenters(map) {
 
             const marker = new naver.maps.Marker({
                 position: new naver.maps.LatLng(center.location.lat, center.location.lng),
-                map: map,
-                title: center.name
+                map: null, // 클러스터링을 위해 초기에는 map에 추가하지 않음
+                title: center.name,
+                icon: {
+                    content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:#ff3333;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);">▼</div>',
+                    size: new naver.maps.Size(40, 40),
+                    anchor: new naver.maps.Point(20, 20)
+                }
             });
 
-            const infoContent = `
-                <div class="popup-content">
-                    <h3>${center.name}</h3>
-                    <p>${center.branch || ''}</p>
-                    <p>${center.basicInfo || ''}</p>
-                </div>
-            `;
-
             const infoWindow = new naver.maps.InfoWindow({
-                content: infoContent,
+                content: `
+                    <div class="popup-content">
+                        <h3>${center.name}</h3>
+                        <p>${center.branch || ''}</p>
+                        <p>${center.basicInfo || ''}</p>
+                        <div class="links">
+                            <a href="${center.links?.naver || '#'}" target="_blank">네이버 지도</a>
+                            <a href="${center.links?.website || '#'}" target="_blank">웹사이트</a>
+                        </div>
+                    </div>
+                `,
                 backgroundColor: "#fff",
                 borderColor: "#888",
                 borderWidth: 1,
@@ -78,8 +85,34 @@ async function loadCenters(map) {
             markers.push(marker);
         });
 
+        // 마커 클러스터링
+        const clusterer = new naver.maps.MarkerClustering({
+            minClusterSize: 2,
+            maxZoom: 13,
+            map: map,
+            markers: markers,
+            disableClickZoom: false,
+            gridSize: 120,
+            icons: [
+                {
+                    content: '<div class="cluster">1</div>'
+                },
+                {
+                    content: '<div class="cluster">5</div>'
+                },
+                {
+                    content: '<div class="cluster">10</div>'
+                }
+            ],
+            indexGenerator: [2, 5, 10],
+            stylingFunction: function(clusterMarker, count) {
+                clusterMarker.getElement().querySelector('.cluster').textContent = count;
+            }
+        });
+
         // 검색 기능 초기화
         initSearch(markers, map);
+
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     }
