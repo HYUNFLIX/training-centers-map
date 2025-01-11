@@ -4,11 +4,8 @@
     <title>전국 연수원 지도</title>
     <meta charset="UTF-8">
     <!-- 네이버 지도 API -->
-<script 
-    type="text/javascript" 
-    src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"
-    defer
-></script>
+    <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue" defer></script>
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=clustering"></script>
     <style>
         #map { 
             height: 600px; 
@@ -57,78 +54,35 @@
         .search-result-item:hover {
             background: #f0f0f0;
         }
-        .review-section {
-            margin-top: 15px;
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-        }
-        .rating-stars {
-            color: #ffd700;
-            margin-right: 10px;
-            font-size: 20px;
-        }
-        .review-info {
-            color: #666;
-            font-size: 14px;
-            margin: 5px 0;
-        }
-        .review-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .review-author {
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-        .review-text {
-            font-size: 14px;
-            color: #333;
+        .links {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
         }
         .links a {
-            color: #0066cc;
-            text-decoration: none;
-            margin-right: 10px;
-        }
-        .links a:hover {
-            text-decoration: underline;
-        }
-        .btn {
             display: inline-block;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        .btn-primary {
-            background-color: #1ec800;
-            color: white;
-        }
-        .btn-secondary {
+            padding: 5px 10px;
             background-color: #03c75a;
             color: white;
-        }
-        .review-form {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f8f8f8;
+            text-decoration: none;
             border-radius: 4px;
-            display: none;
-        }
-        .review-input {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        /* 네이버 지도 정보창 스타일 */
-        .iw_inner {
-            padding: 10px;
             font-size: 14px;
         }
-        /* 로딩 및 에러 메시지 스타일 */
+        .links a:hover {
+            background-color: #02b150;
+        }
+        .cluster {
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            color: white;
+            background: #ff3333;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
         #mapError {
             display: none;
             position: absolute;
@@ -151,9 +105,7 @@
     <div id="map"></div>
     <div id="mapError">지도를 불러오는 중 오류가 발생했습니다.</div>
 
-    <!-- 에러 핸들링을 위한 스크립트 -->
     <script>
-        // 네이버 지도 API 로드 에러 체크
         window.addEventListener('error', function(e) {
             if (e.target.src && e.target.src.includes('maps.js')) {
                 document.getElementById('mapError').style.display = 'block';
@@ -161,7 +113,6 @@
         }, true);
     </script>
 
-    <!-- Firebase 및 앱 로직 -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
