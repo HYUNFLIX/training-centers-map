@@ -283,9 +283,9 @@
                     }
 
                     const marker = L.circleMarker([center.location.lat, center.location.lng], {
-                        radius: 8,
-                        fillColor: '#3388ff',
-                        color: "#000",
+                        radius: getMarkerRadius(map.getZoom()),
+                        fillColor: '#ff3333',    // 빨간색으로 변경
+                        color: "#000",          // 테두리 색상
                         weight: 1,
                         opacity: 1,
                         fillOpacity: 0.8
