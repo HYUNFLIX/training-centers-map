@@ -3,11 +3,7 @@
 <head>
     <title>전국 연수원 지도</title>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID"></script>
     <style>
         #map { 
             height: 600px; 
@@ -15,6 +11,10 @@
         }
         .popup-content {
             min-width: 250px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
         .search-container {
             position: absolute;
@@ -33,70 +33,52 @@
             border-radius: 4px;
             font-size: 14px;
         }
-        .custom-div-icon svg {
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .search-result-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+        .search-result-item:hover {
+            background: #f0f0f0;
         }
         .review-section {
             margin-top: 15px;
-            border-top: 1px solid #eee;
             padding-top: 10px;
-        }
-        .rating-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .rating-number {
-            font-size: 24px;
-            font-weight: bold;
-            margin-right: 10px;
+            border-top: 1px solid #eee;
         }
         .rating-stars {
             color: #ffd700;
-            margin-right: 10px;
+            font-size: 24px;
         }
-        .review-count {
+        .rating-info {
+            margin: 5px 0;
             color: #666;
             font-size: 14px;
         }
-        .reviews-list {
-            max-height: 200px;
-            overflow-y: auto;
-            margin: 10px 0;
+        .links {
+            margin-top: 10px;
         }
-        .review-item {
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
+        .links a {
+            color: #0066cc;
+            text-decoration: none;
+            margin-right: 10px;
         }
-        .review-author {
-            font-weight: bold;
-            margin-bottom: 3px;
-        }
-        .review-rating {
-            color: #ffd700;
-            margin-bottom: 3px;
-        }
-        .review-text {
-            font-size: 14px;
-            color: #333;
-        }
-        .login-section {
-            text-align: center;
-            margin: 10px 0;
-        }
-        .google-login-btn {
-            background-color: #4285f4;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
+        .links a:hover {
+            text-decoration: underline;
         }
         .review-form {
             margin-top: 10px;
-            padding: 10px;
-            background: #f8f8f8;
-            border-radius: 4px;
             display: none;
         }
         .review-input {
@@ -106,26 +88,21 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-        .review-submit {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+        .btn {
+            display: inline-block;
             padding: 8px 16px;
+            border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 14px;
         }
-        .review-stars {
-            display: flex;
-            gap: 5px;
-            margin: 5px 0;
+        .btn-primary {
+            background-color: #1ec800;
+            color: white;
         }
-        .review-star {
-            cursor: pointer;
-            font-size: 20px;
-            color: #ccc;
-        }
-        .review-star.active {
-            color: #ffd700;
+        .btn-secondary {
+            background-color: #03c75a;
+            color: white;
         }
     </style>
 </head>
@@ -136,6 +113,7 @@
     </div>
     <div id="map"></div>
 
+    <!-- Firebase SDK -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
