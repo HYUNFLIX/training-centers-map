@@ -1,4 +1,4 @@
-// Firebase 설정
+// Firebase 초기화
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -14,56 +14,70 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 네이버 지도 초기화
-let map = new naver.maps.Map('map', {
-    center: new naver.maps.LatLng(36.5, 127.5),
-    zoom: 7,
-    zoomControl: true,
-    zoomControlOptions: {
-        position: naver.maps.Position.TOP_RIGHT
-    }
-});
+// 전역 변수
+let map;
+let infowindow;
 
-// InfoWindow 객체 생성
-let infowindow = new naver.maps.InfoWindow({
-    anchorSkew: true,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    pixelOffset: new naver.maps.Point(20, -20)
-});
+// 지도 초기화
+function initMap() {
+    map = new naver.maps.Map('map', {
+        center: new naver.maps.LatLng(36.5, 127.5),
+        zoom: 7,
+        zoomControl: true,
+        zoomControlOptions: {
+            position: naver.maps.Position.TOP_RIGHT
+        }
+    });
 
-// 연수원 데이터 로드 및 마커 생성
+    infowindow = new naver.maps.InfoWindow({
+        anchorSkew: true,
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ccc",
+        pixelOffset: new naver.maps.Point(20, -20)
+    });
+}
+
+// 마커 생성 함수
+function createMarker(center) {
+    const marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(center.location.lat, center.location.lng),
+        map: map,
+        title: center.name
+    });
+
+    naver.maps.Event.addListener(marker, 'click', () => {
+        const content = `
+            <div class="info-window">
+                <h3>${center.name}</h3>
+                <p>${center.branch || ''}</p>
+                <p>${center.basicInfo || ''}</p>
+                <div>
+                    <a href="${center.links?.naver}" target="_blank">네이버 지도</a>
+                    <a href="${center.links?.website}" target="_blank">웹사이트</a>
+                </div>
+            </div>
+        `;
+        
+        infowindow.setContent(content);
+        infowindow.open(map, marker);
+    });
+
+    return marker;
+}
+
+// 연수원 데이터 로드
 async function loadCenters() {
     try {
         const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+        const markers = [];
+
         querySnapshot.forEach((doc) => {
             const center = doc.data();
-            
-            if (!center.location?.lat || !center.location?.lng) return;
-
-            const marker = new naver.maps.Marker({
-                position: new naver.maps.LatLng(center.location.lat, center.location.lng),
-                map: map,
-                title: center.name
-            });
-
-            naver.maps.Event.addListener(marker, 'click', function() {
-                const content = `
-                    <div class="info-window">
-                        <h3>${center.name}</h3>
-                        <p>${center.branch || ''}</p>
-                        <p>${center.basicInfo || ''}</p>
-                        <div>
-                            <a href="${center.links?.naver}" target="_blank">네이버 지도</a>
-                            <a href="${center.links?.website}" target="_blank">웹사이트</a>
-                        </div>
-                    </div>
-                `;
-                
-                infowindow.setContent(content);
-                infowindow.open(map, marker);
-            });
+            if (center.location?.lat && center.location?.lng) {
+                const marker = createMarker(center);
+                markers.push(marker);
+            }
         });
 
         // 검색 기능 초기화
@@ -92,7 +106,6 @@ async function searchTrainingCenters(searchText) {
         querySnapshot.forEach((doc) => {
             const center = doc.data();
             if (center.name.toLowerCase().includes(searchText)) {
-                // 검색된 위치로 지도 이동
                 const position = new naver.maps.LatLng(center.location.lat, center.location.lng);
                 map.setCenter(position);
                 map.setZoom(12);
@@ -104,4 +117,9 @@ async function searchTrainingCenters(searchText) {
 }
 
 // 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', loadCenters);
+document.addEventListener('DOMContentLoaded', () => {
+    // 지도 초기화
+    initMap();
+    // 데이터 로드
+    loadCenters();
+});
