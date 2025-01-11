@@ -3,7 +3,12 @@
 <head>
     <title>전국 연수원 지도</title>
     <meta charset="UTF-8">
-    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00cue"></script>
+    <!-- 네이버 지도 API -->
+    <script 
+        type="text/javascript" 
+        src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00cue"
+        crossorigin="anonymous"
+    ></script>
     <style>
         #map { 
             height: 600px; 
@@ -123,6 +128,19 @@
             padding: 10px;
             font-size: 14px;
         }
+        /* 로딩 및 에러 메시지 스타일 */
+        #mapError {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -131,7 +149,19 @@
         <div class="search-results"></div>
     </div>
     <div id="map"></div>
+    <div id="mapError">지도를 불러오는 중 오류가 발생했습니다.</div>
 
+    <!-- 에러 핸들링을 위한 스크립트 -->
+    <script>
+        // 네이버 지도 API 로드 에러 체크
+        window.addEventListener('error', function(e) {
+            if (e.target.src && e.target.src.includes('maps.js')) {
+                document.getElementById('mapError').style.display = 'block';
+            }
+        }, true);
+    </script>
+
+    <!-- Firebase 및 앱 로직 -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
