@@ -29,7 +29,7 @@ const map = new naver.maps.Map('map', {
     }
 });
 
-// 마커와 정보창을 저장할 객체
+// 마커와 정보창 저장 객체
 const markers = new Map();
 const infoWindows = new Map();
 
@@ -38,7 +38,6 @@ async function handleGoogleLogin() {
     try {
         const result = await signInWithPopup(auth, provider);
         currentUser = result.user;
-        console.log("로그인 성공:", currentUser.displayName);
         return true;
     } catch (error) {
         console.error("로그인 실패:", error);
@@ -51,7 +50,6 @@ async function handleLogout() {
     try {
         await signOut(auth);
         currentUser = null;
-        console.log("로그아웃 성공");
         return true;
     } catch (error) {
         console.error("로그아웃 실패:", error);
@@ -59,146 +57,172 @@ async function handleLogout() {
     }
 }
 
-// 리뷰 작성 함수
-async function submitReview(centerId, rating, comment) {
+// 리뷰 컴포넌트 생성
+async function createReviewComponent(center, docId) {
+    let reviewsHTML = '';
+    try {
+        const reviewsQuery = query(
+            collection(db, "reviews"),
+            where("centerId", "==", docId),
+            orderBy("createdAt", "desc")
+        );
+        const reviewsSnapshot = await getDocs(reviewsQuery);
+        
+        reviewsSnapshot.forEach(doc => {
+            const review = doc.data();
+            reviewsHTML += `
+                <div class="review-item">
+                    <div class="review-author">${review.userName}</div>
+                    <div class="rating-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</div>
+                    <div class="review-text">${review.comment}</div>
+                </div>
+            `;
+        });
+    } catch (error) {
+        console.error("리뷰 로드 실패:", error);
+    }
+
+    return `
+        <div class="review-section">
+            <div class="rating-summary">
+                <div class="rating-stars">
+                    ${'★'.repeat(Math.round(center.rating?.average || 0))}
+                    ${'☆'.repeat(5 - Math.round(center.rating?.average || 0))}
+                </div>
+                <div class="review-info">
+                    평점: ${center.rating?.average?.toFixed(1) || '0.0'} (${center.rating?.count || 0}개의 평가)
+                </div>
+            </div>
+            <div class="reviews-list">
+                ${reviewsHTML}
+            </div>
+            ${currentUser ? `
+                <button class="btn btn-primary" onclick="window.showReviewForm('${docId}')">
+                    리뷰 작성
+                </button>
+                <div id="reviewForm-${docId}" class="review-form">
+                    <div class="rating-input">
+                        ${Array(5).fill().map((_, i) => `
+                            <span class="rating-star" data-rating="${i+1}">☆</span>
+                        `).join('')}
+                    </div>
+                    <textarea class="review-input" placeholder="리뷰를 작성해주세요"></textarea>
+                    <button class="btn btn-primary" onclick="window.submitReview('${docId}')">등록</button>
+                </div>
+            ` : `
+                <button class="btn btn-secondary" onclick="window.handleGoogleLogin()">
+                    Google 로그인하여 리뷰 작성
+                </button>
+            `}
+        </div>
+    `;
+}
+
+// 정보창 업데이트
+async function updateInfoWindow(marker, center, docId) {
+    const reviewComponent = await createReviewComponent(center, docId);
+    
+    const content = `
+        <div class="popup-content">
+            <h3>${center.name}</h3>
+            <p>${center.branch}</p>
+            <p>${center.basicInfo}</p>
+            <div class="links">
+                <a href="${center.links?.naver}" target="_blank">네이버 지도</a>
+                <a href="${center.links?.website}" target="_blank">웹사이트</a>
+            </div>
+            ${reviewComponent}
+        </div>
+    `;
+
+    return content;
+}
+
+// 리뷰 제출 함수
+async function submitReview(centerId) {
     if (!currentUser) {
         alert("로그인이 필요합니다.");
         return;
     }
 
+    const form = document.querySelector(`#reviewForm-${centerId}`);
+    const rating = form.querySelector('.rating-input').getAttribute('data-selected');
+    const comment = form.querySelector('.review-input').value;
+
+    if (!rating) {
+        alert("별점을 선택해주세요.");
+        return;
+    }
+    if (!comment.trim()) {
+        alert("리뷰 내용을 입력해주세요.");
+        return;
+    }
+
     try {
+        // 리뷰 추가
         const reviewData = {
             userId: currentUser.uid,
             userName: currentUser.displayName,
             centerId: centerId,
-            rating: rating,
+            rating: parseInt(rating),
             comment: comment,
             createdAt: new Date()
         };
 
         await addDoc(collection(db, "reviews"), reviewData);
 
+        // 평균 평점 업데이트
         const centerRef = doc(db, "trainingCenters", centerId);
         const centerDoc = await getDoc(centerRef);
         const centerData = centerDoc.data();
         
         const currentRating = centerData.rating || { average: 0, count: 0 };
         const newCount = currentRating.count + 1;
-        const newAverage = ((currentRating.average * currentRating.count) + rating) / newCount;
+        const newAverage = ((currentRating.average * currentRating.count) + parseInt(rating)) / newCount;
         
         await updateDoc(centerRef, {
             'rating.average': newAverage,
             'rating.count': newCount
         });
 
-        alert("리뷰가 등록되었습니다.");
         // 정보창 업데이트
-        loadCenterInfo(centerId);
-        return true;
+        const marker = markers.get(centerId);
+        if (marker) {
+            const infoWindow = infoWindows.get(centerId);
+            const content = await updateInfoWindow(marker, {
+                ...centerData,
+                rating: { average: newAverage, count: newCount }
+            }, centerId);
+            infoWindow.setContent(content);
+        }
+
+        alert("리뷰가 등록되었습니다.");
     } catch (error) {
         console.error("리뷰 등록 실패:", error);
         alert("리뷰 등록에 실패했습니다.");
-        return false;
-    }
-}
-
-// 리뷰 목록 컴포넌트 생성
-async function createReviewsList(centerId) {
-    const reviewsQuery = query(
-        collection(db, "reviews"),
-        where("centerId", "==", centerId),
-        orderBy("createdAt", "desc")
-    );
-    
-    const reviewsSnapshot = await getDocs(reviewsQuery);
-    let reviewsHTML = '';
-    
-    reviewsSnapshot.forEach(doc => {
-        const review = doc.data();
-        reviewsHTML += `
-            <div class="review-item">
-                <div class="review-author">${review.userName}</div>
-                <div class="rating-stars">${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}</div>
-                <div class="review-text">${review.comment}</div>
-            </div>
-        `;
-    });
-    
-    return reviewsHTML;
-}
-
-// 정보창 내용 업데이트
-async function loadCenterInfo(centerId) {
-    try {
-        const centerDoc = await getDoc(doc(db, "trainingCenters", centerId));
-        const center = centerDoc.data();
-        const reviewsList = await createReviewsList(centerId);
-        
-        const contentString = `
-            <div class="popup-content">
-                <h3>${center.name}</h3>
-                <p>${center.branch}</p>
-                <p>${center.basicInfo}</p>
-                <div class="links">
-                    <a href="${center.links?.naver}" target="_blank">네이버 지도</a>
-                    <a href="${center.links?.website}" target="_blank">웹사이트</a>
-                </div>
-                <div class="review-section">
-                    <div class="rating-stars">
-                        ${'★'.repeat(Math.round(center.rating?.average || 0))}
-                        ${'☆'.repeat(5 - Math.round(center.rating?.average || 0))}
-                        <span class="rating-info">
-                            (${center.rating?.average?.toFixed(1) || '0.0'} / ${center.rating?.count || 0}개)
-                        </span>
-                    </div>
-                    ${currentUser ? `
-                        <button class="btn btn-primary" onclick="showReviewForm('${centerId}')">
-                            리뷰 작성
-                        </button>
-                    ` : `
-                        <button class="btn btn-secondary" onclick="handleGoogleLogin()">
-                            로그인하여 리뷰 작성
-                        </button>
-                    `}
-                    <div class="review-form" id="reviewForm-${centerId}">
-                        <div class="rating-stars">
-                            ${'★'.repeat(5)}
-                        </div>
-                        <textarea class="review-input" placeholder="리뷰를 작성해주세요"></textarea>
-                        <button class="btn btn-primary" onclick="submitReview('${centerId}', 5, this.previousElementSibling.value)">
-                            등록
-                        </button>
-                    </div>
-                    <div class="reviews-list">
-                        ${reviewsList}
-                    </div>
-                </div>
-            </div>
-        `;
-
-        infoWindows.get(centerId).setContent(contentString);
-    } catch (error) {
-        console.error("정보창 업데이트 실패:", error);
     }
 }
 
 // 연수원 데이터 로드 및 마커 생성
 async function loadCenters() {
     try {
-        console.log("데이터 로드 시작");
         const querySnapshot = await getDocs(collection(db, "trainingCenters"));
         
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach(async (doc) => {
             const center = doc.data();
             if (!center.location?.lat || !center.location?.lng) return;
 
             // 마커 생성
-            const markerPosition = new naver.maps.LatLng(center.location.lat, center.location.lng);
+            const markerPosition = new naver.maps.LatLng(
+                center.location.lat,
+                center.location.lng
+            );
+            
             const marker = new naver.maps.Marker({
                 position: markerPosition,
                 map: map,
                 icon: {
-                    content: `<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ff3333"><path d="M12 0C7.802 0 4 3.403 4 7.602C4 11.8 12 24 12 24S20 11.8 20 7.602C20 3.403 16.199 0 12 0ZM12 11C10.343 11 9 9.657 9 8C9 6.343 10.343 5 12 5C13.657 5 15 6.343 15 8C15 9.657 13.657 11 12 11Z"/></svg>') no-repeat;background-size:contain;"></div>`,
+                    content: '<div style="cursor:pointer;width:40px;height:40px;background:#ff3333;border-radius:20px;color:white;text-align:center;line-height:40px;font-size:20px;">▼</div>',
                     size: new naver.maps.Size(40, 40),
                     anchor: new naver.maps.Point(20, 40)
                 }
@@ -206,40 +230,35 @@ async function loadCenters() {
 
             // 정보창 생성
             const infoWindow = new naver.maps.InfoWindow({
-                content: '<div class="popup-content">로딩중...</div>',
-                maxWidth: 400,
-                backgroundColor: "white",
-                borderColor: "#666",
+                content: await updateInfoWindow(marker, center, doc.id),
                 borderWidth: 0,
-                anchorSize: new naver.maps.Size(0, 0),
+                disableAnchor: true,
+                backgroundColor: 'transparent',
                 pixelOffset: new naver.maps.Point(0, -10)
             });
 
-            // 마커와 정보창 저장
             markers.set(doc.id, marker);
             infoWindows.set(doc.id, infoWindow);
 
-            // 클릭 이벤트
-            naver.maps.Event.addListener(marker, 'click', async () => {
-                // 다른 정보창들 닫기
+            // 마커 클릭 이벤트
+            naver.maps.Event.addListener(marker, 'click', function() {
                 infoWindows.forEach(window => window.close());
-                
-                // 현재 정보창 열기
                 infoWindow.open(map, marker);
-                
-                // 정보창 내용 로드
-                await loadCenterInfo(doc.id);
+            });
+
+            // 지도 클릭 이벤트
+            naver.maps.Event.addListener(map, 'click', function() {
+                infoWindow.close();
             });
         });
 
-        // 검색 기능 초기화
         initializeSearch();
     } catch (error) {
-        console.error("데이터 로드 중 에러:", error);
+        console.error("데이터 로드 실패:", error);
     }
 }
 
-// 검색 기능 구현
+// 검색 기능
 function initializeSearch() {
     const searchInput = document.querySelector('.search-input');
     const searchResults = document.querySelector('.search-results');
@@ -300,10 +319,22 @@ function initializeSearch() {
     loadSearchData();
 }
 
-// 리뷰 폼 표시 함수
+// 리뷰 폼 표시/숨기기
 window.showReviewForm = function(centerId) {
     const form = document.querySelector(`#reviewForm-${centerId}`);
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
+
+    // 별점 이벤트 핸들러
+    const stars = form.querySelectorAll('.rating-star');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = this.dataset.rating;
+            form.querySelector('.rating-input').setAttribute('data-selected', rating);
+            stars.forEach((s, index) => {
+                s.textContent = index < rating ? '★' : '☆';
+            });
+        });
+    });
 };
 
 // 전역 함수 등록
@@ -314,8 +345,5 @@ window.submitReview = submitReview;
 // 인증 상태 변경 감지
 auth.onAuthStateChanged((user) => {
     currentUser = user;
-    // 필요한 경우 UI 업데이트
+    loadCenters();
 });
-
-// 초기 데이터 로드
-loadCenters().catch(console.error);
