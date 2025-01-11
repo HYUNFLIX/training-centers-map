@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>연수원 지도 관리자</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .login-error {
             display: none;
@@ -53,7 +53,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
@@ -61,17 +61,12 @@
             projectId: "training-centers-map",
             storageBucket: "training-centers-map.appspot.storage.googleapis.com",
             messagingSenderId: "943690141587",
-            appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
+            appId: "1:943690141587:web:1a0bdd995ef6efbf662266",
+            measurementId: "G-MEASUREMENT_ID"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.location.href = 'add.html';
-            }
-        });
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
