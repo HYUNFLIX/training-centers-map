@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // Firebase 설정
 const firebaseConfig = {
@@ -126,6 +126,27 @@ function initSearch(markers, map) {
     });
 }
 
+// 주소 기반 위도 경도 가져오기
+async function fetchCoordinates(address) {
+    const apiKey = "YOUR_NAVER_MAPS_API_KEY"; // 네이버 지도 API 키
+    const url = `https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(address)}`;
+    const response = await fetch(url, {
+        headers: {
+            "X-NCP-APIGW-API-KEY-ID": "YOUR_CLIENT_ID",
+            "X-NCP-APIGW-API-KEY": apiKey,
+        },
+    });
+    const data = await response.json();
+    if (data.addresses && data.addresses.length > 0) {
+        return {
+            lat: parseFloat(data.addresses[0].y),
+            lng: parseFloat(data.addresses[0].x),
+        };
+    } else {
+        throw new Error("주소를 찾을 수 없습니다.");
+    }
+}
+
 // 지도 API 로드 완료 후 초기화
 document.addEventListener('DOMContentLoaded', () => {
     const waitForMap = setInterval(() => {
@@ -134,4 +155,22 @@ document.addEventListener('DOMContentLoaded', () => {
             initMap();
         }
     }, 100);
+
+    // 주소 입력 시 자동으로 위도와 경도 가져오기
+    const branchInput = document.getElementById('centerBranch');
+    const latInput = document.getElementById('centerLat');
+    const lngInput = document.getElementById('centerLng');
+
+    if (branchInput && latInput && lngInput) {
+        branchInput.addEventListener('blur', async () => {
+            try {
+                const coordinates = await fetchCoordinates(branchInput.value);
+                latInput.value = coordinates.lat;
+                lngInput.value = coordinates.lng;
+            } catch (error) {
+                console.error("위치 검색 실패:", error);
+                alert("주소를 찾을 수 없습니다. 정확히 입력해 주세요.");
+            }
+        });
+    }
 });
