@@ -39,13 +39,30 @@ async function loadCenters(map) {
         const querySnapshot = await getDocs(collection(db, "trainingCenters"));
         let markers = [];
 
+        // 클러스터 마커 스타일 정의
+        const htmlMarker1 = {
+            content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:#ff3333;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);">1</div>',
+            size: new naver.maps.Size(40, 40),
+            anchor: new naver.maps.Point(20, 20)
+        };
+        const htmlMarker2 = {
+            content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:#ff3333;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);">5+</div>',
+            size: new naver.maps.Size(40, 40),
+            anchor: new naver.maps.Point(20, 20)
+        };
+        const htmlMarker3 = {
+            content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:#ff3333;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);">10+</div>',
+            size: new naver.maps.Size(40, 40),
+            anchor: new naver.maps.Point(20, 20)
+        };
+
         querySnapshot.forEach((doc) => {
             const center = doc.data();
             if (!center.location?.lat || !center.location?.lng) return;
 
             const marker = new naver.maps.Marker({
                 position: new naver.maps.LatLng(center.location.lat, center.location.lng),
-                map: null, // 클러스터링을 위해 초기에는 map에 추가하지 않음
+                map: null,
                 title: center.name,
                 icon: {
                     content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:#ff3333;border-radius:50%;border:2px solid white;box-shadow:0 2px 4px rgba(0,0,0,0.3);">▼</div>',
@@ -85,28 +102,22 @@ async function loadCenters(map) {
             markers.push(marker);
         });
 
-        // 마커 클러스터링
-        const clusterer = new naver.maps.MarkerClustering({
+        // 마커 클러스터러 생성
+        const markerClustering = new naver.maps.MarkerClustering({
             minClusterSize: 2,
             maxZoom: 13,
             map: map,
             markers: markers,
             disableClickZoom: false,
             gridSize: 120,
-            icons: [
-                {
-                    content: '<div class="cluster">1</div>'
-                },
-                {
-                    content: '<div class="cluster">5</div>'
-                },
-                {
-                    content: '<div class="cluster">10</div>'
-                }
-            ],
-            indexGenerator: [2, 5, 10],
+            icons: [htmlMarker1, htmlMarker2, htmlMarker3],
+            indexGenerator: [10, 100, 200],
+            averageCenter: true,
             stylingFunction: function(clusterMarker, count) {
-                clusterMarker.getElement().querySelector('.cluster').textContent = count;
+                const content = clusterMarker.getElement();
+                if (content) {
+                    content.querySelector('div').textContent = count;
+                }
             }
         });
 
@@ -129,7 +140,6 @@ function initSearch(markers, map) {
             marker.getTitle().toLowerCase().includes(value)
         );
 
-        // 검색 결과 표시
         searchResults.innerHTML = '';
         if (value && results.length > 0) {
             results.forEach(marker => {
@@ -151,7 +161,6 @@ function initSearch(markers, map) {
         }
     });
 
-    // 검색창 외부 클릭 시 결과 숨기기
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-container')) {
             searchResults.style.display = 'none';
