@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,39 +7,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
     <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=geocoder"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-            authDomain: "training-centers-map.firebaseapp.com",
-            projectId: "training-centers-map",
-            storageBucket: "training-centers-map.appspot.storage.googleapis.com",
-            messagingSenderId: "943690141587",
-            appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-            }
-        });
-    </script>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- 토스트 메시지 -->
-    <div id="toast" class="fixed top-4 right-4 px-4 py-2 rounded-lg text-white transition-all duration-300 transform translate-y-0 hidden"></div>
-
     <div class="max-w-2xl mx-auto p-6">
         <div class="bg-white rounded-lg shadow-md p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-900">연수원 추가</h2>
-                <button onclick="window.location.href='../index.html'" 
-                    class="text-gray-600 hover:text-gray-800">
+                <button onclick="window.location.href='../index.html'" class="text-gray-600 hover:text-gray-800">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -49,31 +24,22 @@
                 <div class="space-y-4">
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700">연수원명 *</label>
-                        <input type="text" id="name" required 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            placeholder="예: OO연수원">
+                        <input type="text" id="name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="예: OO연수원">
                     </div>
 
                     <div>
                         <label for="branch" class="block text-sm font-medium text-gray-700">지점/위치 *</label>
-                        <input type="text" id="branch" required 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            placeholder="예: 서울본원">
+                        <input type="text" id="branch" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="예: 서울본원">
                     </div>
 
                     <div class="relative">
                         <label for="address" class="block text-sm font-medium text-gray-700">주소 검색 *</label>
                         <div class="flex gap-2">
-                            <input type="text" id="address" required 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                placeholder="예: 서울시 강남구..."
-                                autocomplete="off">
-                            <button type="button" id="searchButton" onclick="searchAddress()" 
-                                class="mt-1 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <input type="text" id="address" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="예: 서울시 강남구..." autocomplete="off">
+                            <button type="button" id="searchButton" onclick="searchAddress()" class="mt-1 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 검색
                             </button>
                         </div>
-                        <!-- 검색 결과 드롭다운 -->
                         <div id="searchResults" class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm hidden">
                         </div>
                         <div id="addressError" class="mt-1 text-sm text-red-600 hidden"></div>
@@ -87,36 +53,27 @@
 
                     <div>
                         <label for="basicInfo" class="block text-sm font-medium text-gray-700">기본정보 *</label>
-                        <textarea id="basicInfo" required 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 min-h-[100px]"
-                            placeholder="연수원의 기본적인 정보를 입력해주세요."></textarea>
+                        <textarea id="basicInfo" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 min-h-[100px]" placeholder="연수원의 기본적인 정보를 입력해주세요."></textarea>
                     </div>
 
                     <div>
                         <label for="naverLink" class="block text-sm font-medium text-gray-700">네이버 지도 링크 *</label>
-                        <input type="url" id="naverLink" required 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            placeholder="https://map.naver.com/...">
+                        <input type="url" id="naverLink" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="https://map.naver.com/...">
                     </div>
 
                     <div>
                         <label for="websiteLink" class="block text-sm font-medium text-gray-700">웹사이트 링크 *</label>
-                        <input type="url" id="websiteLink" required 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            placeholder="https://...">
+                        <input type="url" id="websiteLink" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="https://...">
                     </div>
                 </div>
 
                 <div class="pt-4">
-                    <button type="submit" 
-                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         연수원 등록
                     </button>
                 </div>
             </form>
         </div>
     </div>
-    
-    <script type="module" src="add.js"></script>
 </body>
 </html>
