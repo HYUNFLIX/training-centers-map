@@ -3,7 +3,7 @@
 <head>
     <title>전국 연수원 지도</title>
     <meta charset="UTF-8">
-    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00cue"></script>
     <style>
         #map { 
             height: 600px; 
@@ -54,20 +54,30 @@
         }
         .review-section {
             margin-top: 15px;
-            padding-top: 10px;
             border-top: 1px solid #eee;
+            padding-top: 10px;
         }
         .rating-stars {
             color: #ffd700;
-            font-size: 24px;
+            margin-right: 10px;
+            font-size: 20px;
         }
-        .rating-info {
-            margin: 5px 0;
+        .review-info {
             color: #666;
             font-size: 14px;
+            margin: 5px 0;
         }
-        .links {
-            margin-top: 10px;
+        .review-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .review-author {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .review-text {
+            font-size: 14px;
+            color: #333;
         }
         .links a {
             color: #0066cc;
@@ -77,8 +87,28 @@
         .links a:hover {
             text-decoration: underline;
         }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .btn-primary {
+            background-color: #1ec800;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #03c75a;
+            color: white;
+        }
         .review-form {
             margin-top: 10px;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 4px;
             display: none;
         }
         .review-input {
@@ -88,21 +118,10 @@
             border: 1px solid #ddd;
             border-radius: 4px;
         }
-        .btn {
-            display: inline-block;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        /* 네이버 지도 정보창 스타일 */
+        .iw_inner {
+            padding: 10px;
             font-size: 14px;
-        }
-        .btn-primary {
-            background-color: #1ec800;
-            color: white;
-        }
-        .btn-secondary {
-            background-color: #03c75a;
-            color: white;
         }
     </style>
 </head>
@@ -113,7 +132,6 @@
     </div>
     <div id="map"></div>
 
-    <!-- Firebase SDK -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
