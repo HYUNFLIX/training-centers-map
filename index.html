@@ -49,52 +49,48 @@
             text-decoration: underline;
         }
         .search-container {
-    position: absolute;
-    top: 10px;
-    left: 50px;
-    z-index: 1000;
-    background: white;
-    padding: 10px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.search-input {
-    padding: 8px;
-    width: 200px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.search-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    max-height: 200px;
-    overflow-y: auto;
-    display: none;
-}
-
-.search-result-item {
-    padding: 8px;
-    cursor: pointer;
-}
-
-.search-result-item:hover {
-    background: #f0f0f0;
-}
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .search-input {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .search-result-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+        .search-result-item:hover {
+            background: #f0f0f0;
+        }
     </style>
 </head>
 <body>
     <div class="search-container">
-    <input type="text" class="search-input" placeholder="연수원 검색...">
-    <div class="search-results"></div>
-</div>
+        <input type="text" class="search-input" placeholder="연수원 검색...">
+        <div class="search-results"></div>
+    </div>
     <div id="map"></div>
 
     <!-- Firebase SDK -->
@@ -117,6 +113,9 @@
         const db = getFirestore(app);
         console.log("Firebase 초기화 완료");
 
+        // 전역 변수로 마커 저장
+        const markers = new Map();
+
         // 지도 초기화
         const map = L.map('map').setView([36.5, 127.5], 7);
         console.log("지도 초기화 완료");
@@ -126,6 +125,71 @@
             maxZoom: 19,
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
+
+        // 검색 기능 구현
+        function initializeSearch() {
+            const searchInput = document.querySelector('.search-input');
+            const searchResults = document.querySelector('.search-results');
+            let centers = [];
+
+            // 데이터 저장
+            async function loadSearchData() {
+                const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+                centers = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+            }
+
+            // 검색 결과 표시
+            function showSearchResults(results) {
+                searchResults.innerHTML = '';
+                if (results.length > 0) {
+                    results.forEach(center => {
+                        const div = document.createElement('div');
+                        div.className = 'search-result-item';
+                        div.textContent = `${center.name} (${center.branch})`;
+                        div.onclick = () => {
+                            const marker = markers.get(center.id);
+                            if (marker) {
+                                map.setView([center.location.lat, center.location.lng], 13);
+                                marker.openPopup();
+                            }
+                            searchResults.style.display = 'none';
+                            searchInput.value = '';
+                        };
+                        searchResults.appendChild(div);
+                    });
+                    searchResults.style.display = 'block';
+                } else {
+                    searchResults.style.display = 'none';
+                }
+            }
+
+            // 검색 이벤트 처리
+            searchInput.addEventListener('input', (e) => {
+                const value = e.target.value.toLowerCase();
+                if (value) {
+                    const results = centers.filter(center => 
+                        center.name.toLowerCase().includes(value) || 
+                        center.branch.toLowerCase().includes(value)
+                    );
+                    showSearchResults(results);
+                } else {
+                    searchResults.style.display = 'none';
+                }
+            });
+
+            // 검색창 외부 클릭 시 결과 숨기기
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.search-container')) {
+                    searchResults.style.display = 'none';
+                }
+            });
+
+            // 초기 데이터 로드
+            loadSearchData();
+        }
 
         // 평점 컴포넌트 생성
         function createRatingComponent(center, docId) {
@@ -167,6 +231,10 @@
             try {
                 const centerRef = doc(db, "trainingCenters", centerId);
                 const centerDoc = await getDoc(centerRef);
+                if (!centerDoc.exists()) {
+                    console.error("연수원 문서를 찾을 수 없음:", centerId);
+                    return;
+                }
                 const centerData = centerDoc.data();
                 
                 const currentRating = centerData.rating || { average: 0, count: 0 };
@@ -199,104 +267,63 @@
         }
 
         // 연수원 데이터 로드 및 마커 생성
-async function loadCenters() {
-    try {
-        console.log("데이터 로드 시작");
-        const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-        console.log("데이터 가져옴:", querySnapshot.size, "개의 문서");
-        
-        querySnapshot.forEach((doc) => {
-            const center = doc.data();
-            console.log("연수원 데이터:", center);
+        async function loadCenters() {
+            try {
+                console.log("데이터 로드 시작");
+                const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+                console.log("데이터 가져옴:", querySnapshot.size, "개의 문서");
+                
+                querySnapshot.forEach((doc) => {
+                    const center = doc.data();
+                    console.log("연수원 데이터:", center);
 
-            const marker = L.circleMarker([center.location.lat, center.location.lng], {
-                radius: 8,
-                fillColor: '#3388ff',
-                color: "#000",
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8
-            }).addTo(map);
-
-            // 마커 저장
-            markers.set(doc.id, marker);
-
-            // 나머지 코드는 동일...
-        });
-
-        // 검색 기능 초기화
-        initializeSearch();
-    } catch (error) {
-        console.error("데이터 로드 중 에러:", error);
-    }
-}
-        // 전역 변수로 마커 저장
-const markers = new Map();
-
-// 검색 기능 구현
-function initializeSearch() {
-    const searchInput = document.querySelector('.search-input');
-    const searchResults = document.querySelector('.search-results');
-    let centers = [];
-
-    // 데이터 저장
-    async function loadSearchData() {
-        const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-        centers = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-    }
-
-    // 검색 결과 표시
-    function showSearchResults(results) {
-        searchResults.innerHTML = '';
-        if (results.length > 0) {
-            results.forEach(center => {
-                const div = document.createElement('div');
-                div.className = 'search-result-item';
-                div.textContent = `${center.name} (${center.branch})`;
-                div.onclick = () => {
-                    const marker = markers.get(center.id);
-                    if (marker) {
-                        map.setView([center.location.lat, center.location.lng], 13);
-                        marker.openPopup();
+                    if (!center.location || !center.location.lat || !center.location.lng) {
+                        console.error("위치 정보 없음:", doc.id);
+                        return;
                     }
-                    searchResults.style.display = 'none';
-                    searchInput.value = '';
-                };
-                searchResults.appendChild(div);
-            });
-            searchResults.style.display = 'block';
-        } else {
-            searchResults.style.display = 'none';
-        }
-    }
 
-    // 검색 이벤트 처리
-    searchInput.addEventListener('input', (e) => {
-        const value = e.target.value.toLowerCase();
-        if (value) {
-            const results = centers.filter(center => 
-                center.name.toLowerCase().includes(value) || 
-                center.branch.toLowerCase().includes(value)
-            );
-            showSearchResults(results);
-        } else {
-            searchResults.style.display = 'none';
-        }
-    });
+                    const marker = L.circleMarker([center.location.lat, center.location.lng], {
+                        radius: 8,
+                        fillColor: '#3388ff',
+                        color: "#000",
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
 
-    // 검색창 외부 클릭 시 결과 숨기기
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-container')) {
-            searchResults.style.display = 'none';
-        }
-    });
+                    // 마커 저장
+                    markers.set(doc.id, marker);
 
-    // 초기 데이터 로드
-    loadSearchData();
-}
+                    // 팝업 콘텐츠 생성
+                    const popupContent = document.createElement('div');
+                    popupContent.className = 'popup-content';
+                    popupContent.setAttribute('data-center-id', doc.id);
+                    
+                    popupContent.innerHTML = `
+                        <h3>${center.name || '이름 없음'}</h3>
+                        <p>${center.branch || '위치 정보 없음'}</p>
+                        <p>${center.basicInfo || '정보 없음'}</p>
+                        <div class="links">
+                            <a href="${center.links?.naver || '#'}" target="_blank">네이버 지도</a> | 
+                            <a href="${center.links?.website || '#'}" target="_blank">웹사이트</a>
+                        </div>
+                    `;
+
+                    // 평점 컴포넌트 추가
+                    const ratingComponent = createRatingComponent(center, doc.id);
+                    popupContent.appendChild(ratingComponent);
+
+                    marker.bindPopup(popupContent);
+                    console.log("마커 및 팝업 생성 완료:", doc.id);
+                });
+
+                // 검색 기능 초기화
+                initializeSearch();
+            } catch (error) {
+                console.error("데이터 로드 중 에러:", error);
+            }
+        }
+
         // 초기 데이터 로드
         loadCenters().catch(console.error);
     </script>
