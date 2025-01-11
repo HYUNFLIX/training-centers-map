@@ -4,6 +4,8 @@
     <title>연수원 추가</title>
     <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=geocoder"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -104,8 +106,7 @@
             </form>
         </div>
     </div>
-
-    <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=geocoder"></script>
+    
     <script type="module" src="add.js"></script>
 </body>
 </html>
