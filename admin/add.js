@@ -70,11 +70,6 @@ document.getElementById('centerForm').addEventListener('submit', async (e) => {
     const data = {
         name: document.getElementById('name').value.trim(),
         branch: document.getElementById('branch').value.trim(),
-        basicInfo: document.getElementById('basicInfo').value.trim(),
-        links: {
-            naver: document.getElementById('naverLink').value.trim(),
-            website: document.getElementById('websiteLink').value.trim()
-        },
         location: {
             lat: position.lat(),
             lng: position.lng()
