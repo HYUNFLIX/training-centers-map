@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// Firebase 초기화
 const firebaseConfig = {
     apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
     authDomain: "training-centers-map.firebaseapp.com",
@@ -23,11 +24,13 @@ function initMap() {
         zoom: 7
     });
 
+    // 지도 클릭 이벤트
     naver.maps.Event.addListener(map, 'click', function(e) {
         updateMarker(e.coord);
     });
 }
 
+// 마커 업데이트
 function updateMarker(coord) {
     if (!marker) {
         marker = new naver.maps.Marker({
@@ -43,8 +46,12 @@ function updateMarker(coord) {
 // 주소 검색
 document.getElementById('searchButton').addEventListener('click', function() {
     const address = document.getElementById('address').value;
-    const geocoder = new naver.maps.Service.Geocoder();
+    if (!address) {
+        alert('주소를 입력해주세요.');
+        return;
+    }
 
+    const geocoder = new naver.maps.Service.Geocoder();
     geocoder.geocode({ query: address }, function(status, response) {
         if (status === naver.maps.Service.Status.OK) {
             const result = response.v2.addresses[0];
@@ -57,8 +64,8 @@ document.getElementById('searchButton').addEventListener('click', function() {
     });
 });
 
-// 폼 제출 처리
-document.getElementById('centerForm').addEventListener('submit', async (e) => {
+// 폼 제출
+document.getElementById('centerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     if (!marker) {
@@ -79,11 +86,14 @@ document.getElementById('centerForm').addEventListener('submit', async (e) => {
     try {
         await addDoc(collection(db, "trainingCenters"), data);
         alert('연수원이 성공적으로 추가되었습니다!');
+        document.getElementById('centerForm').reset();
+        marker.setMap(null); // 마커 초기화
+        marker = null;
     } catch (error) {
         console.error('Error adding document:', error);
         alert('등록 실패!');
     }
 });
 
-// 초기화 실행
+// 페이지 로드 시 지도 초기화
 document.addEventListener('DOMContentLoaded', initMap);
