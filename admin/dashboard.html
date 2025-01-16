@@ -203,21 +203,36 @@
             modal.classList.add('hidden');
         });
 
-        centerForm.addEventListener('submit', async (e) => {
+centerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // 기본적인 데이터 검증
+    // 모든 입력값 가져오기
+    const name = document.getElementById('centerName').value.trim();
+    const branch = document.getElementById('centerBranch').value.trim();
+    const basicInfo = document.getElementById('centerBasicInfo').value.trim();
+    const naverLink = document.getElementById('centerNaverLink').value.trim();
+    const websiteLink = document.getElementById('centerWebsite').value.trim();
+    const lat = document.getElementById('centerLat').value;
+    const lng = document.getElementById('centerLng').value;
+
+    // 필수 입력값 검증
+    if (!name || !branch || !basicInfo || !naverLink || !websiteLink || !lat || !lng) {
+        alert('모든 필드를 입력해주세요.');
+        return;
+    }
+
+    // 데이터 객체 생성
     const centerData = {
-        name: document.getElementById('centerName').value.trim(),
-        branch: document.getElementById('centerBranch').value.trim(),
-        basicInfo: document.getElementById('centerBasicInfo').value.trim(),
+        name: name,
+        branch: branch,
+        basicInfo: basicInfo, // 빈 문자열이라도 undefined는 아님
         links: {
-            naver: document.getElementById('centerNaverLink').value.trim(),
-            website: document.getElementById('centerWebsite').value.trim()
+            naver: naverLink,
+            website: websiteLink
         },
         location: {
-            lat: parseFloat(document.getElementById('centerLat').value),
-            lng: parseFloat(document.getElementById('centerLng').value)
+            lat: parseFloat(lat),
+            lng: parseFloat(lng)
         },
         updatedAt: new Date()
     };
