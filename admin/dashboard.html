@@ -204,48 +204,39 @@
         });
 
         centerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+    e.preventDefault();
 
-            const naverLink = document.getElementById('centerNaverLink').value.trim();
-            const websiteLink = document.getElementById('centerWebsite').value.trim();
+    // 기본적인 데이터 검증
+    const centerData = {
+        name: document.getElementById('centerName').value.trim(),
+        branch: document.getElementById('centerBranch').value.trim(),
+        basicInfo: document.getElementById('centerBasicInfo').value.trim(),
+        links: {
+            naver: document.getElementById('centerNaverLink').value.trim(),
+            website: document.getElementById('centerWebsite').value.trim()
+        },
+        location: {
+            lat: parseFloat(document.getElementById('centerLat').value),
+            lng: parseFloat(document.getElementById('centerLng').value)
+        },
+        updatedAt: new Date()
+    };
 
-            // 네이버 지도 링크 검사
-            if (!naverLink.startsWith('https://map.naver.com') || !isValidUrl(naverLink)) {
-                alert('유효한 네이버 지도 링크를 입력하세요.');
-                return;
-            }
+    try {
+        if (currentCenterId) {
+            await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
+        } else {
+            centerData.createdAt = new Date();
+            await addDoc(collection(db, "trainingCenters"), centerData);
+        }
 
-            // 웹사이트 링크 검사
-            if (!isValidUrl(websiteLink)) {
-                alert('유효한 웹사이트 링크를 입력하세요.');
-                return;
-            }
-
-            const centerData = {
-                name: document.getElementById('centerName').value,
-                branch: document.getElementById('centerBranch').value,
-                basicInfo: document.getElementById('centerBasicInfo').value,
-                links: {
-                    naver: naverLink,
-                    website: websiteLink
-                },
-                location: {
-                    lat: parseFloat(document.getElementById('centerLat').value),
-                    lng: parseFloat(document.getElementById('centerLng').value)
-                },
-                updatedAt: new Date()
-            };
-
-            if (currentCenterId) {
-                await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
-            } else {
-                centerData.createdAt = new Date();
-                await addDoc(collection(db, "trainingCenters"), centerData);
-            }
-
-            modal.classList.add('hidden');
-            loadCenters();
-        });
+        modal.classList.add('hidden');
+        loadCenters();
+    } catch (error) {
+        console.error('Error saving data:', error);
+        alert('데이터 저장 중 오류가 발생했습니다.');
+    }
+});
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth).then(() => {
