@@ -64,15 +64,15 @@
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">기본정보</label>
-                    <input type="text" id="centerBasicInfo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                    <textarea id="centerBasicInfo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required></textarea>
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">네이버 지도 링크</label>
-                    <input type="url" id="centerNaverLink" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                    <input type="url" id="centerNaverLink" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="https://map.naver.com/..." required>
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">웹사이트 링크</label>
-                    <input type="url" id="centerWebsite" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" required>
+                    <input type="url" id="centerWebsite" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="https://..." required>
                 </div>
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
@@ -96,20 +96,18 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Firebase 설정
-        const firebaseConfig = {
-            // Firebase 콘솔에서 복사한 설정값 붙여넣기
-			  apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-  authDomain: "training-centers-map.firebaseapp.com",
-  projectId: "training-centers-map",
-  storageBucket: "training-centers-map.firebasestorage.app",
-  messagingSenderId: "943690141587",
-  appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
-        };
+        import { getFirestore, collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Firebase 초기화
+        const firebaseConfig = {
+            apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
+            authDomain: "training-centers-map.firebaseapp.com",
+            projectId: "training-centers-map",
+            storageBucket: "training-centers-map.firebasestorage.app",
+            messagingSenderId: "943690141587",
+            appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
+        };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -160,9 +158,10 @@
 
         window.editCenter = async (centerId) => {
             currentCenterId = centerId;
-            const doc = await getDoc(doc(db, "trainingCenters", centerId));
-            const center = doc.data();
-            
+            const docRef = doc(db, "trainingCenters", centerId);
+            const docSnap = await getDoc(docRef);
+            const center = docSnap.data();
+
             document.getElementById('centerName').value = center.name;
             document.getElementById('centerBranch').value = center.branch;
             document.getElementById('centerBasicInfo').value = center.basicInfo;
@@ -170,7 +169,7 @@
             document.getElementById('centerWebsite').value = center.links.website;
             document.getElementById('centerLat').value = center.location.lat;
             document.getElementById('centerLng').value = center.location.lng;
-            
+
             document.getElementById('modalTitle').textContent = '연수원 수정';
             modal.classList.remove('hidden');
         };
@@ -196,14 +195,28 @@
 
         centerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
+            // 유효성 검사 추가
+            const naverLink = document.getElementById('centerNaverLink').value;
+            const websiteLink = document.getElementById('centerWebsite').value;
+
+            if (!naverLink.startsWith('https://map.naver.com')) {
+                alert('유효한 네이버 지도 링크를 입력하세요.');
+                return;
+            }
+
+            if (!websiteLink.startsWith('https://') && !websiteLink.startsWith('http://')) {
+                alert('유효한 웹사이트 링크를 입력하세요.');
+                return;
+            }
+
             const centerData = {
                 name: document.getElementById('centerName').value,
                 branch: document.getElementById('centerBranch').value,
                 basicInfo: document.getElementById('centerBasicInfo').value,
                 links: {
-                    naver: document.getElementById('centerNaverLink').value,
-                    website: document.getElementById('centerWebsite').value
+                    naver: naverLink,
+                    website: websiteLink
                 },
                 location: {
                     lat: parseFloat(document.getElementById('centerLat').value),
@@ -231,6 +244,13 @@
 
         // 초기 로드
         loadCenters();
+
+        // 모달 외부 클릭 시 닫기 기능 추가
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
