@@ -71,23 +71,10 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 인증 상태 확인 및 관리자 권한 확인
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    const idTokenResult = await user.getIdTokenResult();
-                    if (idTokenResult.claims.role !== "admin") {
-                        alert("관리자 권한이 필요합니다.");
-                        window.location.href = "/admin/login.html";
-                    }
-                } catch (error) {
-                    console.error("권한 확인 중 오류 발생:", error);
-                    alert("권한 확인에 실패했습니다.");
-                    window.location.href = "/admin/login.html";
-                }
-            } else {
-                alert("로그인이 필요합니다.");
-                window.location.href = "/admin/login.html";
+        // 인증 상태 확인
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = '/admin/login.html';
             }
         });
 
