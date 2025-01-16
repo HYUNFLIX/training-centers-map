@@ -10,26 +10,110 @@
     <div class="max-w-2xl mx-auto p-6">
         <div class="bg-white rounded-lg shadow-md p-6">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">연수원 추가</h2>
-            <form id="addCenterForm">
-                <!-- 폼 내용 -->
+            <form id="addCenterForm" class="space-y-6">
+                <!-- 연수원명 -->
+                <div>
+                    <label for="centerName" class="block text-sm font-medium text-gray-700">연수원명 *</label>
+                    <input type="text" id="centerName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <!-- 지점/위치 -->
+                <div>
+                    <label for="centerBranch" class="block text-sm font-medium text-gray-700">지점/위치 *</label>
+                    <input type="text" id="centerBranch" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <!-- 기본정보 -->
+                <div>
+                    <label for="centerBasicInfo" class="block text-sm font-medium text-gray-700">기본 정보 *</label>
+                    <textarea id="centerBasicInfo" rows="3" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="연수원에 대한 간단한 소개를 작성하세요."></textarea>
+                </div>
+                <!-- 네이버 지도 링크 -->
+                <div>
+                    <label for="centerNaverLink" class="block text-sm font-medium text-gray-700">네이버 지도 링크 *</label>
+                    <input type="url" id="centerNaverLink" placeholder="https://map.naver.com/..." required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <!-- 웹사이트 링크 -->
+                <div>
+                    <label for="centerWebsite" class="block text-sm font-medium text-gray-700">웹사이트 링크 *</label>
+                    <input type="url" id="centerWebsite" placeholder="https://..." required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </div>
+                <!-- 위도 및 경도 -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="centerLat" class="block text-sm font-medium text-gray-700">위도 *</label>
+                        <input type="number" id="centerLat" step="any" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="centerLng" class="block text-sm font-medium text-gray-700">경도 *</label>
+                        <input type="number" id="centerLng" step="any" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+                <!-- 등록 버튼 -->
+                <button type="submit" class="w-full py-3 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600">등록</button>
             </form>
         </div>
     </div>
+
     <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const auth = getAuth();
-        const adminUID = "관리자UID"; // Firestore 규칙에서 설정한 관리자 UID
+        // Firebase 초기화
+        const firebaseConfig = {
+            apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
+            authDomain: "training-centers-map.firebaseapp.com",
+            projectId: "training-centers-map",
+            storageBucket: "training-centers-map.firebasestorage.app",
+            messagingSenderId: "943690141587",
+            appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
+        // 관리자 UID 설정
+        const adminUID = "관리자UID";
+
+        // 인증 상태 확인
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 if (user.uid !== adminUID) {
                     alert("관리자 권한이 필요합니다.");
-                    window.location.href = "/admin/login.html"; // 로그인 페이지로 리다이렉트
+                    window.location.href = "/admin/login.html";
                 }
             } else {
                 alert("로그인이 필요합니다.");
-                window.location.href = "/admin/login.html"; // 로그인 페이지로 리다이렉트
+                window.location.href = "/admin/login.html";
+            }
+        });
+
+        // 연수원 추가 로직
+        document.getElementById("addCenterForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const centerData = {
+                name: document.getElementById("centerName").value.trim(),
+                branch: document.getElementById("centerBranch").value.trim(),
+                basicInfo: document.getElementById("centerBasicInfo").value.trim(),
+                links: {
+                    naver: document.getElementById("centerNaverLink").value.trim(),
+                    website: document.getElementById("centerWebsite").value.trim(),
+                },
+                location: {
+                    lat: parseFloat(document.getElementById("centerLat").value),
+                    lng: parseFloat(document.getElementById("centerLng").value),
+                },
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+
+            try {
+                await addDoc(collection(db, "trainingCenters"), centerData);
+                alert("연수원이 성공적으로 등록되었습니다!");
+                document.getElementById("addCenterForm").reset();
+            } catch (error) {
+                console.error("Error adding document:", error);
+                alert("연수원을 추가할 수 없습니다. Firebase 권한을 확인하세요.");
             }
         });
     </script>
