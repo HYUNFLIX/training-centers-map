@@ -193,48 +193,42 @@
             modal.classList.add('hidden');
         });
 
-        centerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+centerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-            // 유효성 검사 추가
-            const naverLink = document.getElementById('centerNaverLink').value;
-            const websiteLink = document.getElementById('centerWebsite').value;
+    const websiteLink = document.getElementById('centerWebsite').value;
 
-            if (!naverLink.startsWith('https://map.naver.com')) {
-                alert('유효한 네이버 지도 링크를 입력하세요.');
-                return;
-            }
+    if (!websiteLink.startsWith('https://') && !websiteLink.startsWith('http://')) {
+        alert('유효한 웹사이트 링크를 입력하세요.');
+        return;
+    }
 
-            if (!websiteLink.startsWith('https://') && !websiteLink.startsWith('http://')) {
-                alert('유효한 웹사이트 링크를 입력하세요.');
-                return;
-            }
+    const centerData = {
+        name: document.getElementById('centerName').value,
+        branch: document.getElementById('centerBranch').value,
+        basicInfo: document.getElementById('centerBasicInfo').value,
+        links: {
+            naver: document.getElementById('centerNaverLink').value, // 유효성 검사 없이 입력값을 그대로 저장
+            website: websiteLink
+        },
+        location: {
+            lat: parseFloat(document.getElementById('centerLat').value),
+            lng: parseFloat(document.getElementById('centerLng').value)
+        },
+        updatedAt: new Date()
+    };
 
-            const centerData = {
-                name: document.getElementById('centerName').value,
-                branch: document.getElementById('centerBranch').value,
-                basicInfo: document.getElementById('centerBasicInfo').value,
-                links: {
-                    naver: naverLink,
-                    website: websiteLink
-                },
-                location: {
-                    lat: parseFloat(document.getElementById('centerLat').value),
-                    lng: parseFloat(document.getElementById('centerLng').value)
-                },
-                updatedAt: new Date()
-            };
+    if (currentCenterId) {
+        await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
+    } else {
+        centerData.createdAt = new Date();
+        await addDoc(collection(db, "trainingCenters"), centerData);
+    }
 
-            if (currentCenterId) {
-                await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
-            } else {
-                centerData.createdAt = new Date();
-                await addDoc(collection(db, "trainingCenters"), centerData);
-            }
+    modal.classList.add('hidden');
+    loadCenters();
+});
 
-            modal.classList.add('hidden');
-            loadCenters();
-        });
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth).then(() => {
