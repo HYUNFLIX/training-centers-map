@@ -112,16 +112,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // URL 유효성 검사 함수
-        function isValidUrl(urlString) {
-            try {
-                new URL(urlString);
-                return true;
-            } catch (error) {
-                return false;
-            }
-        }
-
         // 인증 상태 확인
         onAuthStateChanged(auth, (user) => {
             if (!user) {
@@ -203,55 +193,48 @@
             modal.classList.add('hidden');
         });
 
-centerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+        centerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-    // 모든 입력값 가져오기
-    const name = document.getElementById('centerName').value.trim();
-    const branch = document.getElementById('centerBranch').value.trim();
-    const basicInfo = document.getElementById('centerBasicInfo').value.trim();
-    const naverLink = document.getElementById('centerNaverLink').value.trim();
-    const websiteLink = document.getElementById('centerWebsite').value.trim();
-    const lat = document.getElementById('centerLat').value;
-    const lng = document.getElementById('centerLng').value;
+            // 유효성 검사 추가
+            const naverLink = document.getElementById('centerNaverLink').value;
+            const websiteLink = document.getElementById('centerWebsite').value;
 
-    // 필수 입력값 검증
-    if (!name || !branch || !basicInfo || !naverLink || !websiteLink || !lat || !lng) {
-        alert('모든 필드를 입력해주세요.');
-        return;
-    }
+            if (!naverLink.startsWith('https://map.naver.com')) {
+                alert('유효한 네이버 지도 링크를 입력하세요.');
+                return;
+            }
 
-    // 데이터 객체 생성
-    const centerData = {
-        name: name,
-        branch: branch,
-        basicInfo: basicInfo, // 빈 문자열이라도 undefined는 아님
-        links: {
-            naver: naverLink,
-            website: websiteLink
-        },
-        location: {
-            lat: parseFloat(lat),
-            lng: parseFloat(lng)
-        },
-        updatedAt: new Date()
-    };
+            if (!websiteLink.startsWith('https://') && !websiteLink.startsWith('http://')) {
+                alert('유효한 웹사이트 링크를 입력하세요.');
+                return;
+            }
 
-    try {
-        if (currentCenterId) {
-            await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
-        } else {
-            centerData.createdAt = new Date();
-            await addDoc(collection(db, "trainingCenters"), centerData);
-        }
+            const centerData = {
+                name: document.getElementById('centerName').value,
+                branch: document.getElementById('centerBranch').value,
+                basicInfo: document.getElementById('centerBasicInfo').value,
+                links: {
+                    naver: naverLink,
+                    website: websiteLink
+                },
+                location: {
+                    lat: parseFloat(document.getElementById('centerLat').value),
+                    lng: parseFloat(document.getElementById('centerLng').value)
+                },
+                updatedAt: new Date()
+            };
 
-        modal.classList.add('hidden');
-        loadCenters();
-    } catch (error) {
-        console.error('Error saving data:', error);
-        alert('데이터 저장 중 오류가 발생했습니다.');
-    }
-});
+            if (currentCenterId) {
+                await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
+            } else {
+                centerData.createdAt = new Date();
+                await addDoc(collection(db, "trainingCenters"), centerData);
+            }
+
+            modal.classList.add('hidden');
+            loadCenters();
+        });
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth).then(() => {
