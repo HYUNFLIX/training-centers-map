@@ -112,6 +112,16 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // URL 유효성 검사 함수
+        function isValidUrl(urlString) {
+            try {
+                new URL(urlString);
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
         // 인증 상태 확인
         onAuthStateChanged(auth, (user) => {
             if (!user) {
@@ -196,16 +206,17 @@
         centerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // 유효성 검사 추가
-            const naverLink = document.getElementById('centerNaverLink').value;
-            const websiteLink = document.getElementById('centerWebsite').value;
+            const naverLink = document.getElementById('centerNaverLink').value.trim();
+            const websiteLink = document.getElementById('centerWebsite').value.trim();
 
-            if (!naverLink.startsWith('https://map.naver.com')) {
+            // 네이버 지도 링크 검사
+            if (!naverLink.startsWith('https://map.naver.com') || !isValidUrl(naverLink)) {
                 alert('유효한 네이버 지도 링크를 입력하세요.');
                 return;
             }
 
-            if (!websiteLink.startsWith('https://') && !websiteLink.startsWith('http://')) {
+            // 웹사이트 링크 검사
+            if (!isValidUrl(websiteLink)) {
                 alert('유효한 웹사이트 링크를 입력하세요.');
                 return;
             }
