@@ -25,12 +25,12 @@ function initMap() {
     });
 
     // 지도 클릭 이벤트
-    naver.maps.Event.addListener(map, 'click', function(e) {
+    naver.maps.Event.addListener(map, 'click', function (e) {
         updateMarker(e.coord);
     });
 }
 
-// 마커 업데이트
+// 마커 업데이트 함수
 function updateMarker(coord) {
     if (!marker) {
         marker = new naver.maps.Marker({
@@ -44,28 +44,30 @@ function updateMarker(coord) {
 }
 
 // 주소 검색
-document.getElementById('searchButton').addEventListener('click', function() {
+document.getElementById('searchButton').addEventListener('click', function () {
     const address = document.getElementById('address').value;
+
     if (!address) {
         alert('주소를 입력해주세요.');
         return;
     }
 
-    const geocoder = new naver.maps.Service.Geocoder();
-    geocoder.geocode({ query: address }, function(status, response) {
-        if (status === naver.maps.Service.Status.OK) {
-            const result = response.v2.addresses[0];
-            const point = new naver.maps.LatLng(result.y, result.x);
-            map.setCenter(point);
-            updateMarker(point);
-        } else {
-            alert('주소 검색 실패!');
+    naver.maps.Service.geocode({ query: address }, function (status, response) {
+        if (status !== naver.maps.Service.Status.OK) {
+            alert('주소 검색에 실패했습니다. 다시 시도해주세요.');
+            console.error('Geocode Error:', response);
+            return;
         }
+
+        const result = response.v2.addresses[0]; // 첫 번째 검색 결과
+        const point = new naver.maps.LatLng(result.y, result.x); // 위도와 경도
+        map.setCenter(point); // 지도 중심 이동
+        updateMarker(point); // 마커 업데이트
     });
 });
 
 // 폼 제출
-document.getElementById('centerForm').addEventListener('submit', async function(e) {
+document.getElementById('centerForm').addEventListener('submit', async function (e) {
     e.preventDefault();
 
     if (!marker) {
