@@ -89,14 +89,14 @@ document.getElementById('centerForm').addEventListener('submit', async function 
     const data = {
         name: document.getElementById('name').value.trim(),
         branch: document.getElementById('branch').value.trim(),
-        basicInfo: document.getElementById('address').value.trim(), // 주소를 기본정보로 사용
-        links: {
-            naver: document.getElementById('naverLink').value.trim(),
-            website: document.getElementById('websiteLink').value.trim()
-        },
+        basicInfo: document.getElementById('basicInfo').value.trim(), // 기본정보 필드 추가
         location: {
             lat: position.lat(),
             lng: position.lng()
+        },
+        links: {
+            naver: document.getElementById('naverLink').value.trim(),
+            website: document.getElementById('websiteLink').value.trim()
         },
         createdAt: new Date(),
         updatedAt: new Date()
