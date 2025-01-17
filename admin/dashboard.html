@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>연수원 관리 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body class="bg-gray-100">
     <!-- 네비게이션 바 -->
@@ -23,11 +24,16 @@
 
     <!-- 메인 컨텐츠 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- 연수원 추가 버튼 -->
-        <div class="mb-6">
-            <button id="addCenterBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                새 연수원 추가
-            </button>
+        <!-- 버튼 그룹 -->
+        <div class="mb-6 flex justify-between items-center">
+            <div class="flex gap-2">
+                <button id="addCenterBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    새 연수원 추가
+                </button>
+                <button id="excelDownBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    엑셀 다운로드
+                </button>
+            </div>
         </div>
 
         <!-- 연수원 목록 테이블 -->
@@ -35,10 +41,10 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">번호</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연수원명</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">위치</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">기본정보</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">평점</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리</th>
                     </tr>
                 </thead>
@@ -49,10 +55,27 @@
         </div>
     </div>
 
-    <!-- 연수원 추가/수정 모달 -->
-    <div id="centerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden">
+    <!-- 연수원 추가 iframe 모달 -->
+    <div id="addModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="relative top-10 mx-auto p-5 w-3/4 h-5/6">
+            <div class="bg-white rounded-lg shadow-xl h-full">
+                <div class="flex justify-between items-center p-4 border-b">
+                    <h3 class="text-lg font-medium">연수원 추가</h3>
+                    <button id="closeAddModal" class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <iframe id="addFrame" src="" class="w-full h-[calc(100%-4rem)]" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- 연수원 수정 모달 -->
+    <div id="centerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-40">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modalTitle">연수원 추가</h3>
+            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modalTitle">연수원 수정</h3>
             <form id="centerForm">
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">연수원명</label>
@@ -125,10 +148,14 @@
             centersList.innerHTML = '';
 
             const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+            let index = 1;
             querySnapshot.forEach((doc) => {
                 const center = doc.data();
                 const row = document.createElement('tr');
                 row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${index}</div>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-900">${center.name}</div>
                         <div class="text-sm text-gray-500">${center.branch}</div>
@@ -139,20 +166,18 @@
                     <td class="px-6 py-4">
                         <div class="text-sm text-gray-900">${center.basicInfo}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">${center.rating?.average || '-'} (${center.rating?.count || 0})</div>
-                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editCenter('${doc.id}')">수정</button>
                         <button class="text-red-600 hover:text-red-900" onclick="deleteCenter('${doc.id}')">삭제</button>
                     </td>
                 `;
                 centersList.appendChild(row);
+                index++;
             });
         }
 
         // 모달 관련 함수들
-        const modal = document.getElementById('centerModal');
+        const centerModal = document.getElementById('centerModal');
         const centerForm = document.getElementById('centerForm');
         let currentCenterId = null;
 
@@ -171,7 +196,7 @@
             document.getElementById('centerLng').value = center.location.lng;
 
             document.getElementById('modalTitle').textContent = '연수원 수정';
-            modal.classList.remove('hidden');
+            centerModal.classList.remove('hidden');
         };
 
         window.deleteCenter = async (centerId) => {
@@ -181,19 +206,54 @@
             }
         };
 
-        // 이벤트 리스너 설정
+        // 새 연수원 추가 모달
         document.getElementById('addCenterBtn').addEventListener('click', () => {
-            currentCenterId = null;
-            centerForm.reset();
-            document.getElementById('modalTitle').textContent = '연수원 추가';
-            modal.classList.remove('hidden');
+            const addModal = document.getElementById('addModal');
+            const addFrame = document.getElementById('addFrame');
+            addFrame.src = 'add.html';
+            addModal.classList.remove('hidden');
         });
 
+        document.getElementById('closeAddModal').addEventListener('click', () => {
+            document.getElementById('addModal').classList.add('hidden');
+            loadCenters(); // 목록 새로고침
+        });
+
+        // 엑셀 다운로드
+        document.getElementById('excelDownBtn').addEventListener('click', async () => {
+            const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+            const data = [];
+            
+            let index = 1;
+            querySnapshot.forEach((doc) => {
+                const center = doc.data();
+                data.push({
+                    '번호': index++,
+                    '연수원명': center.name,
+                    '지점': center.branch,
+                    '기본정보': center.basicInfo,
+                    '위도': center.location.lat,
+                    '경도': center.location.lng,
+                    '네이버 지도': center.links.naver,
+                    '웹사이트': center.links.website
+                });
+            });
+
+            // SheetJS를 사용하여 엑셀 파일 생성
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "연수원목록");
+            
+            // 파일 다운로드
+            XLSX.writeFile(wb, "연수원목록.xlsx");
+        });
+
+        // 이벤트 리스너 설정
         document.getElementById('cancelBtn').addEventListener('click', () => {
-            modal.classList.add('hidden');
+            centerModal.classList.add('hidden');
         });
 
-centerForm.addEventListener('submit', async (e) => {
+        centerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const websiteLink = document.getElementById('centerWebsite').value;
@@ -208,7 +268,7 @@ centerForm.addEventListener('submit', async (e) => {
         branch: document.getElementById('centerBranch').value,
         basicInfo: document.getElementById('centerBasicInfo').value,
         links: {
-            naver: document.getElementById('centerNaverLink').value, // 유효성 검사 없이 입력값을 그대로 저장
+            naver: document.getElementById('centerNaverLink').value,
             website: websiteLink
         },
         location: {
@@ -218,33 +278,49 @@ centerForm.addEventListener('submit', async (e) => {
         updatedAt: new Date()
     };
 
-    if (currentCenterId) {
-        await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
-    } else {
-        centerData.createdAt = new Date();
-        await addDoc(collection(db, "trainingCenters"), centerData);
-    }
+    try {
+        if (currentCenterId) {
+            await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
+        } else {
+            centerData.createdAt = new Date();
+            await addDoc(collection(db, "trainingCenters"), centerData);
+        }
 
-    modal.classList.add('hidden');
-    loadCenters();
+        centerModal.classList.add('hidden');
+        loadCenters();
+    } catch (error) {
+        console.error('Error saving center:', error);
+        alert('저장 중 오류가 발생했습니다.');
+    }
 });
 
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    signOut(auth).then(() => {
+        window.location.href = '/admin/login.html';
+    });
+});
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = '/admin/login.html';
-            });
-        });
+// 초기 로드
+loadCenters();
 
-        // 초기 로드
+// 모달 외부 클릭 시 닫기 기능 추가
+window.addEventListener('click', (event) => {
+    if (event.target === centerModal) {
+        centerModal.classList.add('hidden');
+    }
+    if (event.target === document.getElementById('addModal')) {
+        document.getElementById('addModal').classList.add('hidden');
+        loadCenters(); // 목록 새로고침
+    }
+});
+
+// add.html에서 저장 완료 메시지를 받으면 모달을 닫고 목록을 새로고침
+window.addEventListener('message', (event) => {
+    if (event.data === 'centerSaved') {
+        document.getElementById('addModal').classList.add('hidden');
         loadCenters();
-
-        // 모달 외부 클릭 시 닫기 기능 추가
-        window.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.classList.add('hidden');
-            }
-        });
+    }
+});
     </script>
 </body>
 </html>
