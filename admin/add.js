@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // Firebase 초기화
 const firebaseConfig = {
@@ -13,6 +14,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+
+// 인증 상태 확인
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        // 로그인되지 않은 경우 로그인 페이지로 리디렉션
+        window.location.href = '/admin/login.html';
+    }
+});
 
 let map;
 let marker;
