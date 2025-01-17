@@ -89,21 +89,36 @@ document.getElementById('centerForm').addEventListener('submit', async function 
     const data = {
         name: document.getElementById('name').value.trim(),
         branch: document.getElementById('branch').value.trim(),
+        basicInfo: document.getElementById('address').value.trim(), // 주소를 기본정보로 사용
+        links: {
+            naver: document.getElementById('naverLink').value.trim(),
+            website: document.getElementById('websiteLink').value.trim()
+        },
         location: {
             lat: position.lat(),
             lng: position.lng()
-        }
+        },
+        createdAt: new Date(),
+        updatedAt: new Date()
     };
 
     try {
+        // 현재 인증된 사용자 확인
+        const user = auth.currentUser;
+        if (!user) {
+            alert('로그인이 필요합니다.');
+            window.location.href = '/admin/login.html';
+            return;
+        }
+
         await addDoc(collection(db, "trainingCenters"), data);
         alert('연수원이 성공적으로 추가되었습니다!');
         document.getElementById('centerForm').reset();
-        marker.setMap(null); // 마커 초기화
+        marker.setMap(null);
         marker = null;
     } catch (error) {
         console.error('Error adding document:', error);
-        alert('등록 실패!');
+        alert('등록 실패! ' + error.message);
     }
 });
 
