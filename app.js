@@ -17,6 +17,8 @@ const db = getFirestore(app);
 let map;
 let markers = [];
 let markerClustering;
+let infowindow; // 추가된 부분
+
 
 // 클러스터 마커 스타일 정의
 const htmlMarker1 = {
@@ -61,6 +63,7 @@ function initMap() {
         }
     });
 
+    // infowindow 초기화
     infowindow = new naver.maps.InfoWindow({
         backgroundColor: "#fff",
         borderWidth: 1,
