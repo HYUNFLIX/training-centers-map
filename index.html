@@ -2,179 +2,54 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>전국 연수원 지도</title>
-    <!-- 네이버 지도 API -->
-    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
-    
+    <title>연수원 여기 어때</title>
+    <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=geocoder"></script>
     <style>
-        /* 기존 스타일 유지 */
-    </style>
-    
-    <script>
-        var MarkerClustering = function(options) {
-            this._clusters = [];
-            this._mapRelations = null;
-            this._markerRelations = [];
-
-            this.DEFAULT_OPTIONS = {
-                // 클러스터 마커를 올릴 지도입니다.
-                map: null,
-                // 클러스터 마커를 구성할 마커입니다.
-                markers: [],
-                // 클러스터 마커 클릭 시 줌 동작 여부입니다.
-                disableClickZoom: true,
-                // 클러스터를 구성할 최소 마커 수입니다.
-                minClusterSize: 2,
-                // 클러스터 마커로 표현할 최대 줌 레벨입니다.
-                maxZoom: 13,
-                // 클러스터를 구성할 그리드 크기입니다.
-                gridSize: 100,
-                icons: [],
-                indexGenerator: [10, 100, 200, 500, 1000],
-                stylingFunction: function(clusterMarker, count) {
-                    clusterMarker.getElement().firstChild.textContent = count;
-                }
-            };
-
-            this._options = {};
-
-            this.setOptions(options || {}, true);
-        };
-
-        MarkerClustering.prototype = {
-            constructor: MarkerClustering,
-
-            setOptions: function(options, doUpdate) {
-                var that = this;
-
-                that._options = extend({}, that.DEFAULT_OPTIONS, options);
-                that._options.markers = options.markers || [];
-
-                if (doUpdate) {
-                    that._redraw();
-                }
-            },
-
-            getOptions: function() {
-                return this._options;
-            },
-
-            clear: function() {
-                var that = this;
-
-                for (var i = 0, ii = that._clusters.length; i < ii; i++) {
-                    that._clusters[i].destroy();
-                }
-
-                that._clusters = [];
-                that._markerRelations = [];
-            },
-
-            _redraw: function() {
-                var that = this;
-
-                that.clear();
-
-                var map = that._options.map;
-                var markers = that._options.markers;
-                var icons = that._options.icons;
-
-                if (!map || !markers || !markers.length || !icons || !icons.length) {
-                    return;
-                }
-
-                var bounds = map.getBounds();
-                var markers = markers.filter(function(marker) {
-                    var position = marker.getPosition();
-                    return bounds.hasLatLng(position);
-                });
-
-                if (markers.length < that._options.minClusterSize) {
-                    return;
-                }
-
-                var clusters = [];
-                var gridSize = that._options.gridSize;
-                var coordinates = markers.map(function(marker) {
-                    return marker.getPosition();
-                });
-
-                for (var i = 0; i < coordinates.length; i++) {
-                    var point = coordinates[i];
-                    var nearest = null;
-                    var minDistance = gridSize;
-
-                    for (var j = 0; j < clusters.length; j++) {
-                        var distance = that._getDistance(point, clusters[j].center);
-                        if (distance < minDistance) {
-                            minDistance = distance;
-                            nearest = clusters[j];
-                        }
-                    }
-
-                    if (nearest && minDistance <= gridSize) {
-                        nearest.markers.push(markers[i]);
-                    } else {
-                        clusters.push({
-                            center: point,
-                            markers: [markers[i]]
-                        });
-                    }
-                }
-
-                clusters.forEach(function(cluster) {
-                    var count = cluster.markers.length;
-                    if (count >= that._options.minClusterSize) {
-                        var icon = that._getIcon(count);
-                        var clusterMarker = new naver.maps.Marker({
-                            position: cluster.center,
-                            map: map,
-                            icon: icon,
-                            title: count + '개의 마커'
-                        });
-
-                        if (that._options.stylingFunction) {
-                            that._options.stylingFunction(clusterMarker, count);
-                        }
-
-                        that._clusters.push(clusterMarker);
-                    }
-                });
-            },
-
-            _getDistance: function(p1, p2) {
-                return Math.sqrt(Math.pow(p1.lat() - p2.lat(), 2) + Math.pow(p1.lng() - p2.lng(), 2));
-            },
-
-            _getIcon: function(count) {
-                var index = 0;
-                var indexGenerator = this._options.indexGenerator;
-
-                for (var i = 0, ii = indexGenerator.length; i < ii; i++) {
-                    if (indexGenerator[i] <= count) {
-                        index = i;
-                    }
-                }
-
-                return this._options.icons[index];
-            }
-        };
-
-        function extend(target, source) {
-            for (var prop in source) {
-                if (source.hasOwnProperty(prop)) {
-                    target[prop] = source[prop];
-                }
-            }
-            return target;
+        #map { 
+            width: 100%;
+            height: 600px;
         }
-    </script>
+        .search-container {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .search-input {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .info-window {
+            padding: 15px;
+            min-width: 200px;
+        }
+        .info-window h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        .info-window p {
+            margin: 5px 0;
+        }
+        .info-window a {
+            color: #2196F3;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
     <div class="search-container">
         <input type="text" class="search-input" placeholder="연수원 검색...">
     </div>
     <div id="map"></div>
-    <script type="module" src="app.js"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
