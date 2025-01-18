@@ -18,6 +18,7 @@ const db = getFirestore(app);
 let map;
 let markers = [];
 let markerClustering;
+let infowindow; // 전역 변수로 선언
 
 // HTML Marker Icons 정의
 const htmlMarker1 = {
@@ -65,21 +66,34 @@ const infowindow = new naver.maps.InfoWindow({
 
 // 지도 초기화 함수
 function initMap() {
-   map = new naver.maps.Map('map', {
-       center: new naver.maps.LatLng(36.5, 127.5),
-       zoom: 7,
-       minZoom: 6,
-       zoomControl: true,
-       zoomControlOptions: {
-           position: naver.maps.Position.TOP_RIGHT,
-           style: naver.maps.ZoomControlStyle.SMALL
-       }
-   });
+    map = new naver.maps.Map('map', {
+        center: new naver.maps.LatLng(36.5, 127.5),
+        zoom: 7,
+        minZoom: 6,
+        zoomControl: true,
+        zoomControlOptions: {
+            position: naver.maps.Position.TOP_RIGHT,
+            style: naver.maps.ZoomControlStyle.SMALL
+        }
+    });
 
-   // 지도 클릭 시 InfoWindow 닫기
-   naver.maps.Event.addListener(map, 'click', function() {
-       infowindow.close();
-   });
+    // InfoWindow 객체 초기화 (이 위치로 이동)
+    infowindow = new naver.maps.InfoWindow({
+        content: '',
+        maxWidth: 300,
+        backgroundColor: "#fff",
+        borderColor: "#888",
+        borderWidth: 2,
+        anchorSize: new naver.maps.Size(30, 30),
+        anchorSkew: true,
+        anchorColor: "#fff",
+        pixelOffset: new naver.maps.Point(20, -20)
+    });
+
+    // 지도 클릭 시 InfoWindow 닫기
+    naver.maps.Event.addListener(map, 'click', function() {
+        infowindow.close();
+    });
 }
 
 // 마커 생성 함수
