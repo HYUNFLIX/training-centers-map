@@ -2,19 +2,17 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>연수원 여기 어때</title>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-    <!-- MarkerCluster CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+    <title>전국 연수원 지도</title>
+    <!-- 네이버 지도 API -->
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
+    <!-- 마커 클러스터링 JS -->
+    <script type="text/javascript" src="./MarkerClustering.js"></script>
     
-    <!-- Leaflet JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-    <!-- MarkerCluster JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
-
     <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+        }
         #map { 
             width: 100%;
             height: 100vh;
@@ -60,98 +58,7 @@
         <input type="text" class="search-input" placeholder="연수원 검색...">
     </div>
     <div id="map"></div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Firebase 초기화
-        const firebaseConfig = {
-            apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-            authDomain: "training-centers-map.firebaseapp.com",
-            projectId: "training-centers-map",
-            storageBucket: "training-centers-map.firebasestorage.app",
-            messagingSenderId: "943690141587",
-            appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // 지도 초기화
-        const map = L.map('map').setView([36.5, 127.5], 7);
-        
-        // OpenStreetMap 타일 레이어 추가
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        // 마커 클러스터 그룹 초기화
-        const markers = L.markerClusterGroup();
-        map.addLayer(markers);
-
-        // 검색 기능
-        function initSearch() {
-            const searchInput = document.querySelector('.search-input');
-            let centers = [];
-            
-            searchInput.addEventListener('input', (e) => {
-                const searchText = e.target.value.toLowerCase();
-                if (!searchText) return;
-
-                const found = centers.find(center => 
-                    center.name.toLowerCase().includes(searchText)
-                );
-
-                if (found) {
-                    map.setView([found.location.lat, found.location.lng], 12);
-                }
-            });
-
-            return {
-                addCenter: function(center) {
-                    centers.push(center);
-                }
-            };
-        }
-
-        // 연수원 데이터 로드
-        async function loadCenters() {
-            const search = initSearch();
-            
-            try {
-                const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-                
-                querySnapshot.forEach((doc) => {
-                    const center = doc.data();
-                    search.addCenter(center);
-
-                    if (center.location?.lat && center.location?.lng) {
-                        const marker = L.marker([center.location.lat, center.location.lng]);
-                        
-                        const content = `
-                            <div class="info-window">
-                                <h3>${center.name}</h3>
-                                <p>${center.branch || ''}</p>
-                                <p>${center.basicInfo || ''}</p>
-                                <div>
-                                    <a href="${center.links?.naver}" target="_blank">네이버 지도</a>
-                                    <a href="${center.links?.website}" target="_blank">웹사이트</a>
-                                </div>
-                            </div>
-                        `;
-                        
-                        marker.bindPopup(content);
-                        markers.addLayer(marker);
-                    }
-                });
-            } catch (error) {
-                console.error('데이터 로드 실패:', error);
-            }
-        }
-
-        // 초기화
-        loadCenters();
-    </script>
+    <!-- Firebase 및 앱 JS -->
+    <script type="module" src="app.js"></script>
 </body>
 </html>
