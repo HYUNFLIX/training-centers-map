@@ -2,13 +2,10 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>전국 연수원 지도</title>
-    <!-- 네이버 지도 API -->
+    <title>연수원 여기어때</title>
     <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
-    <!-- jQuery 추가 (MarkerClustering에 필요) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- MarkerClustering 스크립트 -->
-    <script src="https://raw.githubusercontent.com/navermaps/marker-tools.js/master/marker-clustering/src/MarkerClustering.js"></script>
+    <!-- 네이버의 공식 MarkerClustering 라이브러리 사용 -->
+    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=clustering"></script>
     <style>
         #map { 
             width: 100%;
@@ -47,35 +44,6 @@
             text-decoration: none;
             margin-right: 10px;
         }
-        /* 클러스터 마커 스타일 */
-        .cluster {
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-            border-radius: 50%;
-            text-align: center;
-            color: white;
-            font-weight: bold;
-            background: rgba(51,150,255,0.9);
-        }
-        .cluster-1 {
-            background: rgba(51,150,255,0.9);
-            width: 40px;
-            height: 40px;
-            line-height: 40px;
-        }
-        .cluster-2 {
-            background: rgba(51,150,255,0.9);
-            width: 50px;
-            height: 50px;
-            line-height: 50px;
-        }
-        .cluster-3 {
-            background: rgba(51,150,255,0.9);
-            width: 60px;
-            height: 60px;
-            line-height: 60px;
-        }
     </style>
 </head>
 <body>
@@ -83,159 +51,6 @@
         <input type="text" class="search-input" placeholder="연수원 검색...">
     </div>
     <div id="map"></div>
-    <!-- MarkerClustering 코드 직접 포함 -->
-    <script>
-        /**
-         * 마커 클러스터링을 정의합니다.
-         * @param {Object} options 마커 클러스터링 옵션
-         */
-        function MarkerClustering(options) {
-            // 기본 값
-            this.DEFAULT_OPTIONS = {
-                // 클러스터 크기를 구분하는 값을 설정합니다.
-                indexGenerator: [10, 100, 200],
-                // 클러스터 노출 최소 마커 수
-                minClusterSize: 2,
-                // 클러스터링 최대 줌 레벨
-                maxZoom: 13,
-                // 클러스터 크기
-                gridSize: 120,
-                // 클러스터 아이콘
-                icons: [],
-                // 클러스터 스타일링
-                stylingFunction: function() {}
-            };
-
-            this._clusters = [];
-            this._mapRelations = null;
-            this._markerRelations = [];
-
-            this.setOptions(options);
-            this.setMap(options.map || null);
-        }
-
-        MarkerClustering.prototype = {
-            constructor: MarkerClustering,
-
-            setOptions: function(options) {
-                var opts = this.options = $.extend({}, this.DEFAULT_OPTIONS, options);
-
-                if (!opts.markers || !opts.markers.length) {
-                    return;
-                }
-
-                this._createClusters();
-                this._updateClusters();
-            },
-
-            setMap: function(map) {
-                var rel;
-
-                if (this._mapRelation) {
-                    this._mapRelation.setMap(null);
-                }
-
-                this._mapRelation = rel = new naver.maps.MapRelation(map);
-                rel.addListener('idle', this._onIdle.bind(this));
-
-                if (map) {
-                    this._onIdle();
-                }
-            },
-
-            _createClusters: function() {
-                var clusters = this._clusters,
-                    options = this.options;
-
-                clusters.length = 0;
-
-                options.markers.forEach(function(marker) {
-                    var position = marker.getPosition(),
-                        cluster = new Cluster({
-                            center: position,
-                            marker: marker,
-                            map: options.map
-                        });
-
-                    clusters.push(cluster);
-                });
-            },
-
-            _updateClusters: function() {
-                var clusters = this._clusters;
-
-                clusters.forEach(function(cluster) {
-                    if (cluster.isDirty()) {
-                        cluster.updateIcon();
-                        cluster.updateCount();
-                    }
-                });
-            },
-
-            _onIdle: function() {
-                this._updateClusters();
-            }
-        };
-
-        function Cluster(options) {
-            this._marker = options.marker;
-            this._map = options.map;
-            this._center = options.center;
-            this._count = 0;
-            this._icon = null;
-            this._dirty = true;
-
-            this.setMap(this._map);
-        }
-
-        Cluster.prototype = {
-            constructor: Cluster,
-
-            setMap: function(map) {
-                if (this._map === map) {
-                    return;
-                }
-
-                this._map = map;
-                this._marker.setMap(map);
-            },
-
-            isDirty: function() {
-                return this._dirty;
-            },
-
-            updateIcon: function() {
-                var count = this._count,
-                    index = 0;
-
-                if (count >= 10) {
-                    index = 1;
-                }
-
-                if (count >= 100) {
-                    index = 2;
-                }
-
-                this._icon = index;
-                this._dirty = false;
-            },
-
-            updateCount: function() {
-                var marker = this._marker,
-                    count = this._count,
-                    icon = this._icon;
-
-                if (count > 1) {
-                    var className = 'cluster cluster-' + (icon + 1);
-                    marker.setIcon({
-                        content: '<div class="' + className + '">' + count + '</div>',
-                        size: new naver.maps.Size(40, 40),
-                        anchor: new naver.maps.Point(20, 20)
-                    });
-                }
-            }
-        };
-    </script>
     <script type="module" src="app.js"></script>
 </body>
 </html>
