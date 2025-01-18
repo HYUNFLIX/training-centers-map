@@ -109,47 +109,25 @@ async function loadCenters() {
 
         // 기존 클러스터링이 있다면 제거
         if (markerClustering) {
-            markerClustering.setMap(null);
+            markerClustering.destroy();
         }
 
         // 새로운 클러스터링 생성
         markerClustering = new MarkerClustering({
-            minClusterSize: 2,
-            maxZoom: 13,
             map: map,
             markers: markers,
-            disableClickZoom: false,
+            minClusterSize: 2,
+            maxZoom: 13,
             gridSize: 120,
             icons: [
                 {
                     content: createClusterIcon(0),
                     size: new naver.maps.Size(36, 36),
                     anchor: new naver.maps.Point(18, 18)
-                },
-                {
-                    content: createClusterIcon(0),
-                    size: new naver.maps.Size(36, 36),
-                    anchor: new naver.maps.Point(18, 18)
-                },
-                {
-                    content: createClusterIcon(0),
-                    size: new naver.maps.Size(36, 36),
-                    anchor: new naver.maps.Point(18, 18)
-                },
-                {
-                    content: createClusterIcon(0),
-                    size: new naver.maps.Size(36, 36),
-                    anchor: new naver.maps.Point(18, 18)
-                },
-                {
-                    content: createClusterIcon(0),
-                    size: new naver.maps.Size(36, 36),
-                    anchor: new naver.maps.Point(18, 18)
                 }
             ],
-            indexGenerator: [10, 100, 200, 500, 1000],
             stylingFunction: function(clusterMarker, count) {
-                clusterMarker.getElement().innerHTML = createClusterIcon(count);
+                clusterMarker.setElement(createClusterIcon(count));
             }
         });
 
