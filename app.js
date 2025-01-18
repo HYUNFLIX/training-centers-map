@@ -114,32 +114,42 @@ async function loadCenters() {
 
         // 새로운 클러스터링 생성
         markerClustering = new MarkerClustering({
-            minClusterSize: 2, // 클러스터링 최소 마커 수
-            maxZoom: 13, // 클러스터링이 작동할 최대 줌 레벨
-            map: map, // 클러스터링을 표시할 지도 객체
-            markers: markers, // 클러스터링할 마커 배열
-            disableClickZoom: false, // 클러스터 클릭시 줌 동작 여부
-            gridSize: 120, // 클러스터링 그리드 크기
-            icons: [{ // 클러스터 아이콘
-                content: `<div style="
-                    background: ${clustererStyles.background};
-                    border: ${clustererStyles.border};
-                    color: ${clustererStyles.color};
-                    width: ${clustererStyles.width};
-                    height: ${clustererStyles.height};
-                    line-height: ${clustererStyles.lineHeight};
-                    text-align: ${clustererStyles.textAlign};
-                    border-radius: ${clustererStyles.borderRadius};
-                    font-size: ${clustererStyles.fontSize};
-                    font-weight: ${clustererStyles.fontWeight};">
-                    ${markers.length}
-                </div>`,
-                size: N.Size(36, 36),
-                anchor: N.Point(20, 20)
-            }],
-            indexGenerator: [10, 100, 200, 500, 1000], // 클러스터 크기별 경계값
+            minClusterSize: 2,
+            maxZoom: 13,
+            map: map,
+            markers: markers,
+            disableClickZoom: false,
+            gridSize: 120,
+            icons: [
+                {
+                    content: createClusterIcon(0),
+                    size: new naver.maps.Size(36, 36),
+                    anchor: new naver.maps.Point(18, 18)
+                },
+                {
+                    content: createClusterIcon(0),
+                    size: new naver.maps.Size(36, 36),
+                    anchor: new naver.maps.Point(18, 18)
+                },
+                {
+                    content: createClusterIcon(0),
+                    size: new naver.maps.Size(36, 36),
+                    anchor: new naver.maps.Point(18, 18)
+                },
+                {
+                    content: createClusterIcon(0),
+                    size: new naver.maps.Size(36, 36),
+                    anchor: new naver.maps.Point(18, 18)
+                },
+                {
+                    content: createClusterIcon(0),
+                    size: new naver.maps.Size(36, 36),
+                    anchor: new naver.maps.Point(18, 18)
+                }
+            ],
+            indexGenerator: [10, 100, 200, 500, 1000],
             stylingFunction: function(clusterMarker, count) {
-                clusterMarker.getElement().querySelector('div').textContent = count;
+                clusterMarker.getElement().innerHTML = createClusterIcon(count);
             }
         });
 
@@ -148,6 +158,30 @@ async function loadCenters() {
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     }
+}
+
+// 클러스터 아이콘 생성 함수 추가
+function createClusterIcon(count) {
+    return `
+        <div style="
+            cursor: pointer;
+            background: #5347AA;
+            border: 2px solid #FFFFFF;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            line-height: 34px;
+            text-align: center;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        ">
+            ${count}
+        </div>
+    `;
 }
 
 // 검색 기능
