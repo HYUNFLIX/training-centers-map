@@ -15,40 +15,87 @@ const db = getFirestore(app);
 
 // 전역 변수
 let map;
-let markers;
-const centersList = new Map(); // 연수원 데이터 저장용
+let markers = [];
+let markerClustering;
+
+// 클러스터 마커 스타일 정의
+const htmlMarker1 = {
+    content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:#ff6b6b;border-radius:50%;"></div>',
+    size: new naver.maps.Size(40, 40),
+    anchor: new naver.maps.Point(20, 20)
+};
+
+const htmlMarker2 = {
+    content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:#ff8787;border-radius:50%;"></div>',
+    size: new naver.maps.Size(40, 40),
+    anchor: new naver.maps.Point(20, 20)
+};
+
+const htmlMarker3 = {
+    content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:#ffa8a8;border-radius:50%;"></div>',
+    size: new naver.maps.Size(40, 40),
+    anchor: new naver.maps.Point(20, 20)
+};
+
+const htmlMarker4 = {
+    content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:#ffc9c9;border-radius:50%;"></div>',
+    size: new naver.maps.Size(40, 40),
+    anchor: new naver.maps.Point(20, 20)
+};
+
+const htmlMarker5 = {
+    content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:#ffd8d8;border-radius:50%;"></div>',
+    size: new naver.maps.Size(40, 40),
+    anchor: new naver.maps.Point(20, 20)
+};
 
 // 지도 초기화
 function initMap() {
-    map = L.map('map').setView([36.5, 127.5], 7);
-    
-    // OpenStreetMap 타일 레이어 추가
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    map = new naver.maps.Map('map', {
+        zoom: 7,
+        center: new naver.maps.LatLng(36.5, 127.5),
+        zoomControl: true,
+        zoomControlOptions: {
+            position: naver.maps.Position.TOP_RIGHT,
+            style: naver.maps.ZoomControlStyle.SMALL
+        }
+    });
 
-    // 마커 클러스터 그룹 초기화
-    markers = L.markerClusterGroup();
-    map.addLayer(markers);
+    infowindow = new naver.maps.InfoWindow({
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ccc",
+        padding: 20,
+        anchorSize: new naver.maps.Size(30, 30),
+        anchorSkew: true,
+        anchorColor: "#fff"
+    });
 }
 
 // 마커 생성 함수
 function createMarker(center) {
-    const marker = L.marker([center.location.lat, center.location.lng]);
-    
-    const content = `
-        <div class="info-window">
-            <h3>${center.name}</h3>
-            <p>${center.branch || ''}</p>
-            <p>${center.basicInfo || ''}</p>
-            <div>
-                <a href="${center.links?.naver}" target="_blank">네이버 지도</a>
-                <a href="${center.links?.website}" target="_blank">웹사이트</a>
+    const marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(center.location.lat, center.location.lng),
+        map: map
+    });
+
+    naver.maps.Event.addListener(marker, 'click', () => {
+        const content = `
+            <div class="info-window">
+                <h3>${center.name}</h3>
+                <p>${center.branch || ''}</p>
+                <p>${center.basicInfo || ''}</p>
+                <div>
+                    <a href="${center.links?.naver}" target="_blank">네이버 지도</a>
+                    <a href="${center.links?.website}" target="_blank">웹사이트</a>
+                </div>
             </div>
-        </div>
-    `;
-    
-    marker.bindPopup(content);
+        `;
+        
+        infowindow.setContent(content);
+        infowindow.open(map, marker);
+    });
+
     return marker;
 }
 
@@ -59,11 +106,28 @@ async function loadCenters() {
         
         querySnapshot.forEach((doc) => {
             const center = doc.data();
-            centersList.set(doc.id, center); // 데이터 저장
-
             if (center.location?.lat && center.location?.lng) {
                 const marker = createMarker(center);
-                markers.addLayer(marker);
+                markers.push(marker);
+            }
+        });
+
+        // 마커 클러스터링 설정
+        markerClustering = new MarkerClustering({
+            minClusterSize: 2,
+            maxZoom: 12,
+            map: map,
+            markers: markers,
+            disableClickZoom: false,
+            gridSize: 120,
+            icons: [htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5],
+            indexGenerator: [10, 100, 200, 500, 1000],
+            stylingFunction: function(clusterMarker, count) {
+                const element = clusterMarker.getElement();
+                const div = element.querySelector('div');
+                if (div) {
+                    div.textContent = count;
+                }
             }
         });
 
@@ -82,13 +146,15 @@ function initSearch() {
         const searchText = e.target.value.toLowerCase();
         if (!searchText) return;
 
-        // 연수원 검색
-        for (const [id, center] of centersList) {
+        const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+        querySnapshot.forEach((doc) => {
+            const center = doc.data();
             if (center.name.toLowerCase().includes(searchText)) {
-                map.setView([center.location.lat, center.location.lng], 12);
-                break;
+                const position = new naver.maps.LatLng(center.location.lat, center.location.lng);
+                map.setCenter(position);
+                map.setZoom(12);
             }
-        }
+        });
     });
 }
 
