@@ -2,56 +2,152 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전국 연수원 지도</title>
-    <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
-    <script type="text/javascript" src="./MarkerClustering.js"></script>
+    
+    <!-- 네이버 지도 API (모든 필요한 submodules 포함) -->
     <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=geocoder"></script>
-
+    
+    <!-- Firebase SDK는 type="module"로 app.js에서 import하므로 여기서는 필요없음 -->
+    
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
         #map { 
             width: 100%;
-            height: 600px;
+            height: 100vh;
         }
+        
         .search-container {
             position: absolute;
-            top: 10px;
+            top: 20px;
             left: 50px;
             z-index: 1000;
             background: white;
             padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
+        
         .search-input {
-            padding: 8px;
-            width: 200px;
-            border: 1px solid #ccc;
+            padding: 10px;
+            width: 240px;
+            border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 14px;
+            outline: none;
         }
+        
+        .search-input:focus {
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+        
         .info-window {
-            padding: 15px;
-            min-width: 200px;
+            padding: 20px;
+            min-width: 250px;
+            max-width: 300px;
+            border-radius: 8px;
         }
+        
         .info-window h3 {
-            margin: 0 0 10px 0;
+            margin: 0 0 12px 0;
             font-size: 16px;
+            font-weight: 600;
+            color: #333;
         }
+        
         .info-window p {
-            margin: 5px 0;
+            margin: 8px 0;
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
         }
+        
+        .info-window .links {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
         .info-window a {
             color: #2196F3;
             text-decoration: none;
-            margin-right: 10px;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+            transition: background-color 0.2s;
+        }
+        
+        .info-window a:hover {
+            background-color: #e0e0e0;
+            color: #1976D2;
         }
     </style>
+
+    <script type="text/javascript">
+        function MarkerClustering(options) {
+            this.DEFAULT_OPTIONS = {
+                // 클러스터 식별을 위한 최소 마커 수
+                minClusterSize: 2,
+                // 클러스터링 최대 줌 레벨
+                maxZoom: 13,
+                // 클러스터링 그리드 크기
+                gridSize: 100,
+                // 클러스터 마커를 클릭했을 때 줌 동작 여부
+                disableClickZoom: false,
+                // 클러스터링 아이콘 정보
+                icons: [],
+                // 클러스터링 스타일링 정보
+                stylingFunction: function() {}
+            };
+
+            this._clusters = [];
+            this._markers = [];
+            this._options = this.DEFAULT_OPTIONS;
+
+            this.setOptions(options || {});
+        }
+
+        MarkerClustering.prototype = {
+            constructor: MarkerClustering,
+
+            setOptions: function(options) {
+                var oldOptions = this._options;
+
+                this._options = {};
+
+                for (var key in this.DEFAULT_OPTIONS) {
+                    this._options[key] = options[key] || oldOptions[key] || this.DEFAULT_OPTIONS[key];
+                }
+            },
+
+            addMarker: function(marker) {
+                this._markers.push(marker);
+            },
+
+            addMarkers: function(markers) {
+                markers.forEach(this.addMarker, this);
+            },
+
+            clear: function() {
+                this._clusters = [];
+                this._markers = [];
+            }
+        };
+    </script>
 </head>
 <body>
     <div class="search-container">
         <input type="text" class="search-input" placeholder="연수원 검색...">
     </div>
     <div id="map"></div>
-<script type="module" src="app.js"></script>
+    
+    <!-- app.js는 마지막에 로드 -->
+    <script type="module" src="app.js"></script>
 </body>
 </html>
