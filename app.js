@@ -20,10 +20,29 @@ let infowindow;
 let markers = [];
 let markerClustering;
 
+// 클러스터 마커 스타일 정의
+const htmlMarker1 = {
+    content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:rgba(51,150,255,0.9);border-radius:20px;"></div>',
+    size: new naver.maps.Size(40, 40),
+    anchor: new naver.maps.Point(20, 20)
+};
+
+const htmlMarker2 = {
+    content: '<div style="cursor:pointer;width:50px;height:50px;line-height:54px;font-size:12px;color:white;text-align:center;font-weight:bold;background:rgba(51,150,255,0.9);border-radius:25px;"></div>',
+    size: new naver.maps.Size(50, 50),
+    anchor: new naver.maps.Point(25, 25)
+};
+
+const htmlMarker3 = {
+    content: '<div style="cursor:pointer;width:60px;height:60px;line-height:64px;font-size:14px;color:white;text-align:center;font-weight:bold;background:rgba(51,150,255,0.9);border-radius:30px;"></div>',
+    size: new naver.maps.Size(60, 60),
+    anchor: new naver.maps.Point(30, 30)
+};
+
 // 지도 초기화
 function initMap() {
     map = new naver.maps.Map('map', {
-        center: new naver.maps.LatLng(36.5, 127.5),
+        center: new naver.maps.LatLng(36.2253017, 127.6460516),
         zoom: 7,
         zoomControl: true,
         zoomControlOptions: {
@@ -68,40 +87,7 @@ function createMarker(center) {
     return marker;
 }
 
-// 마커 클러스터링 초기화
-function initMarkerClustering(markers) {
-    if (markerClustering) {
-        markerClustering.setMap(null);
-    }
-
-    markerClustering = new MarkerClustering({
-        minClusterSize: 2,
-        maxZoom: 12,
-        map: map,
-        markers: markers,
-        disableClickZoom: false,
-        gridSize: 120,
-        icons: [
-            {
-                content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:rgba(51,150,255,0.9);border-radius:20px;">$[count]</div>',
-                size: N.Size(40, 40),
-                anchor: N.Point(20, 20)
-            },
-            {
-                content: '<div style="cursor:pointer;width:50px;height:50px;line-height:54px;font-size:12px;color:white;text-align:center;font-weight:bold;background:rgba(51,150,255,0.9);border-radius:25px;">$[count]</div>',
-                size: N.Size(50, 50),
-                anchor: N.Point(25, 25)
-            },
-            {
-                content: '<div style="cursor:pointer;width:60px;height:60px;line-height:64px;font-size:14px;color:white;text-align:center;font-weight:bold;background:rgba(51,150,255,0.9);border-radius:30px;">$[count]</div>',
-                size: N.Size(60, 60),
-                anchor: N.Point(30, 30)
-            }
-        ]
-    });
-}
-
-// 연수원 데이터 로드
+// 연수원 데이터 로드 및 클러스터링 초기화
 async function loadCenters() {
     try {
         const querySnapshot = await getDocs(collection(db, "trainingCenters"));
@@ -115,9 +101,21 @@ async function loadCenters() {
             }
         });
 
-        // 마커 클러스터링 적용
+        // 마커 클러스터링 설정
         if (markers.length > 0) {
-            initMarkerClustering(markers);
+            markerClustering = new MarkerClustering({
+                minClusterSize: 2,
+                maxZoom: 13,
+                map: map,
+                markers: markers,
+                disableClickZoom: false,
+                gridSize: 120,
+                icons: [htmlMarker1, htmlMarker2, htmlMarker3],
+                indexGenerator: [10, 100, 200],
+                stylingFunction: function(clusterMarker, count) {
+                    $(clusterMarker.getElement()).find('div:first-child').text(count);
+                }
+            });
         }
 
         // 검색 기능 초기화
@@ -155,7 +153,7 @@ async function searchTrainingCenters(searchText) {
             if (center.name.toLowerCase().includes(searchText)) {
                 const position = new naver.maps.LatLng(center.location.lat, center.location.lng);
                 map.setCenter(position);
-                map.setZoom(12);
+                map.setZoom(13); // maxZoom 값과 동일하게 설정
                 found = true;
             }
         });
