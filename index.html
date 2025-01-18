@@ -1,12 +1,102 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>전국 연수원 지도</title>
-    <!-- 네이버 지도 API -->
-    <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
-    <!-- 마커 클러스터링 JS -->
-    <script type="text/javascript" src="./MarkerClustering.js"></script>
+<meta charset="UTF-8">
+<title>전국 연수원 지도</title>
+<!-- 네이버 지도 API -->
+<script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
+<!-- MarkerClustering 직접 구현 -->
+<script>
+/**
+ * 마커 클러스터링을 정의합니다.
+ * @param {Object} options 마커 클러스터링 옵션
+ */
+var MarkerClustering = function(options) {
+    // 기본 값입니다.
+    this.DEFAULT_OPTIONS = {
+        // 클러스터 마커를 올릴 지도입니다.
+        map: null,
+        // 클러스터 마커를 구성할 마커입니다.
+        markers: [],
+        // 클러스터 마커 클릭 시 줌 동작 여부입니다.
+        disableClickZoom: true,
+        // 클러스터를 구성할 최소 마커 수입니다.
+        minClusterSize: 2,
+        // 클러스터 마커로 표현할 최대 줌 레벨입니다. 해당 줌 레벨보다 높으면, 클러스터를 구성하지 않습니다.
+        maxZoom: 13,
+        // 클러스터를 구성할 그리드 크기입니다. 단위는 픽셀입니다.
+        gridSize: 100,
+        // 클러스터 마커의 아이콘입니다. NAVER Maps JavaScript API v3에서 제공하는 아이콘, 심볼, HTML 마커 유형을 모두 지원합니다.
+        icons: [],
+        // 클러스터 마커의 아이콘 배열에서 어떤 아이콘을 선택할 것인지 인덱스를 결정합니다.
+        indexGenerator: [10, 100, 200, 500, 1000],
+        // 클러스터로 구성할 마커를 가지고 있는 배열입니다.
+        markers: [],
+        // 클러스터 마커가 노출될 최소 줌 레벨입니다.
+        minZoom: 0,
+        // 클러스터 마커가 노출될 최대 줌 레벨입니다.
+        maxZoom: 13,
+        // 클러스터를 구성하는 마커 수에 따라 노출될 아이콘을 결정하는 함수입니다.
+        stylingFunction: function(clusterMarker, count) {
+            $(clusterMarker.getElement()).find('div:first-child').text(count);
+        }
+    };
+
+    this._clusters = [];
+    this._mapRelations = null;
+    this._markerRelations = [];
+
+    this.setOptions(options || {}, true);
+    this.setMap(options.map || null);
+};
+
+MarkerClustering.prototype = {
+    constructor: MarkerClustering,
+
+    setOptions: function(options, applyRightNow) {
+        var previousOptions = this._options;
+
+        this._options = extend({}, this.DEFAULT_OPTIONS, options);
+        this._options.markers = options.markers || [];
+
+        if (applyRightNow) {
+            this._redraw();
+        }
+
+        return this;
+    },
+
+    setMap: function(map) {
+        var this_ = this;
+
+        if (this._mapRelation) {
+            if (this._mapRelation.getMap()) {
+                this._mapRelation.setMap(null);
+            }
+
+            this._mapRelation = null;
+        }
+
+        if (map) {
+            this._mapRelation = map.addListener('idle', function() {
+                this_._redraw();
+            });
+        }
+
+        return this;
+    }
+};
+
+// 필요한 유틸리티 함수
+function extend(target, source) {
+    for (var prop in source) {
+        if (source.hasOwnProperty(prop)) {
+            target[prop] = source[prop];
+        }
+    }
+    return target;
+}
+</script>
     
     <style>
         body { 
