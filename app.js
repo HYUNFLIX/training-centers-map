@@ -146,15 +146,20 @@ function initSearch() {
         const searchText = e.target.value.toLowerCase();
         if (!searchText) return;
 
-        const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-        querySnapshot.forEach((doc) => {
-            const center = doc.data();
-            if (center.name.toLowerCase().includes(searchText)) {
-                const position = new naver.maps.LatLng(center.location.lat, center.location.lng);
-                map.setCenter(position);
-                map.setZoom(12);
-            }
-        });
+        getDocs(collection(db, "trainingCenters"))
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const center = doc.data();
+                    if (center.name.toLowerCase().includes(searchText)) {
+                        const position = new naver.maps.LatLng(center.location.lat, center.location.lng);
+                        map.setCenter(position);
+                        map.setZoom(12);
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error('검색 중 오류:', error);
+            });
     });
 }
 
