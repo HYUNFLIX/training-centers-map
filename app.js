@@ -8,7 +8,7 @@ const firebaseConfig = {
     projectId: "training-centers-map",
     storageBucket: "training-centers-map.firebasestorage.app",
     messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
 };
 
 const app = initializeApp(firebaseConfig);
