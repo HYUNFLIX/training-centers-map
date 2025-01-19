@@ -18,6 +18,7 @@ const db = getFirestore(app);
 let map;
 let infowindow;
 let markers = [];
+let clusterer;
 
 // 지도 초기화
 function initMap() {
@@ -37,15 +38,42 @@ function initMap() {
         borderColor: "#ccc",
         pixelOffset: new naver.maps.Point(20, -20)
     });
+
+    loadCenters();
 }
 
 // 마커 생성 함수
 function createMarker(center) {
     return new naver.maps.Marker({
         position: new naver.maps.LatLng(center.location.lat, center.location.lng),
-        map: map,
         title: center.name,
         clickable: true
+    });
+}
+
+// 마커 클러스터링 설정
+function setupMarkerClustering(positions) {
+    clusterer = new naver.maps.MarkerClustering({
+        minClusterSize: 2,
+        maxZoom: 13,
+        map: map,
+        markers: positions,
+        disableClickZoom: false,
+        gridSize: 120,
+        icons: [
+            {
+                content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:rgba(51,150,255,0.9);border-radius:20px;">$[count]</div>',
+                size: new naver.maps.Size(40, 40),
+                anchor: new naver.maps.Point(20, 20)
+            }
+        ],
+        indexGenerator: [10, 100, 200]
+    });
+
+    // 클러스터 클릭 이벤트
+    naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
+        const bounds = cluster.getBounds();
+        map.fitBounds(bounds);
     });
 }
 
@@ -59,7 +87,7 @@ async function loadCenters() {
             const center = doc.data();
             if (center.location?.lat && center.location?.lng) {
                 const marker = createMarker(center);
-                
+
                 // 마커 클릭 이벤트
                 naver.maps.Event.addListener(marker, 'click', () => {
                     const content = `
@@ -73,7 +101,7 @@ async function loadCenters() {
                             </div>
                         </div>
                     `;
-                    
+
                     infowindow.setContent(content);
                     infowindow.open(map, marker);
                 });
@@ -82,24 +110,9 @@ async function loadCenters() {
             }
         });
 
-        // 마커 클러스터링 설정
+        // 마커 클러스터링 적용
         if (positions.length > 0) {
-            const clusterer = new naver.maps.MarkerClustering({
-                minClusterSize: 2,
-                maxZoom: 13,
-                map: map,
-                markers: positions,
-                disableClickZoom: false,
-                gridSize: 120,
-                icons: [
-                    {
-                        content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:rgba(51,150,255,0.9);border-radius:20px;">$[count]</div>',
-                        size: new naver.maps.Size(40, 40),
-                        anchor: new naver.maps.Point(20, 20)
-                    }
-                ],
-                indexGenerator: [10, 100, 200]
-            });
+            setupMarkerClustering(positions);
         }
 
         // 검색 기능 초기화
@@ -113,10 +126,10 @@ async function loadCenters() {
 function initSearch() {
     const searchInput = document.querySelector('.search-input');
     let searchTimeout;
-    
+
     searchInput.addEventListener('input', (e) => {
         const searchText = e.target.value.toLowerCase();
-        
+
         // 디바운싱 적용
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
@@ -131,7 +144,7 @@ async function searchTrainingCenters(searchText) {
     try {
         const querySnapshot = await getDocs(collection(db, "trainingCenters"));
         let found = false;
-        
+
         querySnapshot.forEach((doc) => {
             const center = doc.data();
             if (center.name.toLowerCase().includes(searchText)) {
@@ -152,8 +165,5 @@ async function searchTrainingCenters(searchText) {
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
-    // 지도 초기화
     initMap();
-    // 데이터 로드
-    loadCenters();
 });
