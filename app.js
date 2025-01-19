@@ -17,8 +17,6 @@ const db = getFirestore(app);
 // 전역 변수
 let map;
 let infowindow;
-let markers = [];
-let clusterer;
 
 // 지도 초기화
 function initMap() {
@@ -42,38 +40,27 @@ function initMap() {
     loadCenters();
 }
 
-// 마커 생성 함수
-function createMarker(center) {
-    return new naver.maps.Marker({
-        position: new naver.maps.LatLng(center.location.lat, center.location.lng),
-        title: center.name,
-        clickable: true
-    });
-}
-
 // 마커 클러스터링 설정
 function setupMarkerClustering(positions) {
-    clusterer = new naver.maps.MarkerClustering({
-        minClusterSize: 2,
-        maxZoom: 13,
-        map: map,
-        markers: positions,
-        disableClickZoom: false,
-        gridSize: 120,
+    const clusterer = new naver.maps.MarkerClustering({
+        minClusterSize: 2, // 클러스터를 만들 최소 마커 개수
+        maxZoom: 13,       // 이 줌 이상에서는 클러스터가 해제돼요
+        map: map,          // 네이버 지도 객체
+        markers: positions, // 마커 배열
+        gridSize: 120,     // 클러스터 크기
         icons: [
             {
-                content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:rgba(51,150,255,0.9);border-radius:20px;">$[count]</div>',
-                size: new naver.maps.Size(40, 40),
-                anchor: new naver.maps.Point(20, 20)
+                content: '<div style="width:40px;height:40px;line-height:40px;text-align:center;color:white;background:blue;border-radius:20px;">$[count]</div>',
+                size: new naver.maps.Size(40, 40), // 아이콘 크기
+                anchor: new naver.maps.Point(20, 20) // 아이콘 위치
             }
-        ],
-        indexGenerator: [10, 100, 200]
+        ]
     });
 
-    // 클러스터 클릭 이벤트
+    // 클러스터 클릭 이벤트 추가
     naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
-        const bounds = cluster.getBounds();
-        map.fitBounds(bounds);
+        const bounds = cluster.getBounds(); // 클러스터 영역 가져오기
+        map.fitBounds(bounds); // 클러스터 영역으로 지도 확대
     });
 }
 
@@ -86,7 +73,11 @@ async function loadCenters() {
         querySnapshot.forEach((doc) => {
             const center = doc.data();
             if (center.location?.lat && center.location?.lng) {
-                const marker = createMarker(center);
+                const marker = new naver.maps.Marker({
+                    position: new naver.maps.LatLng(center.location.lat, center.location.lng),
+                    title: center.name,
+                    clickable: true
+                });
 
                 // 마커 클릭 이벤트
                 naver.maps.Event.addListener(marker, 'click', () => {
@@ -101,7 +92,6 @@ async function loadCenters() {
                             </div>
                         </div>
                     `;
-
                     infowindow.setContent(content);
                     infowindow.open(map, marker);
                 });
@@ -110,13 +100,8 @@ async function loadCenters() {
             }
         });
 
-        // 마커 클러스터링 적용
-        if (positions.length > 0) {
-            setupMarkerClustering(positions);
-        }
-
-        // 검색 기능 초기화
-        initSearch();
+        // 클러스터링 적용
+        setupMarkerClustering(positions);
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     }
