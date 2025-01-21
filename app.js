@@ -83,9 +83,8 @@ function setupMarkerClustering(positions) {
 
     // 클러스터 클릭 이벤트 추가
     naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
-        // 클러스터 해제 줌 레벨로 확대
-        map.setZoom(map.getZoom() + 2);
-        map.panTo(cluster.getCenter());
+        const bounds = cluster.getBounds(); // 클러스터 영역 가져오기
+        map.fitBounds(bounds); // 클러스터 영역으로 확대
     });
 }
 
