@@ -69,27 +69,25 @@ function setupMarkerClustering(positions) {
     };
 
     const clusterer = new MarkerClustering({
-        minClusterSize: 2,
-        maxZoom: 13,
-        map: map,
-        markers: positions,
-        gridSize: 120,
-        icons: [htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5],
-        indexGenerator: [5, 10, 20, 50, 100],
+        minClusterSize: 2, // 클러스터 최소 크기
+        maxZoom: 13,       // 클러스터 해제 줌 레벨
+        map: map,          // 네이버 지도 객체
+        markers: positions, // 마커 배열
+        gridSize: 120,     // 클러스터 크기
+        icons: [htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5], // 5단계 아이콘
+        indexGenerator: [5, 10, 20, 50, 100], // 클러스터 크기 구간
         stylingFunction: function(clusterMarker, count) {
             clusterMarker.getElement().querySelector('div').textContent = count;
-        },
-        // 클러스터 클릭 이벤트를 옵션으로 추가
-        onClick: function(cluster) {
-            const bounds = cluster.getBounds();
-            map.fitBounds(bounds, {
-                padding: 100,  // 모든 방향에 100픽셀 패딩
-                duration: 500, // 애니메이션 시간 (밀리초)
-                easing: 'easeOutCubic'
-            });
         }
     });
+
+    // 클러스터 클릭 이벤트 추가
+    naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
+        const bounds = cluster.getBounds(); // 클러스터 영역 가져오기
+        map.fitBounds(bounds); // 클러스터 영역으로 확대
+    });
 }
+
 // 연수원 데이터 로드
 async function loadCenters() {
     try {
