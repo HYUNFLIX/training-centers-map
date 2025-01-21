@@ -82,15 +82,19 @@ function setupMarkerClustering(positions) {
     });
 
     // 클러스터 클릭 이벤트 추가
-naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
-    const bounds = cluster.getBounds(); // 클러스터 영역 가져오기
-    if (bounds) {
-        map.fitBounds(bounds); // 클러스터 영역으로 확대
-    } else {
-        console.error("클러스터 경계를 가져올 수 없습니다.");
-    }
-});
-
+    naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
+        try {
+            const bounds = cluster.getBounds(); // 클러스터 경계 가져오기
+            if (bounds) {
+                console.log("클러스터 경계:", bounds);
+                map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 }); // 클러스터 영역으로 확대
+            } else {
+                console.warn("클러스터 경계를 가져올 수 없습니다.");
+            }
+        } catch (error) {
+            console.error("클러스터 클릭 이벤트 처리 중 오류:", error);
+        }
+    });
 }
 
 // 연수원 데이터 로드
