@@ -43,33 +43,47 @@ function initMap() {
 // 마커 클러스터링 설정
 function setupMarkerClustering(positions) {
     const htmlMarker1 = {
-        content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(/images/m1.png);background-size:contain;"></div>',
+        content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:12px;color:white;text-align:center;font-weight:bold;background:url(/images/m1.png);background-size:contain;"></div>',
         size: new naver.maps.Size(40, 40),
         anchor: new naver.maps.Point(20, 20)
     };
     const htmlMarker2 = {
-        content: '<div style="cursor:pointer;width:40px;height:40px;line-height:42px;font-size:10px;color:white;text-align:center;font-weight:bold;background:url(/images/m2.png);background-size:contain;"></div>',
-        size: new naver.maps.Size(40, 40),
-        anchor: new naver.maps.Point(20, 20)
+        content: '<div style="cursor:pointer;width:50px;height:50px;line-height:50px;font-size:14px;color:white;text-align:center;font-weight:bold;background:url(/images/m2.png);background-size:contain;"></div>',
+        size: new naver.maps.Size(50, 50),
+        anchor: new naver.maps.Point(25, 25)
+    };
+    const htmlMarker3 = {
+        content: '<div style="cursor:pointer;width:60px;height:60px;line-height:60px;font-size:16px;color:white;text-align:center;font-weight:bold;background:url(/images/m3.png);background-size:contain;"></div>',
+        size: new naver.maps.Size(60, 60),
+        anchor: new naver.maps.Point(30, 30)
+    };
+    const htmlMarker4 = {
+        content: '<div style="cursor:pointer;width:70px;height:70px;line-height:70px;font-size:18px;color:white;text-align:center;font-weight:bold;background:url(/images/m4.png);background-size:contain;"></div>',
+        size: new naver.maps.Size(70, 70),
+        anchor: new naver.maps.Point(35, 35)
+    };
+    const htmlMarker5 = {
+        content: '<div style="cursor:pointer;width:80px;height:80px;line-height:80px;font-size:20px;color:white;text-align:center;font-weight:bold;background:url(/images/m5.png);background-size:contain;"></div>',
+        size: new naver.maps.Size(80, 80),
+        anchor: new naver.maps.Point(40, 40)
     };
 
     const clusterer = new MarkerClustering({
-        minClusterSize: 2, // 클러스터를 만들 최소 마커 개수
-        maxZoom: 13,       // 이 줌 이상에서는 클러스터가 해제돼요
+        minClusterSize: 2, // 클러스터 최소 크기
+        maxZoom: 13,       // 클러스터 해제 줌 레벨
         map: map,          // 네이버 지도 객체
         markers: positions, // 마커 배열
         gridSize: 120,     // 클러스터 크기
-        icons: [htmlMarker1, htmlMarker2], // 여러 아이콘 스타일 정의
-        indexGenerator: [10, 100, 200, 500, 1000],
+        icons: [htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5], // 5단계 아이콘
+        indexGenerator: [5, 10, 20, 50, 100], // 클러스터 크기 구간
         stylingFunction: function(clusterMarker, count) {
             clusterMarker.getElement().querySelector('div').textContent = count;
         }
     });
 
-    // 클러스터 클릭 이벤트 추가
     naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
         const bounds = cluster.getBounds(); // 클러스터 영역 가져오기
-        map.fitBounds(bounds); // 클러스터 영역으로 지도 확대
+        map.fitBounds(bounds); // 클러스터 영역으로 확대
     });
 }
 
