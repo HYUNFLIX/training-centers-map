@@ -81,6 +81,7 @@ function setupMarkerClustering(positions) {
         }
     });
 
+    // 클러스터 클릭 이벤트 추가
     naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
         const bounds = cluster.getBounds(); // 클러스터 영역 가져오기
         map.fitBounds(bounds); // 클러스터 영역으로 확대
@@ -129,16 +130,33 @@ async function loadCenters() {
                     }
                 });
 
+                // 마커 클릭 이벤트
+                naver.maps.Event.addListener(marker, 'click', () => {
+                    const content = `
+                        <div class="info-window">
+                            <h3>${center.name}</h3>
+                            <p>${center.branch || ''}</p>
+                            <p>${center.basicInfo || ''}</p>
+                            <div>
+                                ${center.links?.naver ? `<a href="${center.links.naver}" target="_blank">네이버 지도</a>` : ''}
+                                ${center.links?.website ? `<a href="${center.links.website}" target="_blank">웹사이트</a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    infowindow.setContent(content);
+                    infowindow.open(map, marker);
+                });
+
                 positions.push(marker);
             }
         });
 
+        // 클러스터링 적용
         setupMarkerClustering(positions);
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     }
 }
-
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
