@@ -83,22 +83,9 @@ function setupMarkerClustering(positions) {
 
     // 클러스터 클릭 이벤트 추가
     naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
-        const markersInCluster = cluster.getMarkers();
-        let content = '<div style="padding:10px;">';
-        content += '<h4>클러스터에 포함된 마커</h4>';
-        content += '<ul>';
-
-        markersInCluster.forEach((marker) => {
-            content += `<li>${marker.getTitle()}</li>`;
-        });
-
-        content += '</ul>';
-        content += '</div>';
-
-        // 클러스터 중심으로 정보창 열기
-        infowindow.setContent(content);
-        infowindow.setPosition(cluster.getCenter());
-        infowindow.open(map);
+        // 클러스터 해제 줌 레벨로 확대
+        map.setZoom(map.getZoom() + 2);
+        map.panTo(cluster.getCenter());
     });
 }
 
