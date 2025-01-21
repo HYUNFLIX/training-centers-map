@@ -99,36 +99,46 @@ async function loadCenters() {
                 const marker = new naver.maps.Marker({
                     position: new naver.maps.LatLng(center.location.lat, center.location.lng),
                     title: center.name,
-                    clickable: true
-                });
-
-                // 마커 클릭 이벤트
-                naver.maps.Event.addListener(marker, 'click', () => {
-                    const content = `
-                        <div class="info-window">
-                            <h3>${center.name}</h3>
-                            <p>${center.branch || ''}</p>
-                            <p>${center.basicInfo || ''}</p>
-                            <div>
-                                ${center.links?.naver ? `<a href="${center.links.naver}" target="_blank">네이버 지도</a>` : ''}
-                                ${center.links?.website ? `<a href="${center.links.website}" target="_blank">웹사이트</a>` : ''}
+                    clickable: true,
+                    icon: {
+                        content: `
+                            <div style="
+                                position: relative;
+                                text-align: center;
+                                color: white;
+                                font-size: 14px;
+                                font-weight: bold;
+                                background: green;
+                                border: 2px solid white;
+                                border-radius: 20px;
+                                padding: 5px 10px;
+                                box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);">
+                                ${center.name}
+                                <div style="
+                                    width: 10px;
+                                    height: 10px;
+                                    background: green;
+                                    border: 2px solid white;
+                                    border-radius: 50%;
+                                    margin: auto;
+                                    margin-top: -5px;"></div>
                             </div>
-                        </div>
-                    `;
-                    infowindow.setContent(content);
-                    infowindow.open(map, marker);
+                        `,
+                        size: new naver.maps.Size(100, 50),
+                        anchor: new naver.maps.Point(50, 50)
+                    }
                 });
 
                 positions.push(marker);
             }
         });
 
-        // 클러스터링 적용
         setupMarkerClustering(positions);
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     }
 }
+
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', () => {
