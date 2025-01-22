@@ -107,6 +107,7 @@ async function loadCenters() {
                     position: new naver.maps.LatLng(center.location.lat, center.location.lng),
                     title: center.name,
                     clickable: true,
+                    // 아이콘 설정
                    icon: {
     content: `
         <div style="
@@ -122,23 +123,21 @@ async function loadCenters() {
             border-radius: 20px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
             white-space: nowrap;">
+            <!-- 왼쪽 마커 아이콘 -->
             <div style="
-                width: 20px;
-                height: 20px;
-                background: #007bff;
-                border-radius: 50%;
+                width: 26px;
+                height: 26px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 margin-right: 10px;">
-                <div style="
-                    width: 10px;
-                    height: 10px;
-                    background: white;
-                    border-radius: 50%;">
-                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" style="width: 100%; height: 100%; fill: #007bff;">
+                    <path fill-rule="evenodd" d="M13 13.14a1.62 1.62 0 01-1.61-1.62A1.62 1.62 0 1113 13.14zm5.9 1.5a6.3 6.3 0 001.1-3.53c0-3.64-3.14-6.6-7-6.61-3.86 0-7 2.97-7 6.6 0 1.26.38 2.48 1.12 3.58l5.5 6.64a.5.5 0 00.77 0z" clip-rule="evenodd"></path>
+                </svg>
             </div>
-            ${center.name} <!-- 연수원명 표시 -->
+            <!-- 연수원 이름 -->
+            <span>${center.name}</span>
+            <!-- 아래 화살표 -->
             <div style="
                 position: absolute;
                 bottom: -10px;
@@ -153,8 +152,9 @@ async function loadCenters() {
         </div>
     `,
     size: new naver.maps.Size(150, 50), // 말풍선 크기
-    anchor: new naver.maps.Point(19, 58) // 말풍선 위치 조정
+    anchor: new naver.maps.Point(75, 70) // 말풍선 위치 조정
 }
+
 
 
                 });
