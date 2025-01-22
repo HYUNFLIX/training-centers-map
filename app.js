@@ -108,32 +108,35 @@ async function loadCenters() {
                     title: center.name,
                     clickable: true,
                     icon: {
-                        content: `
-                            <div style="
-                                position: relative;
-                                text-align: center;
-                                color: white;
-                                font-size: 14px;
-                                font-weight: bold;
-                                background: green;
-                                border: 2px solid white;
-                                border-radius: 20px;
-                                padding: 5px 10px;
-                                box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3);">
-                                ${center.name}
-                                <div style="
-                                    width: 10px;
-                                    height: 10px;
-                                    background: green;
-                                    border: 2px solid white;
-                                    border-radius: 50%;
-                                    margin: auto;
-                                    margin-top: -5px;"></div>
-                            </div>
-                        `,
-                        size: new naver.maps.Size(100, 50),
-                        anchor: new naver.maps.Point(50, 50)
-                    }
+    content: `
+        <div style="
+            position: relative;
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;">
+            ${center.name} <!-- 연수원명 표시 -->
+            <div style="
+                position: absolute;
+                bottom: -10px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 0;
+                height: 0;
+                border-left: 10px solid transparent;
+                border-right: 10px solid transparent;
+                border-top: 10px solid #007bff;">
+            </div>
+        </div>
+    `,
+    size: new naver.maps.Size(100, 50), // 마커 크기
+    anchor: new naver.maps.Point(50, 60) // 말풍선 위치 조정
+}
                 });
 
                 // 마커 클릭 이벤트
