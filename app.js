@@ -153,7 +153,7 @@ async function loadCenters() {
         </div>
     `,
     size: new naver.maps.Size(150, 50), // 말풍선 크기
-    anchor: new naver.maps.Point(75, 70) // 말풍선 위치 조정
+    anchor: new naver.maps.Point(19, 58) // 말풍선 위치 조정
 }
 
 
