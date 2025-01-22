@@ -108,42 +108,54 @@ async function loadCenters() {
                     title: center.name,
                     clickable: true,
                    icon: {
-  content: `
-    <div style="
-      position: relative;
-      display: flex;
-      align-items: center;
-      padding: 8px 15px;
-      background: white;
-      color: black;
-      font-size: 14px;
-      font-weight: bold;
-      border: none;
-      border-radius: 30px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      white-space: nowrap;">
-      <div style="
-        width: 20px;
-        height: 20px;
-        background: #4B9AFF;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-right: 10px;">
+    content: `
         <div style="
-          width: 10px;
-          height: 10px;
-          background: white;
-          border-radius: 50%;">
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: white;
+            color: black;
+            font-size: 14px;
+            font-weight: bold;
+            border: 2px solid #007bff;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;">
+            <div style="
+                width: 20px;
+                height: 20px;
+                background: #007bff;
+                border-radius: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-right: 10px;">
+                <div style="
+                    width: 10px;
+                    height: 10px;
+                    background: white;
+                    border-radius: 50%;">
+                </div>
+            </div>
+            ${center.name} <!-- 연수원명 표시 -->
+            <div style="
+                position: absolute;
+                bottom: -10px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 0;
+                height: 0;
+                border-left: 10px solid transparent;
+                border-right: 10px solid transparent;
+                border-top: 10px solid #007bff;">
+            </div>
         </div>
-      </div>
-      ${center.name}
-    </div>
-  `,
-  size: new naver.maps.Size(150, 40), // 높이를 좀 더 줄임
-  anchor: new naver.maps.Point(75, 20) // anchor 위치 조정
+    `,
+    size: new naver.maps.Size(150, 50), // 말풍선 크기
+    anchor: new naver.maps.Point(75, 70) // 말풍선 위치 조정
 }
+
 
                 });
 
