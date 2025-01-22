@@ -110,51 +110,57 @@ async function loadCenters() {
                     // 아이콘 설정
                    icon: {
     content: `
-        <div style="
+        <div class="marker-container" style="
             position: relative;
             display: flex;
             align-items: center;
-            padding: 10px 15px;
-            background: white;
-            color: black;
-            font-size: 14px;
-            font-weight: bold;
-            border: 2px solid #007bff;
-            border-radius: 20px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            padding: 4px;
+            border: 1px solid rgba(0, 123, 255, 1);
+            border-radius: 19px;
+            background: #fff;
+            box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.17);
             white-space: nowrap;">
-            <!-- 왼쪽 마커 아이콘 -->
+            <!-- 마커 아이콘 -->
             <div style="
-                width: 26px;
-                height: 26px;
+                position: relative;
+                width: 24px;
+                height: 24px;
+                border: 1px solid rgba(0, 0, 0, 0);
+                border-radius: 50%;
+                background: rgba(0, 123, 255, 1);
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                margin-right: 10px;">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" style="width: 100%; height: 100%; fill: #007bff;">
-                    <path fill-rule="evenodd" d="M13 13.14a1.62 1.62 0 01-1.61-1.62A1.62 1.62 0 1113 13.14zm5.9 1.5a6.3 6.3 0 001.1-3.53c0-3.64-3.14-6.6-7-6.61-3.86 0-7 2.97-7 6.6 0 1.26.38 2.48 1.12 3.58l5.5 6.64a.5.5 0 00.77 0z" clip-rule="evenodd"></path>
+                box-sizing: border-box;
+                margin-right: 8px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" style="width: 14px; height: 14px;">
+                    <path fill="white" d="M13 13.14a1.62 1.62 0 01-1.61-1.62A1.62 1.62 0 1113 13.14zm5.9 1.5a6.3 6.3 0 001.1-3.53c0-3.64-3.14-6.6-7-6.61-3.86 0-7 2.97-7 6.6 0 1.26.38 2.48 1.12 3.58l5.5 6.64a.5.5 0 00.77 0z"></path>
                 </svg>
             </div>
-            <!-- 연수원 이름 -->
-            <span>${center.name}</span>
-            <!-- 아래 화살표 -->
+            <!-- 텍스트 -->
+            <span style="
+                font-size: 14px;
+                font-weight: bold;
+                color: black;">${center.name}</span>
+            <!-- 화살표 -->
             <div style="
-                position: relative;
+                position: absolute;
+                bottom: -10px;
+                left: 50%;
+                transform: translateX(-50%);
                 width: 0;
                 height: 0;
-                border-width: 8px 5px 0;
-                border-style: solid;
-                border-color: #007bff transparent transparent;
-                display: inline-block;
-                vertical-align: top;
-                left: 12px;
-                margin-top: -2px;">
+                border-left: 10px solid transparent;
+                border-right: 10px solid transparent;
+                border-top: 10px solid rgba(0, 123, 255, 1);">
             </div>
         </div>
     `,
-    size: new naver.maps.Size(150, 50), // 말풍선 크기
-    anchor: new naver.maps.Point(75, 70) // 말풍선 위치 조정
+    size: new naver.maps.Size(200, 50), // 말풍선 크기
+    anchor: new naver.maps.Point(100, 70) // 말풍선 위치 조정
 }
+
 
 
 
