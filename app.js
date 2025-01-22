@@ -139,15 +139,16 @@ async function loadCenters() {
             <span>${center.name}</span>
             <!-- 아래 화살표 -->
             <div style="
-                position: absolute;
-                bottom: -10px;
-                left: 50%;
-                transform: translateX(-50%);
+                position: relative;
                 width: 0;
                 height: 0;
-                border-left: 10px solid transparent;
-                border-right: 10px solid transparent;
-                border-top: 10px solid #007bff;">
+                border-width: 8px 5px 0;
+                border-style: solid;
+                border-color: #007bff transparent transparent;
+                display: inline-block;
+                vertical-align: top;
+                left: 12px;
+                margin-top: -2px;">
             </div>
         </div>
     `,
