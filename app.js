@@ -107,19 +107,37 @@ async function loadCenters() {
                     position: new naver.maps.LatLng(center.location.lat, center.location.lng),
                     title: center.name,
                     clickable: true,
-                    icon: {
+                   icon: {
     content: `
         <div style="
             position: relative;
-            display: inline-block;
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: white;
+            color: black;
             font-size: 14px;
             font-weight: bold;
+            border: 2px solid #007bff;
             border-radius: 20px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
             white-space: nowrap;">
+            <div style="
+                width: 20px;
+                height: 20px;
+                background: #007bff;
+                border-radius: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-right: 10px;">
+                <div style="
+                    width: 10px;
+                    height: 10px;
+                    background: white;
+                    border-radius: 50%;">
+                </div>
+            </div>
             ${center.name} <!-- 연수원명 표시 -->
             <div style="
                 position: absolute;
@@ -134,9 +152,10 @@ async function loadCenters() {
             </div>
         </div>
     `,
-    size: new naver.maps.Size(100, 50), // 마커 크기
-    anchor: new naver.maps.Point(50, 60) // 말풍선 위치 조정
+    size: new naver.maps.Size(150, 50), // 말풍선 크기
+    anchor: new naver.maps.Point(75, 70) // 말풍선 위치 조정
 }
+
                 });
 
                 // 마커 클릭 이벤트
