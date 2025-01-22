@@ -81,18 +81,24 @@ function setupMarkerClustering(positions) {
         }
     });
 
-    // 클러스터 클릭 이벤트 추가
-    naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
-        const markersInCluster = cluster.getMarkers();
-        if (markersInCluster.length > 1) {
-            const bounds = new naver.maps.LatLngBounds();
-            markersInCluster.forEach(marker => bounds.extend(marker.getPosition()));
-            map.fitBounds(bounds, { top: 50, right: 50, bottom: 50, left: 50 });
-        } else {
-            console.warn("클러스터에 포함된 마커가 1개 이하입니다.");
-        }
-    });
-}
+// 클러스터 클릭 이벤트 추가 및 최적화
+naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
+    const markersInCluster = cluster.getMarkers();
+    if (markersInCluster.length > 1) {
+        const bounds = new naver.maps.LatLngBounds();
+        markersInCluster.forEach(marker => bounds.extend(marker.getPosition()));
+        
+        // 지도 확대 및 애니메이션
+        map.panToBounds(bounds, { duration: 500, easing: 'easeOutCubic' });
+
+        // 클러스터 정보 출력
+        const markerInfo = markersInCluster.map(marker => marker.getTitle()).join(', ');
+        console.log(`클러스터에 포함된 마커: ${markerInfo}`);
+    } else {
+        console.warn("클러스터에 포함된 마커가 1개 이하입니다.");
+    }
+});
+
 
 // 연수원 데이터 로드
 async function loadCenters() {
