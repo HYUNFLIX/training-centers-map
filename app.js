@@ -74,6 +74,7 @@ function setupMarkerClustering(positions) {
         map: map,          // 네이버 지도 객체
         markers: positions, // 마커 배열
         gridSize: 120,     // 클러스터 크기
+        disableClickZoom: false, // 줌 동작 활성화
         icons: [htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5], // 5단계 아이콘
         indexGenerator: [5, 10, 20, 50, 100], // 클러스터 크기 구간
         stylingFunction: function(clusterMarker, count) {
