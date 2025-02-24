@@ -187,9 +187,8 @@ async function loadCenters() {
                     infowindow.setContent(content);
                     infowindow.open(map, marker);
                 });
-
-                markers.push(marker);
-                allMarkers.push(marker);
+                positions.push(marker);
+    
             }
         });
 
