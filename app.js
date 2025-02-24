@@ -3,10 +3,10 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDSPO1KqZg...",
+    apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
     authDomain: "training-centers-map.firebaseapp.com",
     projectId: "training-centers-map",
-    storageBucket: "training-centers-map.appspot.com",
+    storageBucket: "training-centers-map.firebasestorage.app",
     messagingSenderId: "943690141587",
     appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
 };
@@ -188,7 +188,8 @@ async function loadCenters() {
                     infowindow.open(map, marker);
                 });
 
-                positions.push(marker);
+                markers.push(marker);
+                allMarkers.push(marker);
             }
         });
 
