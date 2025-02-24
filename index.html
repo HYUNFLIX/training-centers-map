@@ -1,62 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>연수원 여기어때</title>
-    <!-- jQuery 추가 -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- 네이버 지도 API -->
-    <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
-    <script src="MarkerClustering.js"></script>
+  <meta charset="UTF-8">
+  <title>연수원 여기어때</title>
+  <!-- jQuery 추가 -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- 네이버 지도 API -->
+  <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
+  <!-- 마커 클러스터링 -->
+  <script src="MarkerClustering.js"></script>
 
-    <style>
-        #map { 
-            width: 100%;
-            height: 600px;
-        }
-        .search-container {
-            position: absolute;
-            top: 10px;
-            left: 50px;
-            z-index: 1000;
-            background: white;
-            padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .search-input {
-            padding: 8px;
-            width: 200px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .info-window {
-            padding: 15px;
-            min-width: 200px;
-        }
-        .info-window h3 {
-            margin: 0 0 10px 0;
-            font-size: 16px;
-        }
-        .info-window p {
-            margin: 5px 0;
-        }
-        .info-window a {
-            color: #2196F3;
-            text-decoration: none;
-            margin-right: 10px;
-        }
-    </style>
+  <!-- 외부 CSS 파일 로드 -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div id="map" style="width:100%;height:600px;"></div>
-<div class="search-container">
-    <input type="text" class="search-input" placeholder="연수원 검색...">
-    <div class="search-results" style="display:none;"></div>
-</div>
+  <div id="map" style="width:100%;height:600px;"></div>
+  <div class="search-container">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" class="search-input" placeholder="연수원 검색..." />
+      <span class="clear-icon">✕</span>
+    </div>
+    <div class="search-results"></div>
+  </div>
 
-
-    <script type="module" src="app.js"></script>
+  <!-- JS 파일 불러오기 (모듈 형식) -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
