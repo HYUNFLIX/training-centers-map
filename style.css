@@ -1,0 +1,79 @@
+/* 검색창 컨테이너 */
+.search-container {
+  position: absolute;
+  top: 10px;
+  left: 50px;
+  z-index: 1000;
+  background: white;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  width: 260px; /* 검색창 너비 */
+}
+
+/* 검색창 박스 */
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* 왼쪽 돋보기 아이콘 */
+.search-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* 검색 입력창 */
+.search-input {
+  width: 100%;
+  padding: 8px 30px 8px 30px; /* 좌우 아이콘 공간 확보 */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* 오른쪽 X 버튼 */
+.clear-icon {
+  position: absolute;
+  right: 10px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  display: none; /* 초기에는 숨김 */
+}
+
+/* 검색결과(자동완성) 영역 */
+.search-results {
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none; /* 초기에는 숨김 */
+}
+
+/* 검색결과 항목 */
+.search-result-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+/* 각 항목 왼쪽에 아이콘(돋보기 등)을 붙이고 싶다면 예시 */
+.search-result-item::before {
+  content: '🔍';
+  margin-right: 6px;
+  font-size: 12px;
+}
+
+/* 항목 hover 시 배경색 변경 */
+.search-result-item:hover {
+  background: #f2f2f2;
+}
