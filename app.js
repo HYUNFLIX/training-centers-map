@@ -31,12 +31,12 @@ function initMap() {
         }
     });
 
-    // InfoWindow 스타일을 직접 꾸미기 위해 기본 테두리/배경 제거
+    // InfoWindow 기본 스타일 제거(커스텀 말풍선을 사용하기 위함)
     infowindow = new naver.maps.InfoWindow({
         anchorSkew: true,
-        backgroundColor: "transparent", // 말풍선 모양을 HTML로 구현하기 위해 투명 처리
-        borderWidth: 0,                 // 기본 테두리 제거
-        pixelOffset: new naver.maps.Point(10, -30) // 말풍선 꼭지점 위치 조정
+        backgroundColor: "transparent",
+        borderWidth: 0,
+        pixelOffset: new naver.maps.Point(10, -30)
     });
 
     loadCenters();
@@ -71,14 +71,13 @@ function setupMarkerClustering(markers) {
         anchor: new naver.maps.Point(40, 40)
     };
 
-    // MarkerClustering.js 라이브러리를 이용한 클러스터링 객체 생성
     const clusterer = new MarkerClustering({
-        minClusterSize: 2,          // 클러스터 구성 최소 마커 수
-        maxZoom: 13,                // 클러스터 해제 줌 레벨
-        map: map,                   // 네이버 지도 객체
-        markers: markers,           // 마커 배열
-        gridSize: 120,              // 클러스터링 그리드 크기 (픽셀)
-        disableClickZoom: false,    // 클러스터 클릭 시 확대 동작 활성화
+        minClusterSize: 2,
+        maxZoom: 13,
+        map: map,
+        markers: markers,
+        gridSize: 120,
+        disableClickZoom: false,
         icons: [htmlMarker1, htmlMarker2, htmlMarker3, htmlMarker4, htmlMarker5],
         indexGenerator: [5, 10, 20, 50, 100],
         stylingFunction: function(clusterMarker, count) {
@@ -86,7 +85,6 @@ function setupMarkerClustering(markers) {
         }
     });
 
-    // 클러스터 클릭 시 해당 클러스터 내의 마커들 영역으로 확대
     naver.maps.Event.addListener(clusterer, 'clusterclick', (cluster) => {
         const markersInCluster = cluster.getMarkers();
         if (markersInCluster.length > 1) {
@@ -108,29 +106,31 @@ async function loadCenters() {
         querySnapshot.forEach((doc) => {
             const center = doc.data();
             if (center.location?.lat && center.location?.lng) {
-                // 원하는 말풍선 형태의 마커(HTML) 적용
+                // 마커 아이콘 HTML을 제공해주신 구조와 동일하게 구성합니다.
                 const marker = new naver.maps.Marker({
                     position: new naver.maps.LatLng(center.location.lat, center.location.lng),
                     title: center.name,
                     clickable: true,
                     icon: {
                         content: `
-                          <div class="UfBAj">
-                            <div class="QMt1k">
-                              <div class="f2YRX">
-                                <div class="DEyxL">
-                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" class="OIYTG" style="width: 14px; height: 14px;">
-                                    <path fill-rule="evenodd" d="M13 13.14a1.62 1.62 0 01-1.61-1.62A1.62 1.62 0 1113 13.14zm5.9 1.5a6.3 6.3 0 001.1-3.53c0-3.64-3.14-6.6-7-6.61-3.86 0-7 2.97-7 6.6 0 1.26.38 2.48 1.12 3.58l5.5 6.64a.5.5 0 00.77 0z" clip-rule="evenodd"></path>
-                                  </svg>
-                                </div>
-                                <div class="PkreH">
-                                  <div class="wObwH">
-                                    <span class="Ypcqn">${center.name}</span>
+                          <div class="ZYypw">
+                            <div class="UfBAj">
+                              <div class="QMt1k">
+                                <div class="f2YRX">
+                                  <div class="DEyxL">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" class="OIYTG">
+                                      <path fill-rule="evenodd" d="M13 13.14a1.62 1.62 0 01-1.61-1.62A1.62 1.62 0 1113 13.14zm5.9 1.5a6.3 6.3 0 001.1-3.53c0-3.64-3.14-6.6-7-6.61-3.86 0-7 2.97-7 6.6 0 1.26.38 2.48 1.12 3.58l5.5 6.64a.5.5 0 00.77 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                  </div>
+                                  <div class="PkreH">
+                                    <div class="wObwH">
+                                      <span class="Ypcqn">${center.name}</span>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
+                              <div class="lMhqd"></div>
                             </div>
-                            <div class="lMhqd"></div>
                           </div>
                         `,
                         size: new naver.maps.Size(70, 40),
@@ -138,9 +138,8 @@ async function loadCenters() {
                     }
                 });
 
-                // 마커 클릭 시 커스텀 말풍선(InfoWindow) 열기
+                // 마커 클릭 시 커스텀 InfoWindow(말풍선) 열기
                 naver.maps.Event.addListener(marker, 'click', () => {
-                    // InfoWindow에 표시할 말풍선 형태 HTML
                     const content = `
                       <div style="
                         position: relative;
@@ -172,8 +171,7 @@ async function loadCenters() {
                             : ''
                           }
                         </div>
-
-                        <!-- 아래쪽 화살표 (회색 테두리 + 흰색 내부) -->
+                        <!-- 말풍선 아래쪽 화살표 (테두리와 내부) -->
                         <div style="
                           position: absolute;
                           bottom: -10px;
@@ -205,17 +203,17 @@ async function loadCenters() {
             }
         });
 
-        // 클러스터링 적용 (전체 마커 표시)
+        // 클러스터링 적용
         setupMarkerClustering(markers);
 
-        // 검색 기능 초기화 (검색 대상은 Firestore에서 로드한 마커 배열)
+        // 검색 기능 초기화
         initSearch(markers, map);
     } catch (error) {
         console.error('데이터 로드 실패:', error);
     }
 }
 
-// 검색 기능 초기화 함수 (기존 로직 동일)
+// 검색 기능 초기화 함수 (기존 로직 유지)
 function initSearch(markers, map) {
     const searchInput = document.querySelector('.search-input');
     const searchResults = document.querySelector('.search-results');
@@ -226,7 +224,6 @@ function initSearch(markers, map) {
             marker.getTitle().toLowerCase().includes(value)
         );
 
-        // 검색 결과 표시
         searchResults.innerHTML = '';
         if (value && results.length > 0) {
             results.forEach(marker => {
@@ -236,7 +233,6 @@ function initSearch(markers, map) {
                 div.onclick = () => {
                     map.setCenter(marker.getPosition());
                     map.setZoom(15);
-                    // 마커 클릭 이벤트 강제 발생
                     naver.maps.Event.trigger(marker, 'click');
                     searchResults.style.display = 'none';
                     searchInput.value = '';
@@ -249,7 +245,6 @@ function initSearch(markers, map) {
         }
     });
 
-    // 검색창 외부 클릭 시 결과 숨기기
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-container')) {
             searchResults.style.display = 'none';
