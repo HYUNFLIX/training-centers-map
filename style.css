@@ -184,6 +184,14 @@ nav ul li a:hover {
   border-bottom: none;
 }
 
+/* 검색 결과 없음 스타일 */
+.search-result-empty {
+  padding: 12px 15px;
+  color: #999;
+  font-size: 14px;
+  text-align: center;
+}
+
 /* 필터 스타일 */
 .filter-container {
   position: relative;
@@ -423,6 +431,29 @@ footer .container {
   margin-right: 6px;
 }
 
+/* 정보창 닫기 버튼 */
+.info-window-close {
+  background: #f5f5f5;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.info-window-close:hover {
+  background-color: #e0e0e0;
+}
+
+.info-window-close i {
+  font-size: 14px;
+  color: #666;
+}
+
 /* 반응형 스타일 */
 @media (max-width: 768px) {
   .main-header .container {
@@ -520,4 +551,80 @@ footer .container {
   transform: translateX(-50%) translateY(-50%) rotate(45deg);
   top: 0;
   left: 50%;
+}
+
+/* 마커 클러스터링 스타일 */
+.cluster-marker {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cluster-marker:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.cluster-marker-1 {
+  background-color: rgba(0, 119, 204, 0.85);
+  width: 40px;
+  height: 40px;
+  font-size: 13px;
+}
+
+.cluster-marker-2 {
+  background-color: rgba(0, 119, 204, 0.85);
+  width: 50px;
+  height: 50px;
+  font-size: 15px;
+}
+
+.cluster-marker-3 {
+  background-color: rgba(0, 119, 204, 0.85);
+  width: 60px;
+  height: 60px;
+  font-size: 17px;
+}
+
+.cluster-marker-4 {
+  background-color: rgba(0, 119, 204, 0.85);
+  width: 70px;
+  height: 70px;
+  font-size: 19px;
+}
+
+.cluster-marker-5 {
+  background-color: rgba(0, 119, 204, 0.85);
+  width: 80px;
+  height: 80px;
+  font-size: 21px;
+}
+
+/* 현재 위치 마커 스타일 */
+.current-location-marker {
+  width: 20px;
+  height: 20px;
+  background-color: #0077cc;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px rgba(0, 119, 204, 0.4), 0 0 8px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.current-location-marker::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background-color: white;
+  border-radius: 50%;
 }
