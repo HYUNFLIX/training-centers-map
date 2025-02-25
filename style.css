@@ -628,3 +628,219 @@ footer .container {
   background-color: white;
   border-radius: 50%;
 }
+
+/* 커스텀 정보창 스타일 - style.css 파일 끝에 추가 */
+
+/* 커스텀 정보창 스타일 */
+.custom-info-window {
+  width: 320px;
+  max-width: 100%;
+  font-family: 'Noto Sans KR', sans-serif;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.info-window-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #0077cc;
+  color: white;
+  padding: 12px 15px;
+}
+
+.info-window-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+}
+
+.info-window-branch {
+  font-size: 14px;
+  color: #666;
+  margin: 8px 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.info-address {
+  padding: 0 15px 12px;
+  color: #444;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.info-address i {
+  color: #0077cc;
+  margin-right: 6px;
+}
+
+.info-description {
+  padding: 0 15px 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 12px;
+}
+
+.info-window-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 15px 12px;
+}
+
+.info-tag {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f2f7fc;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #0077cc;
+}
+
+.info-tag i {
+  margin-right: 5px;
+  font-size: 12px;
+}
+
+.info-window-links {
+  padding: 0 15px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.info-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  background-color: #f2f2f2;
+  border-radius: 4px;
+  color: #333;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.info-link:hover {
+  background-color: #e5e5e5;
+  text-decoration: none;
+}
+
+.info-link i {
+  margin-right: 6px;
+}
+
+.info-window-footer {
+  padding: 12px 15px;
+  background-color: #f8f8f8;
+  display: flex;
+  justify-content: space-between;
+}
+
+.directions-button, .search-button {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.directions-button {
+  background-color: #0077cc;
+  color: white;
+}
+
+.directions-button:hover {
+  background-color: #0066b3;
+  text-decoration: none;
+}
+
+.search-button {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.search-button:hover {
+  background-color: #dee2e6;
+  text-decoration: none;
+}
+
+.directions-button i, .search-button i {
+  margin-right: 5px;
+}
+
+.info-window-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.info-window-close:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.info-window-close i {
+  font-size: 14px;
+  color: white;
+}
+
+/* 호버 정보창 스타일 (간단한 미리보기용) */
+.hover-info-window {
+  padding: 10px 12px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  max-width: 200px;
+}
+
+.hover-info-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.hover-info-branch {
+  font-size: 12px;
+  color: #666;
+  margin-top: 3px;
+}
+
+/* 로딩 표시 */
+.loading-info {
+  padding: 10px 15px;
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+}
+
+/* 정보창 화살표 스타일링 */
+.naver-info-window-arrow {
+  position: relative;
+}
+
+.naver-info-window-arrow:after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #fff;
+}
