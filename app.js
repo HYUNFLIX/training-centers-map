@@ -126,17 +126,6 @@ const createInfoWindowContent = (center) => {
             <div class="info-window-links">
                 ${linksHtml}
             </div>
-            
-            <div class="info-window-footer">
-                <a href="https://map.naver.com/p/directions/${center.location.lng},${center.location.lat},${encodeURIComponent(center.name)}" 
-                   target="_blank" class="directions-button">
-                    <i class="fas fa-route"></i> 길찾기
-                </a>
-                <a href="https://map.naver.com/p/search/${encodeURIComponent(center.name)}" 
-                   target="_blank" class="search-button">
-                    <i class="fas fa-search"></i> 검색
-                </a>
-            </div>
         </div>
     `;
 };
@@ -162,7 +151,7 @@ const initMap = () => {
         backgroundColor: "#fff",
         borderWidth: 0,
         borderColor: "transparent",
-        anchorSize: new naver.maps.Size(12, 12),
+        anchorSize: new naver.maps.Size(6, 6), // 화살표 크기 축소
         anchorSkew: true,
         anchorColor: "#fff",
         pixelOffset: new naver.maps.Point(10, -20),
@@ -371,13 +360,6 @@ const setupMarkerClustering = (markers) => {
 };
 
 /**
- * 모바일 여부 확인 함수
- */
-function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-/**
  * Firestore에서 연수원 데이터를 불러와 마커를 생성하고 클러스터링
  */
 const loadCenters = async () => {
@@ -425,28 +407,6 @@ const loadCenters = async () => {
                         }
                     }, 100);
                 });
-                
-                // 모바일이 아닌 경우 마커 호버 이벤트 추가
-                if (!isMobile()) {
-                    naver.maps.Event.addListener(marker, 'mouseover', () => {
-                        if (!currentInfoWindow) { // 이미 열린 정보창이 없을 때만
-                            const simpleContent = `
-                                <div class="hover-info-window">
-                                    <div class="hover-info-title">${center.name}</div>
-                                    ${center.branch ? `<div class="hover-info-branch">${center.branch}</div>` : ''}
-                                </div>
-                            `;
-                            infowindow.setContent(simpleContent);
-                            infowindow.open(map, marker);
-                        }
-                    });
-                    
-                    naver.maps.Event.addListener(marker, 'mouseout', () => {
-                        if (currentInfoWindow !== infowindow) { // 클릭으로 열린 정보창이 아닐 때만
-                            infowindow.close();
-                        }
-                    });
-                }
                 
                 markers.push(marker);
                 allMarkers.push(marker);
