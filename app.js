@@ -39,6 +39,12 @@ const createMarkerContent = (name) => {
 
 // 정보창 내용 HTML 생성 함수
 const createInfoWindowContent = (center) => {
+    // 주소 정보
+    const addressHtml = center.address ? 
+        `<div class="info-address">
+            <i class="fas fa-map-marker-alt"></i> ${center.address}
+        </div>` : '';
+    
     // 태그 생성 (수용인원, 숙박가능 여부 등)
     let tagHtml = '';
     
@@ -65,6 +71,12 @@ const createInfoWindowContent = (center) => {
             </div>
         `;
     }
+    
+    // 기본 정보 (설명)
+    const infoHtml = center.basicInfo ? 
+        `<div class="info-description">
+            ${center.basicInfo}
+        </div>` : '';
     
     // 링크 생성
     let linksHtml = '';
@@ -95,7 +107,7 @@ const createInfoWindowContent = (center) => {
     
     // 최종 HTML 생성
     return `
-        <div class="info-window">
+        <div class="custom-info-window">
             <div class="info-window-header">
                 <h3 class="info-window-title">${center.name}</h3>
                 <button class="info-window-close"><i class="fas fa-times"></i></button>
@@ -103,9 +115,11 @@ const createInfoWindowContent = (center) => {
             
             ${center.branch ? `<p class="info-window-branch">${center.branch}</p>` : ''}
             
-            ${center.basicInfo ? `<div class="info-window-content">${center.basicInfo}</div>` : ''}
+            ${addressHtml}
             
-            <div class="info-window-info">
+            ${infoHtml}
+            
+            <div class="info-window-tags">
                 ${tagHtml}
             </div>
             
@@ -117,6 +131,10 @@ const createInfoWindowContent = (center) => {
                 <a href="https://map.naver.com/p/directions/${center.location.lng},${center.location.lat},${encodeURIComponent(center.name)}" 
                    target="_blank" class="directions-button">
                     <i class="fas fa-route"></i> 길찾기
+                </a>
+                <a href="https://map.naver.com/p/search/${encodeURIComponent(center.name)}" 
+                   target="_blank" class="search-button">
+                    <i class="fas fa-search"></i> 검색
                 </a>
             </div>
         </div>
@@ -140,15 +158,19 @@ const initMap = () => {
 
     // 커스텀 정보창 설정
     infowindow = new naver.maps.InfoWindow({
-        anchorSkew: true,
+        content: '<div class="loading-info">로딩중...</div>',
         backgroundColor: "#fff",
         borderWidth: 0,
         borderColor: "transparent",
-        pixelOffset: new naver.maps.Point(20, -20),
-        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.15)', // 그림자 추가
-        borderRadius: '8px', // 둥근 모서리
-        disableAnchor: false, // 앵커 활성화
-        closeButtonDisplay: true // 닫기 버튼 표시
+        anchorSize: new naver.maps.Size(12, 12),
+        anchorSkew: true,
+        anchorColor: "#fff",
+        pixelOffset: new naver.maps.Point(10, -20),
+        contentPadding: 0,
+        boxShadow: '0 5px 15px rgba(0, 0, 0, 0.2)',
+        borderRadius: '8px',
+        disableAnchor: false,
+        closeButtonDisplay: false
     });
 
     // 지도 컨트롤 이벤트 리스너 등록
@@ -349,6 +371,13 @@ const setupMarkerClustering = (markers) => {
 };
 
 /**
+ * 모바일 여부 확인 함수
+ */
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+/**
  * Firestore에서 연수원 데이터를 불러와 마커를 생성하고 클러스터링
  */
 const loadCenters = async () => {
@@ -390,10 +419,34 @@ const loadCenters = async () => {
                         if (closeBtn) {
                             closeBtn.addEventListener('click', () => {
                                 infowindow.close();
+                                currentInfoWindow = null;
+                                currentOpenMarker = null;
                             });
                         }
                     }, 100);
                 });
+                
+                // 모바일이 아닌 경우 마커 호버 이벤트 추가
+                if (!isMobile()) {
+                    naver.maps.Event.addListener(marker, 'mouseover', () => {
+                        if (!currentInfoWindow) { // 이미 열린 정보창이 없을 때만
+                            const simpleContent = `
+                                <div class="hover-info-window">
+                                    <div class="hover-info-title">${center.name}</div>
+                                    ${center.branch ? `<div class="hover-info-branch">${center.branch}</div>` : ''}
+                                </div>
+                            `;
+                            infowindow.setContent(simpleContent);
+                            infowindow.open(map, marker);
+                        }
+                    });
+                    
+                    naver.maps.Event.addListener(marker, 'mouseout', () => {
+                        if (currentInfoWindow !== infowindow) { // 클릭으로 열린 정보창이 아닐 때만
+                            infowindow.close();
+                        }
+                    });
+                }
                 
                 markers.push(marker);
                 allMarkers.push(marker);
