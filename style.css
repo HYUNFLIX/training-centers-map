@@ -496,61 +496,48 @@ footer .container {
 
 /* 마커 스타일 개선 */
 .marker-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  z-index: 10;
-  padding: 6px 10px;
-  border: 1px solid #0077cc;
-  border-radius: 20px;
-  background: white;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  white-space: nowrap;
-  font-family: 'Noto Sans KR', sans-serif;
-  transition: transform 0.2s;
+    position: relative;
+    display: inline-block;
+    z-index: 10;
 }
 
-.marker-container:hover {
-  transform: translateY(-3px);
+.marker-content {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: #0080ff;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    font-family: 'Noto Sans KR', sans-serif;
 }
 
 .marker-icon {
-  position: relative;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #0077cc;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 6px;
+}
+
+.marker-icon svg path {
+    fill: white;
 }
 
 .marker-text {
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
+    font-size: 13px;
+    font-weight: 500;
+    color: white;
 }
 
-.marker-pointer {
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 16px;
-  height: 8px;
-  overflow: hidden;
-}
-
-.marker-pointer::after {
-  content: '';
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: #0077cc;
-  transform: translateX(-50%) translateY(-50%) rotate(45deg);
-  top: 0;
-  left: 50%;
+.marker-pointer-left {
+    position: absolute;
+    left: -6px;
+    bottom: 8px;
+    width: 12px;
+    height: 12px;
+    background: #0080ff;
+    transform: rotate(45deg);
+    z-index: -1;
 }
 
 /* 마커 클러스터링 스타일 */
