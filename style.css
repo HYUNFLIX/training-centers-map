@@ -494,20 +494,19 @@ footer .container {
   }
 }
 
-/* 마커 스타일 개선 */
+/* 마커 스타일 */
 .marker-container {
     position: relative;
     display: inline-block;
-    z-index: 10;
 }
 
 .marker-content {
     display: flex;
     align-items: center;
-    padding: 6px 12px;
-    background: #0080ff;
-    border-radius: 20px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    padding: 8px 12px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     white-space: nowrap;
     font-family: 'Noto Sans KR', sans-serif;
 }
@@ -519,25 +518,21 @@ footer .container {
     margin-right: 6px;
 }
 
-.marker-icon svg path {
-    fill: white;
-}
-
 .marker-text {
     font-size: 13px;
     font-weight: 500;
-    color: white;
+    color: #333;
 }
 
-.marker-pointer-left {
+.marker-pointer {
     position: absolute;
-    left: -6px;
-    bottom: 8px;
-    width: 12px;
-    height: 12px;
-    background: #0080ff;
-    transform: rotate(45deg);
-    z-index: -1;
+    bottom: -8px;
+    left: 12px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid white;
 }
 
 /* 마커 클러스터링 스타일 */
