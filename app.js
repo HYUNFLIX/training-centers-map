@@ -26,15 +26,15 @@ let clusterer = null;
 const createMarkerContent = (name) => {
     return `
         <div class="marker-container">
-            <div class="marker-pointer-left"></div>
             <div class="marker-content">
                 <div class="marker-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                         <path fill="#0080ff" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                     </svg>
                 </div>
                 <span class="marker-text">${name}</span>
             </div>
+            <div class="marker-pointer"></div>
         </div>
     `;
 };
