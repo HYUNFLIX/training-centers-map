@@ -409,7 +409,7 @@ const loadCenters = async () => {
                                 currentOpenMarker = null;
                             });
                         }
-                    }, 100);
+                    }, 200); // 시간을 늘려 DOM이 완전히 렌더링된 후 이벤트 리스너 등록
                 });
                 
                 markers.push(marker);
