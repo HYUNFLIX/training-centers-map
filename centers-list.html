@@ -21,132 +21,328 @@
   
   <!-- centers-list 페이지 전용 스타일 -->
   <style>
-    .centers-list-container {
-      padding: 20px 0;
-    }
-    
-    #centers-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    .center-item {
-      padding: 15px;
-      border-bottom: 1px solid #eee;
-      transition: background-color 0.2s;
-    }
-    
-    .center-item:hover {
-      background-color: #f5f8ff;
-    }
-    
-    .center-name {
-      font-size: 18px;
-      font-weight: 600;
-      color: #0077cc;
-      margin-bottom: 6px;
-    }
-    
-    .center-branch {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 8px;
-    }
-    
-    .center-info {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 10px;
-      line-height: 1.5;
-    }
-    
-    .center-actions {
+    .logo a {
       display: flex;
-      gap: 10px;
-    }
-    
-    .center-link {
-      display: inline-flex;
       align-items: center;
-      padding: 6px 12px;
-      background-color: #f2f2f2;
-      border-radius: 4px;
-      color: #333;
-      font-size: 14px;
-      transition: background-color 0.3s;
+      color: white;
+      text-decoration: none;
     }
-    
-    .center-link:hover {
-      background-color: #e5e5e5;
+
+    .logo a:hover {
       text-decoration: none;
     }
     
-    .center-link.map-link {
-      background-color: #0077cc;
-      color: white;
+    .page-content {
+      padding: 30px 0;
     }
     
-    .center-link.map-link:hover {
-      background-color: #0066b3;
-    }
-    
-    .center-link i {
-      margin-right: 6px;
-    }
-    
-    .no-centers {
-      text-align: center;
-      padding: 40px;
-      color: #999;
-    }
-    
-    .loading {
-      text-align: center;
-      padding: 40px;
-      color: #999;
-    }
-    
-    /* 검색 및 필터 섹션 */
-    .list-search-container {
+    .stats-container {
       background-color: #f8f9fa;
-      padding: 20px 0;
-      border-bottom: 1px solid #eee;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     }
     
-    .list-search-inner {
+    .stats-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    
+    .stats-cards {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .stat-card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 15px;
+      min-width: 170px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      flex: 1;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #0077cc;
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .list-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .search-sort-container {
       display: flex;
       gap: 10px;
       align-items: center;
     }
     
-    .list-search-box {
-      flex: 1;
+    .search-box {
       position: relative;
+      width: 300px;
     }
     
-    .list-search-input {
+    .search-input {
       width: 100%;
-      padding: 10px 40px 10px 35px;
+      padding: 10px 15px;
+      padding-left: 40px;
       border: 1px solid #ddd;
       border-radius: 4px;
-      font-size: 15px;
+      font-size: 14px;
     }
     
-    .list-search-icon {
+    .search-icon {
       position: absolute;
-      left: 12px;
+      left: 15px;
       top: 50%;
       transform: translateY(-50%);
       color: #666;
     }
     
-    .list-filter-select {
-      min-width: 140px;
+    .sort-select {
       padding: 10px;
       border: 1px solid #ddd;
       border-radius: 4px;
-      font-size: 15px;
+      font-size: 14px;
+      min-width: 140px;
+    }
+    
+    .filter-select {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      min-width: 140px;
+    }
+    
+    .search-button {
+      background-color: #0077cc;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .reset-button {
+      background-color: #f2f2f2;
+      color: #666;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .centers-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .centers-table th {
+      background-color: #f8f9fa;
+      padding: 12px 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .centers-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      color: #555;
+    }
+    
+    .centers-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .centers-table tr:hover {
+      background-color: #f5f8ff;
+    }
+    
+    .table-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .action-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+    }
+    
+    .view-btn {
+      background-color: #4CAF50;
+      color: white;
+    }
+    
+    .view-btn:hover {
+      background-color: #45a049;
+      text-decoration: none;
+      color: white;
+    }
+    
+    .detail-btn {
+      background-color: #f44336;
+      color: white;
+    }
+    
+    .detail-btn:hover {
+      background-color: #d32f2f;
+      text-decoration: none;
+      color: white;
+    }
+    
+    .capacity-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 50px;
+      font-size: 12px;
+      background-color: #E3F2FD;
+      color: #1565C0;
+    }
+    
+    .region-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background-color: #EEEEEE;
+      color: #424242;
+    }
+    
+    .pagination {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    
+    .pagination-btn {
+      display: inline-block;
+      width: 35px;
+      height: 35px;
+      line-height: 35px;
+      margin: 0 5px;
+      text-align: center;
+      border-radius: 4px;
+      background-color: #f2f2f2;
+      color: #666;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+    
+    .pagination-btn:hover {
+      background-color: #e0e0e0;
+      text-decoration: none;
+    }
+    
+    .pagination-btn.active {
+      background-color: #0077cc;
+      color: white;
+    }
+    
+    .pagination-btn.disabled {
+      background-color: #f9f9f9;
+      color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .no-centers {
+      text-align: center;
+      padding: 40px;
+      background-color: white;
+      border-radius: 8px;
+      color: #999;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      background-color: white;
+      border-radius: 8px;
+      color: #999;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 컬럼 너비 설정 */
+    .col-center {
+      width: 20%;
+    }
+    
+    .col-capacity {
+      width: 10%;
+    }
+    
+    .col-region {
+      width: 10%;
+    }
+    
+    .col-info {
+      width: 40%;
+    }
+    
+    .col-actions {
+      width: 20%;
+    }
+    
+    /* 반응형 스타일 */
+    @media (max-width: 768px) {
+      .search-sort-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      
+      .search-box {
+        width: 100%;
+      }
+      
+      .centers-table {
+        display: block;
+        overflow-x: auto;
+      }
+      
+      .list-controls {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+      
+      .stats-cards {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .sort-select, .filter-select {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -172,15 +368,41 @@
 
   <!-- 메인 컨텐츠 -->
   <main>
-    <!-- 검색 및 필터 섹션 -->
-    <div class="list-search-container">
-      <div class="container">
-        <div class="list-search-inner">
-          <div class="list-search-box">
-            <i class="fas fa-search list-search-icon"></i>
-            <input type="text" class="list-search-input" id="list-search-input" placeholder="연수원 이름 검색..." />
+    <div class="container page-content">
+      <h1>전국 연수원 목록</h1>
+      
+      <!-- 상단 통계 -->
+      <div class="stats-container">
+        <div class="stats-title">연수원 통계</div>
+        <div class="stats-cards">
+          <div class="stat-card">
+            <div class="stat-value" id="total-centers">0</div>
+            <div class="stat-label">총 연수원 수</div>
           </div>
-          <select class="list-filter-select" id="region-filter-list">
+          <div class="stat-card">
+            <div class="stat-value" id="total-regions">0</div>
+            <div class="stat-label">지역 수</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="avg-capacity">0</div>
+            <div class="stat-label">평균 수용 인원</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="max-capacity">0</div>
+            <div class="stat-label">최대 수용 인원</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 검색 및 정렬 컨트롤 -->
+      <div class="list-controls">
+        <div class="search-sort-container">
+          <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" id="search-input" placeholder="연수원 이름 검색...">
+          </div>
+          
+          <select class="filter-select" id="region-filter">
             <option value="">지역 선택</option>
             <option value="서울">서울</option>
             <option value="경기">경기</option>
@@ -190,19 +412,56 @@
             <option value="경상">경상</option>
             <option value="제주">제주</option>
           </select>
+          
+          <select class="sort-select" id="sort-select">
+            <option value="name-asc">이름 (가나다순)</option>
+            <option value="name-desc">이름 (역순)</option>
+            <option value="region-asc">지역 (가나다순)</option>
+            <option value="capacity-desc">수용인원 (많은순)</option>
+            <option value="capacity-asc">수용인원 (적은순)</option>
+          </select>
+        </div>
+        
+        <div class="button-container">
+          <button class="search-button" id="search-button">
+            <i class="fas fa-search"></i> 검색
+          </button>
+          <button class="reset-button" id="reset-button">
+            <i class="fas fa-redo"></i> 초기화
+          </button>
         </div>
       </div>
-    </div>
-    
-    <!-- 연수원 목록 -->
-    <div class="container centers-list-container">
-      <h2>전체 연수원 목록</h2>
-      <div class="loading">
+      
+      <!-- 로딩 표시 -->
+      <div id="loading-container" class="loading">
         <i class="fas fa-spinner fa-spin"></i> 연수원 목록을 불러오는 중...
       </div>
-      <ul id="centers-list">
+      
+      <!-- 연수원 목록 테이블 -->
+      <table class="centers-table" id="centers-table" style="display: none;">
+        <thead>
+          <tr>
+            <th class="col-center">연수원</th>
+            <th class="col-capacity">수용인원</th>
+            <th class="col-region">지역</th>
+            <th class="col-info">기본정보</th>
+            <th class="col-actions">관리</th>
+          </tr>
+        </thead>
+        <tbody id="centers-tbody">
+          <!-- 동적으로 채워짐 -->
+        </tbody>
+      </table>
+      
+      <!-- 검색 결과 없음 -->
+      <div id="no-results" class="no-centers" style="display: none;">
+        검색 결과가 없습니다.
+      </div>
+      
+      <!-- 페이지네이션 -->
+      <div class="pagination" id="pagination">
         <!-- 동적으로 채워짐 -->
-      </ul>
+      </div>
     </div>
   </main>
 
@@ -236,122 +495,312 @@
     
     // 전역 변수
     let allCenters = [];
+    let filteredCenters = [];
+    let currentPage = 1;
+    const itemsPerPage = 10; // 페이지당 표시할 항목 수
     
     // DOM 로드 완료 시 실행
     document.addEventListener('DOMContentLoaded', () => {
       loadCenters();
-      setupSearchAndFilter();
+      setupEventListeners();
     });
+    
+    // 이벤트 리스너 설정
+    function setupEventListeners() {
+      // 검색 버튼 클릭
+      document.getElementById('search-button').addEventListener('click', filterAndSortCenters);
+      
+      // 검색창 Enter 키 이벤트
+      document.getElementById('search-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          filterAndSortCenters();
+        }
+      });
+      
+      // 정렬 변경
+      document.getElementById('sort-select').addEventListener('change', filterAndSortCenters);
+      
+      // 지역 필터 변경
+      document.getElementById('region-filter').addEventListener('change', filterAndSortCenters);
+      
+      // 필터 초기화
+      document.getElementById('reset-button').addEventListener('click', resetFilters);
+    }
     
     // 연수원 데이터 로드
     async function loadCenters() {
       try {
         const querySnapshot = await getDocs(collection(db, "trainingCenters"));
         
-        // 로딩 메시지 제거
-        document.querySelector('.loading').style.display = 'none';
-        
         if (querySnapshot.empty) {
-          document.getElementById('centers-list').innerHTML = 
-            '<div class="no-centers">등록된 연수원이 없습니다.</div>';
+          document.getElementById('loading-container').style.display = 'none';
+          document.getElementById('no-results').style.display = 'block';
           return;
         }
         
-        // 데이터를 배열로 변환하여 정렬
+        // 데이터를 배열로 변환
         querySnapshot.forEach(doc => {
           const center = doc.data();
           center.id = doc.id;
           allCenters.push(center);
         });
         
-        // 가나다순 정렬
-        allCenters.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+        // 통계 계산 및 표시
+        updateStatistics(allCenters);
         
-        // 목록 표시
-        renderCentersList(allCenters);
+        // 초기 목록 표시
+        filteredCenters = [...allCenters];
+        sortCenters('name-asc');
+        renderTable();
+        
+        document.getElementById('loading-container').style.display = 'none';
+        document.getElementById('centers-table').style.display = 'table';
       } catch (error) {
         console.error('연수원 목록 로드 실패:', error);
-        document.querySelector('.loading').style.display = 'none';
-        document.getElementById('centers-list').innerHTML = 
-          '<div class="no-centers">데이터를 불러오는 데 실패했습니다.</div>';
+        document.getElementById('loading-container').style.display = 'none';
+        document.getElementById('no-results').textContent = '데이터를 불러오는 데 실패했습니다.';
+        document.getElementById('no-results').style.display = 'block';
       }
     }
     
-    // 연수원 목록 렌더링
-    function renderCentersList(centers) {
-      const centersList = document.getElementById('centers-list');
-      centersList.innerHTML = '';
+    // 통계 업데이트
+    function updateStatistics(centers) {
+      // 총 연수원 수
+      document.getElementById('total-centers').textContent = centers.length;
       
-      if (centers.length === 0) {
-        centersList.innerHTML = '<div class="no-centers">검색 결과가 없습니다.</div>';
+      // 지역 수 (중복 제거)
+      const uniqueRegions = new Set();
+      let totalCapacity = 0;
+      let maxCapacity = 0;
+      
+      centers.forEach(center => {
+        if (center.region) {
+          uniqueRegions.add(center.region);
+        }
+        
+        if (center.capacity) {
+          const capacity = parseInt(center.capacity);
+          if (!isNaN(capacity)) {
+            totalCapacity += capacity;
+            maxCapacity = Math.max(maxCapacity, capacity);
+          }
+        }
+      });
+      
+      document.getElementById('total-regions').textContent = uniqueRegions.size;
+      
+      // 평균 수용 인원
+      const avgCapacity = centers.length > 0 ? Math.round(totalCapacity / centers.length) : 0;
+      document.getElementById('avg-capacity').textContent = avgCapacity;
+      
+      // 최대 수용 인원
+      document.getElementById('max-capacity').textContent = maxCapacity;
+    }
+    
+    // 필터와 정렬 적용
+    function filterAndSortCenters() {
+      const searchValue = document.getElementById('search-input').value.trim().toLowerCase();
+      const regionValue = document.getElementById('region-filter').value;
+      const sortValue = document.getElementById('sort-select').value;
+      
+      // 필터링
+      filteredCenters = allCenters.filter(center => {
+        const nameMatch = center.name?.toLowerCase().includes(searchValue) || 
+                      (center.branch && center.branch.toLowerCase().includes(searchValue));
+        
+        let regionMatch = true;
+        if (regionValue && center.region) {
+          regionMatch = center.region.includes(regionValue);
+        }
+        
+        return nameMatch && regionMatch;
+      });
+      
+      // 정렬
+      sortCenters(sortValue);
+      
+      // 테이블 렌더링
+      currentPage = 1; // 첫 페이지로 초기화
+      renderTable();
+    }
+    
+    // 정렬 적용
+    function sortCenters(sortType) {
+      switch (sortType) {
+        case 'name-asc':
+          filteredCenters.sort((a, b) => (a.name || '').localeCompare((b.name || ''), 'ko'));
+          break;
+        case 'name-desc':
+          filteredCenters.sort((a, b) => (b.name || '').localeCompare((a.name || ''), 'ko'));
+          break;
+        case 'region-asc':
+          filteredCenters.sort((a, b) => (a.region || '').localeCompare((b.region || ''), 'ko'));
+          break;
+        case 'capacity-desc':
+          filteredCenters.sort((a, b) => {
+            const capA = parseInt(a.capacity) || 0;
+            const capB = parseInt(b.capacity) || 0;
+            return capB - capA;
+          });
+          break;
+        case 'capacity-asc':
+          filteredCenters.sort((a, b) => {
+            const capA = parseInt(a.capacity) || 0;
+            const capB = parseInt(b.capacity) || 0;
+            return capA - capB;
+          });
+          break;
+      }
+    }
+    
+    // 필터 초기화
+    function resetFilters() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('region-filter').value = '';
+      document.getElementById('sort-select').value = 'name-asc';
+      
+      filteredCenters = [...allCenters];
+      sortCenters('name-asc');
+      currentPage = 1;
+      renderTable();
+    }
+    
+    // 테이블 렌더링
+    function renderTable() {
+      const tbody = document.getElementById('centers-tbody');
+      tbody.innerHTML = '';
+      
+      if (filteredCenters.length === 0) {
+        document.getElementById('centers-table').style.display = 'none';
+        document.getElementById('no-results').style.display = 'block';
+        document.getElementById('pagination').innerHTML = '';
         return;
       }
       
-      centers.forEach(center => {
-        const li = document.createElement('li');
-        li.className = 'center-item';
+      document.getElementById('centers-table').style.display = 'table';
+      document.getElementById('no-results').style.display = 'none';
+      
+      // 페이지네이션 계산
+      const totalPages = Math.ceil(filteredCenters.length / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, filteredCenters.length);
+      
+      // 현재 페이지의 항목 표시
+      for (let i = startIndex; i < endIndex; i++) {
+        const center = filteredCenters[i];
+        const row = document.createElement('tr');
         
+        // 기본 정보 요약 (150자 제한)
         const basicInfo = center.basicInfo ? 
           center.basicInfo.length > 150 ? 
             center.basicInfo.substring(0, 150) + '...' : 
             center.basicInfo : 
-          '';
+          '정보 없음';
         
-        li.innerHTML = `
-          <div class="center-name">${center.name}</div>
-          ${center.branch ? `<div class="center-branch">${center.branch}</div>` : ''}
-          ${basicInfo ? `<div class="center-info">${basicInfo}</div>` : ''}
-          <div class="center-actions">
-            <a href="index.html?center=${center.id}" class="center-link map-link">
-              <i class="fas fa-map-marker-alt"></i> 지도에서 보기
-            </a>
-            ${center.links?.website ? 
-              `<a href="${center.links.website}" target="_blank" class="center-link">
-                <i class="fas fa-globe"></i> 웹사이트
-              </a>` : ''}
-            ${center.links?.naver ? 
-              `<a href="${center.links.naver}" target="_blank" class="center-link">
-                <i class="fas fa-map"></i> 네이버 지도
-              </a>` : ''}
-          </div>
+        row.innerHTML = `
+          <td class="col-center">
+            <div class="center-name">${center.name || '이름 없음'}</div>
+            <div class="center-branch">${center.branch || ''}</div>
+          </td>
+          <td class="col-capacity">
+            ${center.capacity ? 
+              `<span class="capacity-badge">${center.capacity}명</span>` : 
+              '-'}
+          </td>
+          <td class="col-region">
+            ${center.region ? 
+              `<span class="region-badge">${center.region}</span>` : 
+              '-'}
+          </td>
+          <td class="col-info">${basicInfo}</td>
+          <td class="col-actions">
+            <div class="table-actions">
+              <a href="index.html?center=${center.id}" class="action-btn view-btn">
+                지도보기
+              </a>
+              ${center.links?.website ? 
+                `<a href="${center.links.website}" target="_blank" class="action-btn detail-btn">
+                  상세보기
+                </a>` : 
+                ''}
+            </div>
+          </td>
         `;
         
-        centersList.appendChild(li);
-      });
+        tbody.appendChild(row);
+      }
+      
+      // 페이지네이션 렌더링
+      renderPagination(totalPages);
     }
     
-    // 검색 및 필터 설정
-    function setupSearchAndFilter() {
-      const searchInput = document.getElementById('list-search-input');
-      const regionFilter = document.getElementById('region-filter-list');
+    // 페이지네이션 렌더링
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = '';
       
-      // 검색 이벤트
-      searchInput.addEventListener('input', filterCenters);
-      
-      // 지역 필터 이벤트
-      regionFilter.addEventListener('change', filterCenters);
-      
-      // 필터 적용 함수
-      function filterCenters() {
-        const searchValue = searchInput.value.trim().toLowerCase();
-        const regionValue = regionFilter.value;
-        
-        // 필터링
-        const filteredCenters = allCenters.filter(center => {
-          const nameMatch = center.name.toLowerCase().includes(searchValue) || 
-                          (center.branch && center.branch.toLowerCase().includes(searchValue));
-          
-          let regionMatch = true;
-          if (regionValue && center.region) {
-            regionMatch = center.region.includes(regionValue);
-          }
-          
-          return nameMatch && regionMatch;
-        });
-        
-        // 렌더링
-        renderCentersList(filteredCenters);
+      if (totalPages <= 1) {
+        return;
       }
+      
+      // 이전 버튼
+      const prevBtn = document.createElement('a');
+      prevBtn.href = '#';
+      prevBtn.className = `pagination-btn ${currentPage === 1 ? 'disabled' : ''}`;
+      prevBtn.innerHTML = '&laquo;';
+      if (currentPage > 1) {
+        prevBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          goToPage(currentPage - 1);
+        });
+      }
+      pagination.appendChild(prevBtn);
+      
+      // 페이지 번호
+      const maxPageButtons = 5; // 표시할 최대 페이지 버튼 수
+      let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+      let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+      
+      if (endPage - startPage + 1 < maxPageButtons) {
+        startPage = Math.max(1, endPage - maxPageButtons + 1);
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('a');
+        pageBtn.href = '#';
+        pageBtn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          goToPage(i);
+        });
+        pagination.appendChild(pageBtn);
+      }
+      
+      // 다음 버튼
+      const nextBtn = document.createElement('a');
+      nextBtn.href = '#';
+      nextBtn.className = `pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`;
+      nextBtn.innerHTML = '&raquo;';
+      if (currentPage < totalPages) {
+        nextBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          goToPage(currentPage + 1);
+        });
+      }
+      pagination.appendChild(nextBtn);
+    }
+    
+    // 특정 페이지로 이동
+    function goToPage(page) {
+      currentPage = page;
+      renderTable();
+      
+      // 페이지 상단으로 스크롤
+      window.scrollTo({
+        top: document.getElementById('centers-table').offsetTop - 100,
+        behavior: 'smooth'
+      });
     }
   </script>
 </body>
