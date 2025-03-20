@@ -1,6 +1,6 @@
 // Firebase 초기화
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
@@ -174,6 +174,105 @@ const initMap = () => {
 
     // 필터 토글 기능 설정
     setupFilterToggle();
+    
+    // 로고 클릭 이벤트 설정
+    setupLogoClickEvent();
+    
+    // URL 파라미터 처리
+    handleUrlParams();
+};
+
+/**
+ * 로고 클릭 이벤트 설정 - 지도 초기화
+ */
+const setupLogoClickEvent = () => {
+    const logoLink = document.querySelector('.logo a');
+    
+    if (logoLink) {
+        logoLink.addEventListener('click', (e) => {
+            // 페이지 이동 방지 (이미 index.html에 있을 경우)
+            if (window.location.pathname.endsWith('index.html') || 
+                window.location.pathname.endsWith('/')) {
+                e.preventDefault();
+                
+                // 지도 초기 상태로 복귀
+                map.setCenter(new naver.maps.LatLng(36.2253017, 127.6460516));
+                map.setZoom(7);
+                
+                // 열려있는 정보창 닫기
+                if (currentInfoWindow) {
+                    currentInfoWindow.close();
+                    currentInfoWindow = null;
+                    currentOpenMarker = null;
+                }
+                
+                // 필터 초기화
+                const regionFilter = document.getElementById('region-filter');
+                const capacityFilter = document.getElementById('capacity-filter');
+                if (regionFilter) regionFilter.value = '';
+                if (capacityFilter) capacityFilter.value = '';
+                
+                // 검색창 초기화
+                const searchInput = document.querySelector('.search-input');
+                const clearIcon = document.querySelector('.clear-icon');
+                const searchResults = document.querySelector('.search-results');
+                if (searchInput) searchInput.value = '';
+                if (clearIcon) clearIcon.style.display = 'none';
+                if (searchResults) searchResults.style.display = 'none';
+                
+                // 필터가 적용되었을 경우 모든 마커 다시 표시
+                if (clusterer) {
+                    clusterer.clearMarkers();
+                    clusterer.setMarkers(allMarkers);
+                }
+            }
+        });
+    }
+};
+
+/**
+ * URL 파라미터 처리 함수
+ */
+const handleUrlParams = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const centerId = urlParams.get('center');
+    
+    if (centerId) {
+        // 지도 초기화 후 해당 연수원 찾기
+        setTimeout(async () => {
+            try {
+                // Firestore에서 해당 연수원 데이터 가져오기
+                const docRef = doc(db, "trainingCenters", centerId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const center = docSnap.data();
+                    
+                    if (center.location?.lat && center.location?.lng) {
+                        // 위치로 이동
+                        const position = new naver.maps.LatLng(center.location.lat, center.location.lng);
+                        map.setCenter(position);
+                        map.setZoom(15);
+                        
+                        // 해당 마커 찾기
+                        setTimeout(() => {
+                            const marker = allMarkers.find(m => 
+                                m.getTitle() === center.name && 
+                                Math.abs(m.getPosition().lat() - center.location.lat) < 0.0001 && 
+                                Math.abs(m.getPosition().lng() - center.location.lng) < 0.0001
+                            );
+                            
+                            if (marker) {
+                                naver.maps.Event.trigger(marker, 'click');
+                            }
+                        }, 500);
+                    }
+                }
+            } catch (error) {
+                console.error('연수원 정보 로드 실패:', error);
+            }
+        }, 1000);
+    }
 };
 
 /**
@@ -189,42 +288,6 @@ const setupMapControlEvents = () => {
     document.getElementById('zoom-out')?.addEventListener('click', () => {
         map.setZoom(map.getZoom() - 1);
     });
-
-    // 로고 클릭 시 지도 초기화
-document.getElementById('reset-to-initial')?.addEventListener('click', (e) => {
-    e.preventDefault(); // 기본 링크 동작 방지
-    
-    // 지도 초기 상태로 복귀
-    map.setCenter(new naver.maps.LatLng(36.2253017, 127.6460516));
-    map.setZoom(7);
-    
-    // 열려있는 정보창 닫기
-    if (currentInfoWindow) {
-        currentInfoWindow.close();
-        currentInfoWindow = null;
-        currentOpenMarker = null;
-    }
-    
-    // 필터 초기화 (필요시)
-    const regionFilter = document.getElementById('region-filter');
-    const capacityFilter = document.getElementById('capacity-filter');
-    if (regionFilter) regionFilter.value = '';
-    if (capacityFilter) capacityFilter.value = '';
-    
-    // 검색창 초기화
-    const searchInput = document.querySelector('.search-input');
-    const clearIcon = document.querySelector('.clear-icon');
-    const searchResults = document.querySelector('.search-results');
-    if (searchInput) searchInput.value = '';
-    if (clearIcon) clearIcon.style.display = 'none';
-    if (searchResults) searchResults.style.display = 'none';
-    
-    // 필터가 적용되었을 경우 모든 마커 다시 표시
-    if (clusterer) {
-        clusterer.clearMarkers();
-        clusterer.setMarkers(allMarkers);
-    }
-});
     
     // 내 위치 버튼
     document.getElementById('current-location')?.addEventListener('click', () => {
@@ -409,6 +472,9 @@ const loadCenters = async () => {
 
         querySnapshot.forEach((doc) => {
             const center = doc.data();
+            // ID 추가
+            center.id = doc.id;
+            
             // 위치 정보가 존재하면 마커 생성
             if (center.location?.lat && center.location?.lng) {
                 const marker = new naver.maps.Marker({
