@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>연수원 목록 - 연수원 여기어때</title>
+  
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  <!-- 폰트어썸 아이콘 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- 구글 폰트 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- 외부 CSS 파일 로드 -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- centers-list 페이지 전용 스타일 -->
+  <style>
+    .centers-list-container {
+      padding: 20px 0;
+    }
+    
+    #centers-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .center-item {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.2s;
+    }
+    
+    .center-item:hover {
+      background-color: #f5f8ff;
+    }
+    
+    .center-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0077cc;
+      margin-bottom: 6px;
+    }
+    
+    .center-branch {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    
+    .center-info {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    
+    .center-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .center-link {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      background-color: #f2f2f2;
+      border-radius: 4px;
+      color: #333;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    
+    .center-link:hover {
+      background-color: #e5e5e5;
+      text-decoration: none;
+    }
+    
+    .center-link.map-link {
+      background-color: #0077cc;
+      color: white;
+    }
+    
+    .center-link.map-link:hover {
+      background-color: #0066b3;
+    }
+    
+    .center-link i {
+      margin-right: 6px;
+    }
+    
+    .no-centers {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+    
+    /* 검색 및 필터 섹션 */
+    .list-search-container {
+      background-color: #f8f9fa;
+      padding: 20px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .list-search-inner {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .list-search-box {
+      flex: 1;
+      position: relative;
+    }
+    
+    .list-search-input {
+      width: 100%;
+      padding: 10px 40px 10px 35px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 15px;
+    }
+    
+    .list-search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #666;
+    }
+    
+    .list-filter-select {
+      min-width: 140px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 헤더 섹션 -->
+  <header class="main-header">
+    <div class="container">
+      <div class="logo">
+        <a href="index.html">
+          <i class="fas fa-map-marked-alt"></i>
+          <h1>연수원 여기어때</h1>
+        </a>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="index.html"><i class="fas fa-map"></i> 지도보기</a></li>
+          <li><a href="centers-list.html" class="active"><i class="fas fa-list"></i> 연수원 목록</a></li>
+          <li><a href="#"><i class="fas fa-info-circle"></i> 이용안내</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 메인 컨텐츠 -->
+  <main>
+    <!-- 검색 및 필터 섹션 -->
+    <div class="list-search-container">
+      <div class="container">
+        <div class="list-search-inner">
+          <div class="list-search-box">
+            <i class="fas fa-search list-search-icon"></i>
+            <input type="text" class="list-search-input" id="list-search-input" placeholder="연수원 이름 검색..." />
+          </div>
+          <select class="list-filter-select" id="region-filter-list">
+            <option value="">지역 선택</option>
+            <option value="서울">서울</option>
+            <option value="경기">경기</option>
+            <option value="강원">강원</option>
+            <option value="충청">충청</option>
+            <option value="전라">전라</option>
+            <option value="경상">경상</option>
+            <option value="제주">제주</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 연수원 목록 -->
+    <div class="container centers-list-container">
+      <h2>전체 연수원 목록</h2>
+      <div class="loading">
+        <i class="fas fa-spinner fa-spin"></i> 연수원 목록을 불러오는 중...
+      </div>
+      <ul id="centers-list">
+        <!-- 동적으로 채워짐 -->
+      </ul>
+    </div>
+  </main>
+
+  <!-- 푸터 -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 연수원 여기어때. All rights reserved.</p>
+      <div class="contact-info">
+        <a href="mailto:contact@example.com"><i class="fas fa-envelope"></i> hyunnet@gmail.com</a>
+        <a href="tel:+8201012345678"><i class="fas fa-phone"></i> 010-1234-5678</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
+      authDomain: "training-centers-map.firebaseapp.com",
+      projectId: "training-centers-map",
+      storageBucket: "training-centers-map.firebasestorage.app",
+      messagingSenderId: "943690141587",
+      appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    // 전역 변수
+    let allCenters = [];
+    
+    // DOM 로드 완료 시 실행
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCenters();
+      setupSearchAndFilter();
+    });
+    
+    // 연수원 데이터 로드
+    async function loadCenters() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+        
+        // 로딩 메시지 제거
+        document.querySelector('.loading').style.display = 'none';
+        
+        if (querySnapshot.empty) {
+          document.getElementById('centers-list').innerHTML = 
+            '<div class="no-centers">등록된 연수원이 없습니다.</div>';
+          return;
+        }
+        
+        // 데이터를 배열로 변환하여 정렬
+        querySnapshot.forEach(doc => {
+          const center = doc.data();
+          center.id = doc.id;
+          allCenters.push(center);
+        });
+        
+        // 가나다순 정렬
+        allCenters.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+        
+        // 목록 표시
+        renderCentersList(allCenters);
+      } catch (error) {
+        console.error('연수원 목록 로드 실패:', error);
+        document.querySelector('.loading').style.display = 'none';
+        document.getElementById('centers-list').innerHTML = 
+          '<div class="no-centers">데이터를 불러오는 데 실패했습니다.</div>';
+      }
+    }
+    
+    // 연수원 목록 렌더링
+    function renderCentersList(centers) {
+      const centersList = document.getElementById('centers-list');
+      centersList.innerHTML = '';
+      
+      if (centers.length === 0) {
+        centersList.innerHTML = '<div class="no-centers">검색 결과가 없습니다.</div>';
+        return;
+      }
+      
+      centers.forEach(center => {
+        const li = document.createElement('li');
+        li.className = 'center-item';
+        
+        const basicInfo = center.basicInfo ? 
+          center.basicInfo.length > 150 ? 
+            center.basicInfo.substring(0, 150) + '...' : 
+            center.basicInfo : 
+          '';
+        
+        li.innerHTML = `
+          <div class="center-name">${center.name}</div>
+          ${center.branch ? `<div class="center-branch">${center.branch}</div>` : ''}
+          ${basicInfo ? `<div class="center-info">${basicInfo}</div>` : ''}
+          <div class="center-actions">
+            <a href="index.html?center=${center.id}" class="center-link map-link">
+              <i class="fas fa-map-marker-alt"></i> 지도에서 보기
+            </a>
+            ${center.links?.website ? 
+              `<a href="${center.links.website}" target="_blank" class="center-link">
+                <i class="fas fa-globe"></i> 웹사이트
+              </a>` : ''}
+            ${center.links?.naver ? 
+              `<a href="${center.links.naver}" target="_blank" class="center-link">
+                <i class="fas fa-map"></i> 네이버 지도
+              </a>` : ''}
+          </div>
+        `;
+        
+        centersList.appendChild(li);
+      });
+    }
+    
+    // 검색 및 필터 설정
+    function setupSearchAndFilter() {
+      const searchInput = document.getElementById('list-search-input');
+      const regionFilter = document.getElementById('region-filter-list');
+      
+      // 검색 이벤트
+      searchInput.addEventListener('input', filterCenters);
+      
+      // 지역 필터 이벤트
+      regionFilter.addEventListener('change', filterCenters);
+      
+      // 필터 적용 함수
+      function filterCenters() {
+        const searchValue = searchInput.value.trim().toLowerCase();
+        const regionValue = regionFilter.value;
+        
+        // 필터링
+        const filteredCenters = allCenters.filter(center => {
+          const nameMatch = center.name.toLowerCase().includes(searchValue) || 
+                          (center.branch && center.branch.toLowerCase().includes(searchValue));
+          
+          let regionMatch = true;
+          if (regionValue && center.region) {
+            regionMatch = center.region.includes(regionValue);
+          }
+          
+          return nameMatch && regionMatch;
+        });
+        
+        // 렌더링
+        renderCentersList(filteredCenters);
+      }
+    }
+  </script>
+</body>
+</html>
