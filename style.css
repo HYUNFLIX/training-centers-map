@@ -56,6 +56,16 @@ button {
   font-weight: 700;
 }
 
+.logo a {
+  display: flex;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+}
+
+.logo a:hover {
+  text-decoration: none;
+}
 .logo i {
   font-size: 1.8rem;
   margin-right: 10px;
