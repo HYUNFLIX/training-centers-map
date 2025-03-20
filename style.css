@@ -324,238 +324,58 @@ footer .container {
   margin-right: 5px;
 }
 
-/* 정보창 스타일 개선 */
-.info-window {
-  padding: 15px;
-  width: 320px;
-  max-width: 100%;
-}
-
-/* 정보창 헤더 배경색 추가 */
-.info-window-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #0077cc; /* 파란색 배경 추가 */
-    padding: 12px 15px;
-}
-
-.info-window-title {
-  margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: white; /* 흰색으로 변경 */
-}
-
-.info-window-branch {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 10px;
-}
-
-.info-window-content {
-  margin-bottom: 15px;
-  line-height: 1.5;
-}
-
-.info-window-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 15px;
-}
-
-.info-tag {
-  display: inline-flex;
-  align-items: center;
-  background-color: #f2f7fc;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 13px;
-  color: #0077cc;
-}
-
-.info-tag i {
-  margin-right: 5px;
-  font-size: 12px;
-}
-
-.info-window-links {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.info-link {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  background-color: #f2f2f2;
-  border-radius: 4px;
-  color: #333;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.info-link:hover {
-  background-color: #e5e5e5;
-  text-decoration: none;
-}
-
-.info-link i {
-  margin-right: 6px;
-}
-
-.info-window-footer {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #eee;
-  display: flex;
-  justify-content: space-between;
-}
-
-.directions-button {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  background-color: #0077cc;
-  color: white;
-  border-radius: 4px;
-  font-weight: 500;
-  transition: background-color 0.3s;
-}
-
-.directions-button:hover {
-  background-color: #0066b3;
-  text-decoration: none;
-}
-
-.directions-button i {
-  margin-right: 6px;
-}
-
-/* 닫기 버튼 스타일 수정 */
-.info-window-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.info-window-close:hover {
-    background-color: rgba(255, 255, 255, 0.4);
-}
-
-.info-window-close i {
-    font-size: 14px;
-    color: red; /* 빨간색으로 변경 */
-}
-
-/* 반응형 스타일 */
-@media (max-width: 768px) {
-  .main-header .container {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  nav ul {
-    justify-content: center;
-    margin-top: 10px;
-  }
-  
-  nav ul li {
-    margin: 0 10px;
-  }
-  
-  .search-filter-container .container {
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .search-container {
-    max-width: 100%;
-  }
-  
-  footer .container {
-    flex-direction: column;
-    gap: 15px;
-    text-align: center;
-  }
-  
-  .contact-info {
-    justify-content: center;
-  }
-  
-  .map-container {
-    height: calc(100vh - 280px);
-  }
-}
-
 /* 마커 스타일 */
 .marker-container {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 .marker-content {
-    display: flex;
-    align-items: center;
-    padding: 6px 10px;
-    background: white;
-    border: 1px solid #0080ff; /* 파란색 테두리 추가 */
-    border-radius: 19px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-    white-space: nowrap;
-    font-family: 'Noto Sans KR', sans-serif;
-}
-
-.marker-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 6px;
-}
-
-.marker-text {
-    font-size: 13px;
-    font-weight: 500;
-    color: #333;
-}
-
-.marker-pointer {
-    position: absolute;
-    bottom: -4px;
-    left: 18px;
-    width: 8px;
-    height: 8px;
-    background: white;
-    border-right: 1px solid #0080ff;
-    border-bottom: 1px solid #0080ff;
-    transform: rotate(45deg);
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  background: white;
+  border: 1px solid #0080ff; /* 파란색 테두리 추가 */
+  border-radius: 19px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  font-family: 'Noto Sans KR', sans-serif;
 }
 
 /* 아이콘 원형 배경 스타일 */
 .icon-circle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 24px;
-    height: 24px;
-    background-color: #0080ff;
-    border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  background-color: #0080ff;
+  border-radius: 50%;
 }
 
 .marker-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-right: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.marker-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+.marker-pointer {
+  position: absolute;
+  bottom: -4px;
+  left: 18px;
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-right: 1px solid #0080ff;
+  border-bottom: 1px solid #0080ff;
+  transform: rotate(45deg);
 }
 
 /* 마커 클러스터링 스타일 */
@@ -634,8 +454,6 @@ footer .container {
   border-radius: 50%;
 }
 
-/* 커스텀 정보창 스타일 - style.css 파일 끝에 추가 */
-
 /* 커스텀 정보창 스타일 */
 .custom-info-window {
   width: 320px;
@@ -646,20 +464,21 @@ footer .container {
   overflow: hidden;
 }
 
+/* 정보창 헤더 */
 .info-window-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #0077cc;
-  color: white;
+  background-color: #0077cc; /* 파란색 배경 */
   padding: 12px 15px;
 }
 
+/* 정보창 제목 */
 .info-window-title {
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: white;
+  color: white; /* 흰색으로 변경 */
 }
 
 .info-window-branch {
@@ -781,6 +600,7 @@ footer .container {
   margin-right: 5px;
 }
 
+/* 닫기 버튼 */
 .info-window-close {
   background: rgba(255, 255, 255, 0.2);
   border: none;
@@ -800,7 +620,7 @@ footer .container {
 
 .info-window-close i {
   font-size: 14px;
-  color: white;
+  color: red; /* 빨간색으로 변경 */
 }
 
 /* 호버 정보창 스타일 (간단한 미리보기용) */
@@ -845,161 +665,47 @@ footer .container {
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 10px solid #fff;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent; 
+  border-top: 6px solid #fff;
 }
 
-/* 커스텀 정보창 스타일 - style.css 파일 끝에 추가 */
-
-/* 커스텀 정보창 스타일 */
-.custom-info-window {
-  width: 320px;
-  max-width: 100%;
-  font-family: 'Noto Sans KR', sans-serif;
-  padding: 0;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.info-window-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 15px;
-  /* 배경색 제거 */
-}
-
-.info-window-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #0077cc; /* 제목 색상을 파란색으로 변경 */
-}
-
-.info-window-branch {
-  font-size: 14px;
-  color: #666;
-  margin: 8px 15px;
-  /* 구분선 제거 */
-}
-
-.info-address {
-  padding: 0 15px 12px;
-  color: #444;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.info-address i {
-  color: #0077cc;
-  margin-right: 6px;
-}
-
-.info-description {
-  padding: 0 15px 12px;
-  font-size: 14px;
-  line-height: 1.6;
-  color: #555;
-  /* 구분선 제거 */
-  margin-bottom: 12px;
-}
-
-.info-window-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0 15px 12px;
-}
-
-.info-tag {
-  display: inline-flex;
-  align-items: center;
-  background-color: #f2f7fc;
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 13px;
-  color: #0077cc;
-}
-
-.info-tag i {
-  margin-right: 5px;
-  font-size: 12px;
-}
-
-.info-window-links {
-  padding: 0 15px 12px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.info-link {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  background-color: #f2f2f2;
-  border-radius: 4px;
-  color: #333;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.info-link:hover {
-  background-color: #e5e5e5;
-  text-decoration: none;
-}
-
-.info-link i {
-  margin-right: 6px;
-}
-
-/* 푸터 영역 삭제 */
-
-.info-window-close {
-  background: rgba(0, 0, 0, 0.1); /* 배경색 변경 */
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.info-window-close:hover {
-  background-color: rgba(0, 0, 0, 0.2);
-}
-
-.info-window-close i {
-  font-size: 14px;
-  color: #666; /* 아이콘 색상 변경 */
-}
-
-/* 로딩 표시 */
-.loading-info {
-  padding: 10px 15px;
-  text-align: center;
-  font-size: 14px;
-  color: #666;
-}
-
-/* 정보창 화살표 스타일링 */
-.naver-info-window-arrow {
-  position: relative;
-}
-
-.naver-info-window-arrow:after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent; /* 화살표 크기 축소 */
-  border-right: 6px solid transparent; /* 화살표 크기 축소 */
-  border-top: 6px solid #fff; /* 화살표 크기 축소 */
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .main-header .container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  nav ul {
+    justify-content: center;
+    margin-top: 10px;
+  }
+  
+  nav ul li {
+    margin: 0 10px;
+  }
+  
+  .search-filter-container .container {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .search-container {
+    max-width: 100%;
+  }
+  
+  footer .container {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .contact-info {
+    justify-content: center;
+  }
+  
+  .map-container {
+    height: calc(100vh - 280px);
+  }
 }
