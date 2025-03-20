@@ -189,6 +189,42 @@ const setupMapControlEvents = () => {
     document.getElementById('zoom-out')?.addEventListener('click', () => {
         map.setZoom(map.getZoom() - 1);
     });
+
+    // 로고 클릭 시 지도 초기화
+document.getElementById('reset-to-initial')?.addEventListener('click', (e) => {
+    e.preventDefault(); // 기본 링크 동작 방지
+    
+    // 지도 초기 상태로 복귀
+    map.setCenter(new naver.maps.LatLng(36.2253017, 127.6460516));
+    map.setZoom(7);
+    
+    // 열려있는 정보창 닫기
+    if (currentInfoWindow) {
+        currentInfoWindow.close();
+        currentInfoWindow = null;
+        currentOpenMarker = null;
+    }
+    
+    // 필터 초기화 (필요시)
+    const regionFilter = document.getElementById('region-filter');
+    const capacityFilter = document.getElementById('capacity-filter');
+    if (regionFilter) regionFilter.value = '';
+    if (capacityFilter) capacityFilter.value = '';
+    
+    // 검색창 초기화
+    const searchInput = document.querySelector('.search-input');
+    const clearIcon = document.querySelector('.clear-icon');
+    const searchResults = document.querySelector('.search-results');
+    if (searchInput) searchInput.value = '';
+    if (clearIcon) clearIcon.style.display = 'none';
+    if (searchResults) searchResults.style.display = 'none';
+    
+    // 필터가 적용되었을 경우 모든 마커 다시 표시
+    if (clusterer) {
+        clusterer.clearMarkers();
+        clusterer.setMarkers(allMarkers);
+    }
+});
     
     // 내 위치 버튼
     document.getElementById('current-location')?.addEventListener('click', () => {
