@@ -331,17 +331,20 @@ footer .container {
   max-width: 100%;
 }
 
+/* 정보창 헤더 배경색 추가 */
 .info-window-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #0077cc; /* 파란색 배경 추가 */
+    padding: 12px 15px;
 }
 
 .info-window-title {
   margin: 0;
-  font-size: 18px;
-  color: #f5f5f5;
+    font-size: 18px;
+    font-weight: 700;
+    color: white; /* 흰색으로 변경 */
 }
 
 .info-window-branch {
@@ -431,27 +434,27 @@ footer .container {
   margin-right: 6px;
 }
 
-/* 정보창 닫기 버튼 */
+/* 닫기 버튼 스타일 수정 */
 .info-window-close {
-  background: #f5f5f5;
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: background-color 0.2s;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .info-window-close:hover {
-  background-color: #e0e0e0;
+    background-color: rgba(255, 255, 255, 0.4);
 }
 
 .info-window-close i {
-  font-size: 14px;
-  color: #fd0606;
+    font-size: 14px;
+    color: red; /* 빨간색으로 변경 */
 }
 
 /* 반응형 스타일 */
