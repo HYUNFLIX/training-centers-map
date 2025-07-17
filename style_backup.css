@@ -316,19 +316,30 @@ nav ul li a:hover {
   min-height: 44px;
 }
 
-/* 지도 컨테이너 */
+/* 지도 컨테이너 - 애니메이션 개선 */
 .map-container {
   position: relative;
   height: calc(100vh - 140px);
   min-height: 400px;
+  overflow: hidden;
+  /* GPU 가속 활성화 */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 #map {
   width: 100%;
   height: 100%;
+  /* 부드러운 렌더링 */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  /* GPU 가속 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
-/* 지도 컨트롤 */
+/* 지도 컨트롤 - 애니메이션 개선 */
 .map-controls {
   position: absolute;
   bottom: 20px;
@@ -349,9 +360,12 @@ nav ul li a:hover {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 16px;
   color: #333;
+  /* 클릭 효과 개선 */
+  position: relative;
+  overflow: hidden;
 }
 
 .map-controls button:hover {
@@ -362,6 +376,27 @@ nav ul li a:hover {
 
 .map-controls button:active {
   transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 클릭 리플 효과 */
+.map-controls button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(0, 119, 204, 0.2);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.map-controls button:active::before {
+  width: 100px;
+  height: 100px;
 }
 
 /* 푸터 */
@@ -400,10 +435,24 @@ footer .container {
   margin-right: 8px;
 }
 
-/* 마커 스타일 */
+/* 마커 스타일 - 애니메이션 개선 */
 .marker-container {
   position: relative;
   display: inline-block;
+  /* 마커 등장 애니메이션 */
+  animation: markerFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+}
+
+@keyframes markerFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .marker-content {
@@ -416,6 +465,15 @@ footer .container {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
   font-family: 'Noto Sans KR', sans-serif;
+  /* 호버 애니메이션 */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.marker-content:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
 }
 
 .icon-circle {
@@ -453,7 +511,7 @@ footer .container {
   transform: rotate(45deg);
 }
 
-/* 마커 클러스터링 스타일 */
+/* 마커 클러스터링 스타일 - 애니메이션 개선 */
 .cluster-marker {
   display: flex;
   justify-content: center;
@@ -463,12 +521,30 @@ footer .container {
   border-radius: 50%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   font-family: 'Noto Sans KR', sans-serif;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  /* 부드러운 전환 애니메이션 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  /* 등장 애니메이션 */
+  animation: clusterFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes clusterFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .cluster-marker:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .cluster-marker-1 {
@@ -506,12 +582,25 @@ footer .container {
   font-size: 21px;
 }
 
-/* 정보창 스타일 */
+/* 정보창 스타일 - 애니메이션 개선 */
 .info-window {
   padding: 15px;
   max-width: 320px;
   font-family: 'Noto Sans KR', sans-serif;
   line-height: 1.5;
+  /* 등장 애니메이션 */
+  animation: infoWindowSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes infoWindowSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .info-window-header {
@@ -842,7 +931,7 @@ footer .container {
   cursor: not-allowed;
 }
 
-/* 로딩 및 빈 상태 */
+/* 로딩 및 빈 상태 - 로딩 스피너 개선 */
 .loading,
 .no-centers {
   text-align: center;
@@ -851,6 +940,34 @@ footer .container {
   border-radius: 8px;
   color: #999;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0077cc;
+  border-radius: 50%;
+  animation: smoothSpin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes smoothSpin {
+  0% { 
+    transform: rotate(0deg); 
+  }
+  100% { 
+    transform: rotate(360deg); 
+  }
+}
+
+/* 성능 최적화 */
+.map-container *,
+.marker-container *,
+.cluster-marker * {
+  /* GPU 레이어 분리 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* ================== 반응형 스타일 ================== */
@@ -1201,7 +1318,7 @@ footer .container {
   }
 }
 
-/* 터치 디바이스 최적화 */
+/* 모바일 터치 개선 */
 @media (pointer: coarse) {
   button, a, .clickable {
     min-height: 44px;
@@ -1215,16 +1332,37 @@ footer .container {
   .filter-option select {
     padding: 12px;
   }
+
+  /* 터치 디바이스에서 더 큰 터치 영역 */
+  .map-controls button {
+    min-width: 48px;
+    min-height: 48px;
+  }
+  
+  .marker-content {
+    /* 터치 시 더 부드러운 반응 */
+    transition: all 0.15s ease-out;
+  }
+  
+  .marker-content:active {
+    transform: scale(0.95);
+  }
 }
 
 /* 고해상도 디스플레이 최적화 */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .marker-content {
     border-width: 0.5px;
+    /* 고해상도에서 더 선명한 렌더링 */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 
   .cluster-marker {
     border: 0.5px solid rgba(255, 255, 255, 0.3);
+    /* 고해상도에서 더 선명한 렌더링 */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 }
 
@@ -1233,8 +1371,22 @@ footer .container {
   /* 필요시 다크 모드 스타일 추가 */
 }
 
-/* 애니메이션 줄이기 설정 */
+/* 애니메이션 줄이기 설정 준수 */
 @media (prefers-reduced-motion: reduce) {
+  .marker-container,
+  .cluster-marker,
+  .info-window,
+  .map-controls button {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .loading-spinner {
+    animation: none !important;
+    border: 4px solid #0077cc;
+    border-top: 4px solid #f3f3f3;
+  }
+
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
