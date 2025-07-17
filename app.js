@@ -344,7 +344,7 @@ const initMap = async () => {
             throw new Error('네이버 지도 API가 로드되지 않았습니다');
         }
 
-        // 지도 생성
+        // 지도 생성 (부드러운 애니메이션 설정)
         map = new naver.maps.Map('map', {
             center: new naver.maps.LatLng(36.2253017, 127.6460516),
             zoom: 7,
@@ -356,7 +356,25 @@ const initMap = async () => {
             },
             scaleControl: true,
             logoControl: true,
-            mapDataControl: true
+            mapDataControl: true,
+            // 부드러운 애니메이션 설정
+            tileTransition: true,
+            tileDuration: 200,
+            zoomOrigin: null,
+            pinchZoom: true,
+            scrollWheel: true,
+            keyboardShortcuts: true,
+            draggable: true,
+            disableKineticPan: false,
+            tileSpare: 2,
+            // 성능 최적화
+            useStyleMap: true,
+            blankTileImage: null,
+            // 부드러운 확대/축소를 위한 설정
+            zoomControlOptions: {
+                position: naver.maps.Position.TOP_RIGHT,
+                style: naver.maps.ZoomControlStyle.SMALL
+            }
         });
 
         console.log('✅ 지도 생성 완료');
@@ -591,18 +609,25 @@ const setupMapControlEvents = () => {
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
-                        map.setCenter(new naver.maps.LatLng(lat, lng));
-                        map.setZoom(15);
+                        const currentPos = new naver.maps.LatLng(lat, lng);
                         
-                        // 현재 위치 마커 표시
-                        new naver.maps.Marker({
-                            position: new naver.maps.LatLng(lat, lng),
-                            map: map,
-                            icon: {
-                                content: '<div style="background: #ff4444; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3);"></div>',
-                                anchor: new naver.maps.Point(6, 6)
-                            }
+                        // 부드러운 애니메이션으로 이동
+                        map.morph(currentPos, 15, {
+                            duration: 1000,
+                            easing: 'easeInOutCubic'
                         });
+                        
+                        // 애니메이션 완료 후 마커 표시
+                        setTimeout(() => {
+                            new naver.maps.Marker({
+                                position: currentPos,
+                                map: map,
+                                icon: {
+                                    content: '<div style="background: #ff4444; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3);"></div>',
+                                    anchor: new naver.maps.Point(6, 6)
+                                }
+                            });
+                        }, 1000);
                         
                         console.log('📍 현재 위치로 이동');
                         
@@ -631,7 +656,14 @@ const setupMapControlEvents = () => {
     const zoomInBtn = document.getElementById('zoom-in');
     if (zoomInBtn) {
         zoomInBtn.addEventListener('click', () => {
-            map.setZoom(map.getZoom() + 1);
+            const currentZoom = map.getZoom();
+            const newZoom = Math.min(currentZoom + 1, 21); // 최대 줌 레벨 제한
+            
+            // 부드러운 애니메이션으로 확대
+            map.morph(map.getCenter(), newZoom, {
+                duration: 300,
+                easing: 'easeOutCubic'
+            });
         });
     }
 
@@ -639,7 +671,14 @@ const setupMapControlEvents = () => {
     const zoomOutBtn = document.getElementById('zoom-out');
     if (zoomOutBtn) {
         zoomOutBtn.addEventListener('click', () => {
-            map.setZoom(map.getZoom() - 1);
+            const currentZoom = map.getZoom();
+            const newZoom = Math.max(currentZoom - 1, 1); // 최소 줌 레벨 제한
+            
+            // 부드러운 애니메이션으로 축소
+            map.morph(map.getCenter(), newZoom, {
+                duration: 300,
+                easing: 'easeOutCubic'
+            });
         });
     }
 
@@ -647,8 +686,12 @@ const setupMapControlEvents = () => {
     const resetMapBtn = document.getElementById('reset-map');
     if (resetMapBtn) {
         resetMapBtn.addEventListener('click', () => {
-            map.setCenter(new naver.maps.LatLng(36.2253017, 127.6460516));
-            map.setZoom(7);
+            // 부드러운 애니메이션으로 초기 위치 복귀
+            map.morph(new naver.maps.LatLng(36.2253017, 127.6460516), 7, {
+                duration: 800,
+                easing: 'easeInOutCubic'
+            });
+            
             infoWindowManager.closeCurrentInfoWindow();
             resetAllFilters();
             console.log('🏠 지도 초기 위치로 복귀');
@@ -783,11 +826,17 @@ const setupSearchEvents = () => {
                     const targetMarker = allMarkers.find(marker => marker.centerData.id === centerId);
                     
                     if (targetMarker) {
-                        map.setCenter(targetMarker.getPosition());
-                        map.setZoom(15);
+                        // 부드러운 애니메이션으로 이동
+                        map.morph(targetMarker.getPosition(), 15, {
+                            duration: 800,
+                            easing: 'easeInOutCubic'
+                        });
                         
-                        const content = createInfoWindowContent(targetMarker.centerData);
-                        infoWindowManager.openInfoWindow(map, targetMarker, content);
+                        // 애니메이션 완료 후 정보창 열기
+                        setTimeout(() => {
+                            const content = createInfoWindowContent(targetMarker.centerData);
+                            infoWindowManager.openInfoWindow(map, targetMarker, content);
+                        }, 800);
                         
                         hideSearchResults();
                         if (searchInput) searchInput.blur();
@@ -911,9 +960,11 @@ const setupLogoClickEvent = () => {
                 window.location.pathname.endsWith('/')) {
                 e.preventDefault();
                 
-                // 지도 초기 상태로 복귀
-                map.setCenter(new naver.maps.LatLng(36.2253017, 127.6460516));
-                map.setZoom(7);
+                // 지도 초기 상태로 복귀 (부드러운 애니메이션)
+                map.morph(new naver.maps.LatLng(36.2253017, 127.6460516), 7, {
+                    duration: 800,
+                    easing: 'easeInOutCubic'
+                });
                 
                 // 정보창 닫기
                 infoWindowManager.closeCurrentInfoWindow();
@@ -936,11 +987,17 @@ const handleUrlParams = () => {
         setTimeout(() => {
             const targetMarker = allMarkers.find(marker => marker.centerData.id === centerId);
             if (targetMarker) {
-                map.setCenter(targetMarker.getPosition());
-                map.setZoom(15);
+                // 부드러운 애니메이션으로 이동
+                map.morph(targetMarker.getPosition(), 15, {
+                    duration: 1200,
+                    easing: 'easeInOutCubic'
+                });
                 
-                const content = createInfoWindowContent(targetMarker.centerData);
-                infoWindowManager.openInfoWindow(map, targetMarker, content);
+                // 애니메이션 완료 후 정보창 열기
+                setTimeout(() => {
+                    const content = createInfoWindowContent(targetMarker.centerData);
+                    infoWindowManager.openInfoWindow(map, targetMarker, content);
+                }, 1200);
                 
                 console.log('🎯 URL 파라미터로 특정 연수원 표시:', targetMarker.getTitle());
             }
