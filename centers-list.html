@@ -2,11 +2,53 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="전국 연수원 목록을 지역별, 수용인원별로 검색하고 비교할 수 있는 서비스">
+  <meta name="keywords" content="연수원목록, 교육시설목록, 연수원비교, 지역별연수원, 수용인원">
+  <meta name="author" content="연수원 여기어때">
+  
+  <!-- PWA 지원 -->
+  <meta name="theme-color" content="#0077cc">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="연수원 목록">
+  
+  <!-- 오픈 그래프 메타 태그 -->
+  <meta property="og:title" content="연수원 목록 - 연수원 여기어때">
+  <meta property="og:description" content="전국 연수원 목록을 지역별, 수용인원별로 검색하고 비교할 수 있는 서비스">
+  <meta property="og:type" content="website">
+  
   <title>연수원 목록 - 연수원 여기어때</title>
   
+  <!-- Preload 중요 리소스 -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" as="style">
+  <link rel="preload" href="style.css" as="style">
+  
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+    import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
+    
+    // Firebase 설정
+    const firebaseConfig = {
+      apiKey: "AIzaSyC4lDJp1t8Y4Lf0ZWDS2zQXrJ0vLKpP2vI",
+      authDomain: "training-centers-map.firebaseapp.com",
+      projectId: "training-centers-map",
+      storageBucket: "training-centers-map.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef123456"
+    };
+    
+    // Firebase 초기화
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    // 전역으로 노출
+    window.firebase = { db, collection, getDocs };
+  </script>
+  
   <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
   
   <!-- 폰트어썸 아이콘 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,685 +59,854 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   
   <!-- 외부 CSS 파일 로드 -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
   
-  <!-- centers-list 페이지 전용 스타일 -->
-  <style>
-    .logo a {
-      display: flex;
-      align-items: center;
-      color: white;
-      text-decoration: none;
+  <!-- 구조화된 데이터 (SEO) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "연수원 목록",
+    "description": "전국 연수원 목록을 지역별, 수용인원별로 검색하고 비교할 수 있는 서비스",
+    "url": "https://example.com/centers-list.html",
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": "전국 연수원 목록"
     }
-
-    .logo a:hover {
-      text-decoration: none;
-    }
-    
-    .page-content {
-      padding: 30px 0;
-    }
-    
-    .stats-container {
-      background-color: #f8f9fa;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 30px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-    
-    .stats-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 15px;
-      color: #333;
-    }
-    
-    .stats-cards {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-    
-    .stat-card {
-      background-color: white;
-      border-radius: 8px;
-      padding: 15px;
-      min-width: 170px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-      flex: 1;
-    }
-    
-    .stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      color: #0077cc;
-      margin-bottom: 5px;
-    }
-    
-    .stat-label {
-      font-size: 14px;
-      color: #666;
-    }
-    
-    .list-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    
-    .search-sort-container {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    
-    .search-box {
-      position: relative;
-      width: 300px;
-    }
-    
-    .search-input {
-      width: 100%;
-      padding: 10px 15px;
-      padding-left: 40px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    
-    .search-icon {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #666;
-    }
-    
-    .sort-select {
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      min-width: 140px;
-    }
-    
-    .filter-select {
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      min-width: 140px;
-    }
-    
-    .search-button {
-      background-color: #0077cc;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    
-    .reset-button {
-      background-color: #f2f2f2;
-      color: #666;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    
-    .centers-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-      background-color: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-    
-    .centers-table th {
-      background-color: #f8f9fa;
-      padding: 12px 15px;
-      text-align: left;
-      font-weight: 600;
-      color: #333;
-      border-bottom: 1px solid #eee;
-    }
-    
-    .centers-table td {
-      padding: 12px 15px;
-      border-bottom: 1px solid #eee;
-      color: #555;
-    }
-    
-    .centers-table tr:last-child td {
-      border-bottom: none;
-    }
-    
-    .centers-table tr:hover {
-      background-color: #f5f8ff;
-    }
-    
-    .table-actions {
-      display: flex;
-      gap: 10px;
-    }
-    
-    .action-btn {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 4px;
-      font-size: 13px;
-      text-decoration: none;
-      text-align: center;
-      cursor: pointer;
-    }
-    
-    .view-btn {
-      background-color: #4CAF50;
-      color: white;
-    }
-    
-    .view-btn:hover {
-      background-color: #45a049;
-      text-decoration: none;
-      color: white;
-    }
-    
-    .detail-btn {
-      background-color: #f44336;
-      color: white;
-    }
-    
-    .detail-btn:hover {
-      background-color: #d32f2f;
-      text-decoration: none;
-      color: white;
-    }
-    
-    .capacity-badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 50px;
-      font-size: 12px;
-      background-color: #E3F2FD;
-      color: #1565C0;
-    }
-    
-    .region-badge {
-      display: inline-block;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      background-color: #EEEEEE;
-      color: #424242;
-    }
-    
-    .pagination {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
-    
-    .pagination-btn {
-      display: inline-block;
-      width: 35px;
-      height: 35px;
-      line-height: 35px;
-      margin: 0 5px;
-      text-align: center;
-      border-radius: 4px;
-      background-color: #f2f2f2;
-      color: #666;
-      text-decoration: none;
-      transition: background-color 0.3s;
-    }
-    
-    .pagination-btn:hover {
-      background-color: #e0e0e0;
-      text-decoration: none;
-    }
-    
-    .pagination-btn.active {
-      background-color: #0077cc;
-      color: white;
-    }
-    
-    .pagination-btn.disabled {
-      background-color: #f9f9f9;
-      color: #ccc;
-      cursor: not-allowed;
-    }
-    
-    .no-centers {
-      text-align: center;
-      padding: 40px;
-      background-color: white;
-      border-radius: 8px;
-      color: #999;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-    
-    .loading {
-      text-align: center;
-      padding: 40px;
-      background-color: white;
-      border-radius: 8px;
-      color: #999;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-    
-    /* 컬럼 너비 설정 */
-    .col-center {
-      width: 20%;
-    }
-    
-    .col-capacity {
-      width: 10%;
-    }
-    
-    .col-region {
-      width: 10%;
-    }
-    
-    .col-info {
-      width: 40%;
-    }
-    
-    .col-actions {
-      width: 20%;
-    }
-    
-    /* 반응형 스타일 */
-    @media (max-width: 768px) {
-      .search-sort-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-      }
-      
-      .search-box {
-        width: 100%;
-      }
-      
-      .centers-table {
-        display: block;
-        overflow-x: auto;
-      }
-      
-      .list-controls {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-      }
-      
-      .stats-cards {
-        flex-direction: column;
-        gap: 15px;
-      }
-      
-      .sort-select, .filter-select {
-        width: 100%;
-      }
-    }
-  </style>
+  }
+  </script>
 </head>
 <body>
+  <!-- 스킵 링크 (접근성) -->
+  <a href="#main-content" class="skip-link" tabindex="1">메인 콘텐츠로 바로가기</a>
+  
   <!-- 헤더 섹션 -->
-  <header class="main-header">
+  <header class="main-header" role="banner">
     <div class="container">
       <div class="logo">
-        <a href="index.html">
-          <i class="fas fa-map-marked-alt"></i>
+        <a href="index.html" aria-label="연수원 여기어때 메인 페이지로 이동">
+          <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
           <h1>연수원 여기어때</h1>
         </a>
       </div>
-      <nav>
+      
+      <!-- 모바일 햄버거 메뉴 버튼 -->
+      <button class="mobile-menu-toggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+      </button>
+      
+      <nav id="main-nav" role="navigation" aria-label="주요 네비게이션">
         <ul>
-          <li><a href="index.html"><i class="fas fa-map"></i> 지도보기</a></li>
-          <li><a href="centers-list.html" class="active"><i class="fas fa-list"></i> 연수원 목록</a></li>
-          <li><a href="#"><i class="fas fa-info-circle"></i> 이용안내</a></li>
+          <li><a href="index.html">
+            <i class="fas fa-map" aria-hidden="true"></i> 
+            <span>지도보기</span>
+          </a></li>
+          <li><a href="centers-list.html" class="active" aria-current="page">
+            <i class="fas fa-list" aria-hidden="true"></i> 
+            <span>연수원 목록</span>
+          </a></li>
+          <li><a href="#about">
+            <i class="fas fa-info-circle" aria-hidden="true"></i> 
+            <span>이용안내</span>
+          </a></li>
         </ul>
       </nav>
     </div>
   </header>
 
   <!-- 메인 컨텐츠 -->
-  <main>
+  <main id="main-content" role="main">
     <div class="container page-content">
-      <h1>전국 연수원 목록</h1>
+      
+      <!-- 페이지 헤더 -->
+      <section class="page-header" aria-labelledby="page-title">
+        <h1 id="page-title">전국 연수원 목록</h1>
+        <p class="page-description">지역별, 수용인원별로 연수원을 검색하고 비교해보세요</p>
+      </section>
       
       <!-- 상단 통계 -->
-      <div class="stats-container">
-        <div class="stats-title">연수원 통계</div>
-        <div class="stats-cards">
-          <div class="stat-card">
-            <div class="stat-value" id="total-centers">0</div>
-            <div class="stat-label">총 연수원 수</div>
+      <section class="stats-container" aria-labelledby="stats-title">
+        <h2 id="stats-title" class="stats-title">연수원 통계</h2>
+        <div class="stats-cards" role="group" aria-label="연수원 통계 정보">
+          <div class="stat-card" role="img" aria-labelledby="total-centers-label">
+            <div class="stat-value" id="total-centers" aria-live="polite">0</div>
+            <div class="stat-label" id="total-centers-label">총 연수원 수</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-value" id="total-regions">0</div>
-            <div class="stat-label">지역 수</div>
+          <div class="stat-card" role="img" aria-labelledby="total-regions-label">
+            <div class="stat-value" id="total-regions" aria-live="polite">0</div>
+            <div class="stat-label" id="total-regions-label">지역 수</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-value" id="avg-capacity">0</div>
-            <div class="stat-label">평균 수용 인원</div>
+          <div class="stat-card" role="img" aria-labelledby="avg-capacity-label">
+            <div class="stat-value" id="avg-capacity" aria-live="polite">0</div>
+            <div class="stat-label" id="avg-capacity-label">평균 수용 인원</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-value" id="max-capacity">0</div>
-            <div class="stat-label">최대 수용 인원</div>
+          <div class="stat-card" role="img" aria-labelledby="max-capacity-label">
+            <div class="stat-value" id="max-capacity" aria-live="polite">0</div>
+            <div class="stat-label" id="max-capacity-label">최대 수용 인원</div>
           </div>
         </div>
-      </div>
+      </section>
       
       <!-- 검색 및 정렬 컨트롤 -->
-      <div class="list-controls">
+      <section class="list-controls" aria-label="검색 및 정렬 옵션">
         <div class="search-sort-container">
-          <div class="search-box">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" id="search-input" placeholder="연수원 이름 검색...">
+          <div class="search-box" role="search">
+            <label for="search-input" class="sr-only">연수원 이름 검색</label>
+            <i class="fas fa-search search-icon" aria-hidden="true"></i>
+            <input 
+              type="text" 
+              id="search-input" 
+              class="search-input" 
+              placeholder="연수원 이름 검색..."
+              autocomplete="off"
+              spellcheck="false"
+              aria-describedby="search-help"
+            >
+            <button class="clear-search" aria-label="검색어 지우기" tabindex="-1">
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+            <div id="search-help" class="sr-only">연수원 이름을 입력하여 검색할 수 있습니다</div>
           </div>
           
-          <select class="filter-select" id="region-filter">
-            <option value="">지역 선택</option>
-            <option value="서울">서울</option>
-            <option value="경기">경기</option>
-            <option value="강원">강원</option>
-            <option value="충청">충청</option>
-            <option value="전라">전라</option>
-            <option value="경상">경상</option>
-            <option value="제주">제주</option>
-          </select>
-          
-          <select class="sort-select" id="sort-select">
-            <option value="name-asc">이름 (가나다순)</option>
-            <option value="name-desc">이름 (역순)</option>
-            <option value="region-asc">지역 (가나다순)</option>
-            <option value="capacity-desc">수용인원 (많은순)</option>
-            <option value="capacity-asc">수용인원 (적은순)</option>
-          </select>
+          <div class="filter-controls">
+            <label for="region-filter" class="sr-only">지역 필터</label>
+            <select id="region-filter" class="filter-select" aria-describedby="region-help">
+              <option value="">지역 선택</option>
+              <option value="서울">서울</option>
+              <option value="경기">경기</option>
+              <option value="강원">강원</option>
+              <option value="충청">충청</option>
+              <option value="전라">전라</option>
+              <option value="경상">경상</option>
+              <option value="제주">제주</option>
+            </select>
+            <div id="region-help" class="sr-only">지역별로 연수원을 필터링할 수 있습니다</div>
+            
+            <label for="capacity-filter" class="sr-only">수용인원 필터</label>
+            <select id="capacity-filter" class="filter-select" aria-describedby="capacity-help">
+              <option value="">수용인원</option>
+              <option value="0-50">50명 이하</option>
+              <option value="51-100">51-100명</option>
+              <option value="101-200">101-200명</option>
+              <option value="201+">201명 이상</option>
+            </select>
+            <div id="capacity-help" class="sr-only">수용인원별로 연수원을 필터링할 수 있습니다</div>
+            
+            <label for="sort-select" class="sr-only">정렬 옵션</label>
+            <select id="sort-select" class="sort-select" aria-describedby="sort-help">
+              <option value="name-asc">이름 (가나다순)</option>
+              <option value="name-desc">이름 (역순)</option>
+              <option value="region-asc">지역 (가나다순)</option>
+              <option value="capacity-desc">수용인원 (많은순)</option>
+              <option value="capacity-asc">수용인원 (적은순)</option>
+            </select>
+            <div id="sort-help" class="sr-only">목록의 정렬 방식을 선택할 수 있습니다</div>
+          </div>
         </div>
         
         <div class="button-container">
-          <button class="search-button" id="search-button">
-            <i class="fas fa-search"></i> 검색
+          <button class="search-button" id="search-button" aria-describedby="search-btn-help">
+            <i class="fas fa-search" aria-hidden="true"></i> 
+            <span>검색</span>
           </button>
-          <button class="reset-button" id="reset-button">
-            <i class="fas fa-redo"></i> 초기화
+          <button class="reset-button" id="reset-button" aria-describedby="reset-btn-help">
+            <i class="fas fa-redo" aria-hidden="true"></i> 
+            <span>초기화</span>
           </button>
+          <div id="search-btn-help" class="sr-only">현재 설정된 검색 조건으로 연수원을 검색합니다</div>
+          <div id="reset-btn-help" class="sr-only">모든 검색 조건을 초기화합니다</div>
         </div>
-      </div>
+      </section>
+      
+      <!-- 검색 결과 요약 -->
+      <section class="results-summary" aria-live="polite" aria-atomic="true">
+        <p id="results-count" class="results-text">
+          <span class="sr-only">검색 결과: </span>
+          전체 <strong id="total-count">0</strong>개 중 <strong id="current-count">0</strong>개의 연수원이 표시되고 있습니다
+        </p>
+      </section>
       
       <!-- 로딩 표시 -->
-      <div id="loading-container" class="loading">
-        <i class="fas fa-spinner fa-spin"></i> 연수원 목록을 불러오는 중...
+      <div id="loading-container" class="loading" aria-live="polite" aria-label="데이터 로딩 중">
+        <div class="loading-spinner"></div>
+        <p><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> 연수원 목록을 불러오는 중...</p>
       </div>
       
-      <!-- 연수원 목록 테이블 -->
-      <table class="centers-table" id="centers-table" style="display: none;">
-        <thead>
-          <tr>
-            <th class="col-center">연수원</th>
-            <th class="col-capacity">수용인원</th>
-            <th class="col-region">지역</th>
-            <th class="col-info">기본정보</th>
-            <th class="col-actions">관리</th>
-          </tr>
-        </thead>
-        <tbody id="centers-tbody">
-          <!-- 동적으로 채워짐 -->
-        </tbody>
-      </table>
+      <!-- 연수원 목록 테이블 (데스크톱) -->
+      <div class="centers-table-container" id="table-view">
+        <table class="centers-table" id="centers-table" role="table" aria-labelledby="table-caption">
+          <caption id="table-caption" class="sr-only">연수원 목록 테이블</caption>
+          <thead>
+            <tr role="row">
+              <th scope="col" class="col-center">연수원</th>
+              <th scope="col" class="col-capacity">수용인원</th>
+              <th scope="col" class="col-region">지역</th>
+              <th scope="col" class="col-info">기본정보</th>
+              <th scope="col" class="col-actions">관리</th>
+            </tr>
+          </thead>
+          <tbody id="centers-tbody" role="rowgroup">
+            <!-- 동적으로 채워짐 -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 연수원 목록 카드 (모바일) -->
+      <div class="centers-cards" id="card-view" role="list" aria-labelledby="card-list-title">
+        <h2 id="card-list-title" class="sr-only">연수원 목록</h2>
+        <!-- 동적으로 채워짐 -->
+      </div>
       
       <!-- 검색 결과 없음 -->
-      <div id="no-results" class="no-centers" style="display: none;">
-        검색 결과가 없습니다.
+      <div id="no-results" class="no-centers" style="display: none;" role="status" aria-live="polite">
+        <i class="fas fa-search" aria-hidden="true"></i>
+        <h3>검색 결과가 없습니다</h3>
+        <p>다른 검색 조건을 시도해보세요</p>
+        <button class="reset-button" onclick="resetFilters()" aria-label="검색 조건 초기화">
+          <i class="fas fa-redo" aria-hidden="true"></i> 초기화
+        </button>
       </div>
       
       <!-- 페이지네이션 -->
-      <div class="pagination" id="pagination">
-        <!-- 동적으로 채워짐 -->
-      </div>
+      <nav class="pagination-container" aria-label="페이지 네비게이션">
+        <div class="pagination" id="pagination" role="navigation">
+          <!-- 동적으로 채워짐 -->
+        </div>
+      </nav>
     </div>
   </main>
 
   <!-- 푸터 -->
-  <footer>
+  <footer role="contentinfo">
     <div class="container">
       <p>&copy; 2025 연수원 여기어때. All rights reserved.</p>
       <div class="contact-info">
-        <a href="mailto:contact@example.com"><i class="fas fa-envelope"></i> hyunnet@gmail.com</a>
-        <a href="tel:+8201012345678"><i class="fas fa-phone"></i> 010-1234-5678</a>
+        <a href="mailto:hyunnet@gmail.com" aria-label="이메일 문의">
+          <i class="fas fa-envelope" aria-hidden="true"></i> 
+          <span>hyunnet@gmail.com</span>
+        </a>
+        <a href="tel:+8201012345678" aria-label="전화 문의">
+          <i class="fas fa-phone" aria-hidden="true"></i> 
+          <span>010-1234-5678</span>
+        </a>
       </div>
     </div>
   </footer>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-      authDomain: "training-centers-map.firebaseapp.com",
-      projectId: "training-centers-map",
-      storageBucket: "training-centers-map.firebasestorage.app",
-      messagingSenderId: "943690141587",
-      appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  <!-- 접근성을 위한 숨김 텍스트 및 추가 스타일 -->
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
     
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 6px;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      text-decoration: none;
+      z-index: 9999;
+      border-radius: 4px;
+    }
+    
+    .skip-link:focus {
+      top: 6px;
+    }
+    
+    .page-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px 0;
+    }
+    
+    .page-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 8px;
+    }
+    
+    .page-description {
+      font-size: 1.1rem;
+      color: #666;
+      margin: 0;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0077cc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .results-summary {
+      background: #f8f9fa;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #0077cc;
+    }
+    
+    .results-text {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .clear-search {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      padding: 5px;
+      display: none;
+    }
+    
+    .clear-search:hover {
+      color: #333;
+    }
+    
+    .search-input:not(:placeholder-shown) + .clear-search {
+      display: block;
+    }
+    
+    .filter-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .filter-select, .sort-select {
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      background-color: white;
+      min-height: 44px;
+      min-width: 120px;
+    }
+    
+    .button-container {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .search-button, .reset-button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .search-button {
+      background: #0077cc;
+      color: white;
+    }
+    
+    .search-button:hover {
+      background: #0066b3;
+    }
+    
+    .reset-button {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .reset-button:hover {
+      background: #5a6268;
+    }
+    
+    .no-centers {
+      text-align: center;
+      padding: 60px 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .no-centers i {
+      font-size: 3rem;
+      color: #dee2e6;
+      margin-bottom: 20px;
+    }
+    
+    .no-centers h3 {
+      font-size: 1.5rem;
+      color: #6c757d;
+      margin-bottom: 10px;
+    }
+    
+    .no-centers p {
+      color: #adb5bd;
+      margin-bottom: 20px;
+    }
+    
+    .pagination-container {
+      margin-top: 30px;
+      text-align: center;
+    }
+    
+    /* 모바일 메뉴 애니메이션 */
+    nav ul {
+      transition: left 0.3s ease-in-out;
+    }
+    
+    /* 포커스 스타일 개선 */
+    button:focus,
+    a:focus,
+    input:focus,
+    select:focus {
+      outline: 2px solid #0077cc;
+      outline-offset: 2px;
+    }
+    
+    /* 고대비 모드 지원 */
+    @media (prefers-contrast: high) {
+      .search-input,
+      .filter-select,
+      .sort-select {
+        border-width: 2px;
+        border-color: #000;
+      }
+    }
+    
+    /* 애니메이션 줄이기 설정 */
+    @media (prefers-reduced-motion: reduce) {
+      .loading-spinner {
+        animation: none;
+      }
+      
+      nav ul {
+        transition: none;
+      }
+      
+      * {
+        transition-duration: 0.01ms !important;
+      }
+    }
+    
+    /* 모바일 최적화 */
+    @media (max-width: 768px) {
+      .page-header h1 {
+        font-size: 1.5rem;
+      }
+      
+      .page-description {
+        font-size: 1rem;
+      }
+      
+      .search-sort-container {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .filter-controls {
+        width: 100%;
+      }
+      
+      .filter-select, .sort-select {
+        flex: 1;
+        min-width: auto;
+      }
+      
+      .button-container {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .search-button, .reset-button {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+  </style>
+
+  <!-- 메인 JavaScript -->
+  <script>
     // 전역 변수
     let allCenters = [];
     let filteredCenters = [];
     let currentPage = 1;
-    const itemsPerPage = 10; // 페이지당 표시할 항목 수
+    const itemsPerPage = 10;
     
-    // DOM 로드 완료 시 실행
-    document.addEventListener('DOMContentLoaded', () => {
+    // 페이지 로드 후 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+      initializePage();
       loadCenters();
-      setupEventListeners();
     });
+    
+    // 페이지 초기화
+    function initializePage() {
+      setupMobileMenu();
+      setupSearchControls();
+      setupEventListeners();
+    }
+    
+    // 모바일 메뉴 설정
+    function setupMobileMenu() {
+      const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+      const nav = document.querySelector('nav ul');
+      
+      if (mobileMenuToggle && nav) {
+        mobileMenuToggle.addEventListener('click', function() {
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          
+          this.setAttribute('aria-expanded', !isExpanded);
+          nav.classList.toggle('show');
+          
+          const icon = this.querySelector('i');
+          if (nav.classList.contains('show')) {
+            icon.className = 'fas fa-times';
+            this.setAttribute('aria-label', '메뉴 닫기');
+          } else {
+            icon.className = 'fas fa-bars';
+            this.setAttribute('aria-label', '메뉴 열기');
+          }
+        });
+        
+        // 메뉴 외부 클릭 시 닫기
+        document.addEventListener('click', function(e) {
+          if (!mobileMenuToggle.contains(e.target) && !nav.contains(e.target)) {
+            nav.classList.remove('show');
+            mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            mobileMenuToggle.setAttribute('aria-label', '메뉴 열기');
+            mobileMenuToggle.querySelector('i').className = 'fas fa-bars';
+          }
+        });
+        
+        // ESC 키로 메뉴 닫기
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && nav.classList.contains('show')) {
+            nav.classList.remove('show');
+            mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            mobileMenuToggle.setAttribute('aria-label', '메뉴 열기');
+            mobileMenuToggle.querySelector('i').className = 'fas fa-bars';
+            mobileMenuToggle.focus();
+          }
+        });
+      }
+    }
+    
+    // 검색 컨트롤 설정
+    function setupSearchControls() {
+      const searchInput = document.getElementById('search-input');
+      const clearButton = document.querySelector('.clear-search');
+      
+      if (searchInput && clearButton) {
+        searchInput.addEventListener('input', function() {
+          if (this.value.length > 0) {
+            clearButton.style.display = 'block';
+            clearButton.setAttribute('tabindex', '0');
+          } else {
+            clearButton.style.display = 'none';
+            clearButton.setAttribute('tabindex', '-1');
+          }
+          
+          // 실시간 검색 (500ms 디바운싱)
+          clearTimeout(this.searchTimeout);
+          this.searchTimeout = setTimeout(() => {
+            applyFilters();
+          }, 500);
+        });
+        
+        clearButton.addEventListener('click', function() {
+          searchInput.value = '';
+          searchInput.focus();
+          this.style.display = 'none';
+          this.setAttribute('tabindex', '-1');
+          applyFilters();
+        });
+        
+        clearButton.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.click();
+          }
+        });
+      }
+    }
     
     // 이벤트 리스너 설정
     function setupEventListeners() {
-      // 검색 버튼 클릭
-      document.getElementById('search-button').addEventListener('click', filterAndSortCenters);
+      const regionFilter = document.getElementById('region-filter');
+      const capacityFilter = document.getElementById('capacity-filter');
+      const sortSelect = document.getElementById('sort-select');
+      const searchButton = document.getElementById('search-button');
+      const resetButton = document.getElementById('reset-button');
       
-      // 검색창 Enter 키 이벤트
-      document.getElementById('search-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          filterAndSortCenters();
+      [regionFilter, capacityFilter, sortSelect].forEach(element => {
+        if (element) {
+          element.addEventListener('change', applyFilters);
         }
       });
       
-      // 정렬 변경
-      document.getElementById('sort-select').addEventListener('change', filterAndSortCenters);
+      if (searchButton) {
+        searchButton.addEventListener('click', applyFilters);
+      }
       
-      // 지역 필터 변경
-      document.getElementById('region-filter').addEventListener('change', filterAndSortCenters);
-      
-      // 필터 초기화
-      document.getElementById('reset-button').addEventListener('click', resetFilters);
+      if (resetButton) {
+        resetButton.addEventListener('click', resetFilters);
+      }
     }
     
     // 연수원 데이터 로드
     async function loadCenters() {
       try {
-        const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+        showLoading(true);
         
-        if (querySnapshot.empty) {
-          document.getElementById('loading-container').style.display = 'none';
-          document.getElementById('no-results').style.display = 'block';
-          return;
+        // Firebase에서 데이터 로드
+        if (window.firebase) {
+          const { db, collection, getDocs } = window.firebase;
+          const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+          
+          allCenters = [];
+          querySnapshot.forEach(doc => {
+            const center = doc.data();
+            center.id = doc.id;
+            allCenters.push(center);
+          });
+        } else {
+          // 샘플 데이터 (Firebase 연결 실패 시)
+          allCenters = generateSampleData();
         }
         
-        // 데이터를 배열로 변환
-        querySnapshot.forEach(doc => {
-          const center = doc.data();
-          center.id = doc.id;
-          allCenters.push(center);
-        });
-        
-        // 통계 계산 및 표시
-        updateStatistics(allCenters);
-        
-        // 초기 목록 표시
+        updateStatistics();
         filteredCenters = [...allCenters];
-        sortCenters('name-asc');
-        renderTable();
+        applyFilters();
+        showLoading(false);
         
-        document.getElementById('loading-container').style.display = 'none';
-        document.getElementById('centers-table').style.display = 'table';
       } catch (error) {
         console.error('연수원 목록 로드 실패:', error);
-        document.getElementById('loading-container').style.display = 'none';
-        document.getElementById('no-results').textContent = '데이터를 불러오는 데 실패했습니다.';
-        document.getElementById('no-results').style.display = 'block';
+        showError('데이터를 불러오는 데 실패했습니다.');
+        showLoading(false);
       }
     }
     
+    // 샘플 데이터 생성 (Firebase 연결 실패 시)
+    function generateSampleData() {
+      return [
+        {
+          id: '1',
+          name: '서울교육연수원',
+          branch: '강남지점',
+          basicInfo: '최신 시설을 갖춘 교육전문 연수원',
+          region: '서울',
+          capacity: 150,
+          links: { website: 'https://example.com' }
+        },
+        {
+          id: '2',
+          name: '경기연수원',
+          branch: '수원지점',
+          basicInfo: '자연 친화적 환경의 대규모 연수시설',
+          region: '경기',
+          capacity: 300,
+          links: { website: 'https://example.com' }
+        }
+        // 더 많은 샘플 데이터...
+      ];
+    }
+    
     // 통계 업데이트
-    function updateStatistics(centers) {
-      // 총 연수원 수
-      document.getElementById('total-centers').textContent = centers.length;
+    function updateStatistics() {
+      const totalCenters = allCenters.length;
+      const uniqueRegions = new Set(allCenters.map(c => c.region).filter(Boolean)).size;
       
-      // 지역 수 (중복 제거)
-      const uniqueRegions = new Set();
       let totalCapacity = 0;
       let maxCapacity = 0;
+      let capacityCount = 0;
       
-      centers.forEach(center => {
-        if (center.region) {
-          uniqueRegions.add(center.region);
-        }
-        
+      allCenters.forEach(center => {
         if (center.capacity) {
           const capacity = parseInt(center.capacity);
           if (!isNaN(capacity)) {
             totalCapacity += capacity;
             maxCapacity = Math.max(maxCapacity, capacity);
+            capacityCount++;
           }
         }
       });
       
-      document.getElementById('total-regions').textContent = uniqueRegions.size;
+      const avgCapacity = capacityCount > 0 ? Math.round(totalCapacity / capacityCount) : 0;
       
-      // 평균 수용 인원
-      const avgCapacity = centers.length > 0 ? Math.round(totalCapacity / centers.length) : 0;
-      document.getElementById('avg-capacity').textContent = avgCapacity;
-      
-      // 최대 수용 인원
-      document.getElementById('max-capacity').textContent = maxCapacity;
+      // 애니메이션과 함께 업데이트
+      animateValue('total-centers', 0, totalCenters, 1000);
+      animateValue('total-regions', 0, uniqueRegions, 1200);
+      animateValue('avg-capacity', 0, avgCapacity, 1400);
+      animateValue('max-capacity', 0, maxCapacity, 1600);
     }
     
-    // 필터와 정렬 적용
-    function filterAndSortCenters() {
-      const searchValue = document.getElementById('search-input').value.trim().toLowerCase();
-      const regionValue = document.getElementById('region-filter').value;
-      const sortValue = document.getElementById('sort-select').value;
+    // 숫자 애니메이션
+    function animateValue(elementId, start, end, duration) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      const range = end - start;
+      const startTime = Date.now();
+      
+      function updateValue() {
+        const now = Date.now();
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        const current = Math.floor(start + range * progress);
+        element.textContent = current.toLocaleString();
+        
+        if (progress < 1) {
+          requestAnimationFrame(updateValue);
+        }
+      }
+      
+      updateValue();
+    }
+    
+    // 필터 적용
+    function applyFilters() {
+      const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+      const regionFilter = document.getElementById('region-filter').value;
+      const capacityFilter = document.getElementById('capacity-filter').value;
+      const sortOption = document.getElementById('sort-select').value;
       
       // 필터링
       filteredCenters = allCenters.filter(center => {
-        const nameMatch = center.name?.toLowerCase().includes(searchValue) || 
-                      (center.branch && center.branch.toLowerCase().includes(searchValue));
-        
-        let regionMatch = true;
-        if (regionValue && center.region) {
-          regionMatch = center.region.includes(regionValue);
+        // 검색어 필터
+        if (searchTerm) {
+          const searchFields = [
+            center.name || '',
+            center.branch || '',
+            center.basicInfo || '',
+            center.region || ''
+          ].join(' ').toLowerCase();
+          
+          if (!searchFields.includes(searchTerm)) {
+            return false;
+          }
         }
         
-        return nameMatch && regionMatch;
+        // 지역 필터
+        if (regionFilter && center.region !== regionFilter) {
+          return false;
+        }
+        
+        // 수용인원 필터
+        if (capacityFilter) {
+          const capacity = parseInt(center.capacity) || 0;
+          switch (capacityFilter) {
+            case '0-50':
+              if (capacity > 50) return false;
+              break;
+            case '51-100':
+              if (capacity < 51 || capacity > 100) return false;
+              break;
+            case '101-200':
+              if (capacity < 101 || capacity > 200) return false;
+              break;
+            case '201+':
+              if (capacity < 201) return false;
+              break;
+          }
+        }
+        
+        return true;
       });
       
       // 정렬
-      sortCenters(sortValue);
+      sortCenters(sortOption);
       
-      // 테이블 렌더링
-      currentPage = 1; // 첫 페이지로 초기화
-      renderTable();
-    }
-    
-    // 정렬 적용
-    function sortCenters(sortType) {
-      switch (sortType) {
-        case 'name-asc':
-          filteredCenters.sort((a, b) => (a.name || '').localeCompare((b.name || ''), 'ko'));
-          break;
-        case 'name-desc':
-          filteredCenters.sort((a, b) => (b.name || '').localeCompare((a.name || ''), 'ko'));
-          break;
-        case 'region-asc':
-          filteredCenters.sort((a, b) => (a.region || '').localeCompare((b.region || ''), 'ko'));
-          break;
-        case 'capacity-desc':
-          filteredCenters.sort((a, b) => {
-            const capA = parseInt(a.capacity) || 0;
-            const capB = parseInt(b.capacity) || 0;
-            return capB - capA;
-          });
-          break;
-        case 'capacity-asc':
-          filteredCenters.sort((a, b) => {
-            const capA = parseInt(a.capacity) || 0;
-            const capB = parseInt(b.capacity) || 0;
-            return capA - capB;
-          });
-          break;
-      }
-    }
-    
-    // 필터 초기화
-    function resetFilters() {
-      document.getElementById('search-input').value = '';
-      document.getElementById('region-filter').value = '';
-      document.getElementById('sort-select').value = 'name-asc';
-      
-      filteredCenters = [...allCenters];
-      sortCenters('name-asc');
+      // 페이지 리셋 및 렌더링
       currentPage = 1;
-      renderTable();
+      renderResults();
+      updateResultsCount();
     }
     
-    // 테이블 렌더링
-    function renderTable() {
-      const tbody = document.getElementById('centers-tbody');
-      tbody.innerHTML = '';
-      
+    // 정렬
+    function sortCenters(option) {
+      filteredCenters.sort((a, b) => {
+        switch (option) {
+          case 'name-asc':
+            return (a.name || '').localeCompare(b.name || '');
+          case 'name-desc':
+            return (b.name || '').localeCompare(a.name || '');
+          case 'region-asc':
+            return (a.region || '').localeCompare(b.region || '');
+          case 'capacity-desc':
+            return (parseInt(b.capacity) || 0) - (parseInt(a.capacity) || 0);
+          case 'capacity-asc':
+            return (parseInt(a.capacity) || 0) - (parseInt(b.capacity) || 0);
+          default:
+            return 0;
+        }
+      });
+    }
+    
+    // 결과 렌더링
+    function renderResults() {
       if (filteredCenters.length === 0) {
-        document.getElementById('centers-table').style.display = 'none';
-        document.getElementById('no-results').style.display = 'block';
-        document.getElementById('pagination').innerHTML = '';
+        showNoResults(true);
         return;
       }
       
-      document.getElementById('centers-table').style.display = 'table';
-      document.getElementById('no-results').style.display = 'none';
+      showNoResults(false);
       
       // 페이지네이션 계산
       const totalPages = Math.ceil(filteredCenters.length / itemsPerPage);
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = Math.min(startIndex + itemsPerPage, filteredCenters.length);
+      const currentPageCenters = filteredCenters.slice(startIndex, endIndex);
       
-      // 현재 페이지의 항목 표시
-      for (let i = startIndex; i < endIndex; i++) {
-        const center = filteredCenters[i];
+      // 테이블 렌더링 (데스크톱)
+      renderTable(currentPageCenters);
+      
+      // 카드 렌더링 (모바일)
+      renderCards(currentPageCenters);
+      
+      // 페이지네이션 렌더링
+      renderPagination(totalPages);
+    }
+    
+    // 테이블 렌더링
+    function renderTable(centers) {
+      const tbody = document.getElementById('centers-tbody');
+      if (!tbody) return;
+      
+      tbody.innerHTML = '';
+      
+      centers.forEach(center => {
         const row = document.createElement('tr');
+        row.setAttribute('role', 'row');
         
-        // 기본 정보 요약 (150자 제한)
-        const basicInfo = center.basicInfo ? 
-          center.basicInfo.length > 150 ? 
-            center.basicInfo.substring(0, 150) + '...' : 
-            center.basicInfo : 
-          '정보 없음';
+        const basicInfo = (center.basicInfo || '정보 없음').length > 100 
+          ? center.basicInfo.substring(0, 100) + '...' 
+          : center.basicInfo || '정보 없음';
         
         row.innerHTML = `
           <td class="col-center">
@@ -705,22 +916,22 @@
           <td class="col-capacity">
             ${center.capacity ? 
               `<span class="capacity-badge">${center.capacity}명</span>` : 
-              '-'}
+              '<span class="no-data">-</span>'}
           </td>
           <td class="col-region">
             ${center.region ? 
               `<span class="region-badge">${center.region}</span>` : 
-              '-'}
+              '<span class="no-data">-</span>'}
           </td>
           <td class="col-info">${basicInfo}</td>
           <td class="col-actions">
             <div class="table-actions">
-              <a href="index.html?center=${center.id}" class="action-btn view-btn">
-                지도보기
+              <a href="index.html?center=${center.id}" class="action-btn view-btn" aria-label="${center.name} 지도에서 보기">
+                <i class="fas fa-map" aria-hidden="true"></i> 지도보기
               </a>
               ${center.links?.website ? 
-                `<a href="${center.links.website}" target="_blank" class="action-btn detail-btn">
-                  상세보기
+                `<a href="${center.links.website}" target="_blank" rel="noopener noreferrer" class="action-btn detail-btn" aria-label="${center.name} 상세정보 보기">
+                  <i class="fas fa-external-link-alt" aria-hidden="true"></i> 상세보기
                 </a>` : 
                 ''}
             </div>
@@ -728,36 +939,71 @@
         `;
         
         tbody.appendChild(row);
-      }
+      });
+    }
+    
+    // 카드 렌더링
+    function renderCards(centers) {
+      const cardsContainer = document.getElementById('card-view');
+      if (!cardsContainer) return;
       
-      // 페이지네이션 렌더링
-      renderPagination(totalPages);
+      cardsContainer.innerHTML = '';
+      
+      centers.forEach(center => {
+        const card = document.createElement('div');
+        card.className = 'center-card';
+        card.setAttribute('role', 'listitem');
+        
+        const basicInfo = (center.basicInfo || '정보 없음').length > 150 
+          ? center.basicInfo.substring(0, 150) + '...' 
+          : center.basicInfo || '정보 없음';
+        
+        card.innerHTML = `
+          <div class="center-card-header">
+            <div>
+              <h3 class="center-card-title">${center.name || '이름 없음'}</h3>
+              ${center.branch ? `<div class="center-card-branch">${center.branch}</div>` : ''}
+            </div>
+          </div>
+          <div class="center-card-info">${basicInfo}</div>
+          <div class="center-card-meta">
+            ${center.capacity ? 
+              `<span class="capacity-badge">${center.capacity}명</span>` : ''}
+            ${center.region ? 
+              `<span class="region-badge">${center.region}</span>` : ''}
+          </div>
+          <div class="center-card-actions">
+            <a href="index.html?center=${center.id}" class="btn-directions" aria-label="${center.name} 지도에서 보기">
+              <i class="fas fa-map" aria-hidden="true"></i> 지도보기
+            </a>
+            ${center.links?.website ? 
+              `<a href="${center.links.website}" target="_blank" rel="noopener noreferrer" class="detail-btn" aria-label="${center.name} 상세정보 보기">
+                <i class="fas fa-external-link-alt" aria-hidden="true"></i> 상세보기
+              </a>` : 
+              ''}
+          </div>
+        `;
+        
+        cardsContainer.appendChild(card);
+      });
     }
     
     // 페이지네이션 렌더링
     function renderPagination(totalPages) {
       const pagination = document.getElementById('pagination');
-      pagination.innerHTML = '';
-      
-      if (totalPages <= 1) {
+      if (!pagination || totalPages <= 1) {
+        pagination.innerHTML = '';
         return;
       }
       
+      pagination.innerHTML = '';
+      
       // 이전 버튼
-      const prevBtn = document.createElement('a');
-      prevBtn.href = '#';
-      prevBtn.className = `pagination-btn ${currentPage === 1 ? 'disabled' : ''}`;
-      prevBtn.innerHTML = '&laquo;';
-      if (currentPage > 1) {
-        prevBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          goToPage(currentPage - 1);
-        });
-      }
+      const prevBtn = createPaginationButton('‹', currentPage - 1, currentPage === 1, '이전 페이지');
       pagination.appendChild(prevBtn);
       
       // 페이지 번호
-      const maxPageButtons = 5; // 표시할 최대 페이지 버튼 수
+      const maxPageButtons = window.innerWidth < 600 ? 3 : 5;
       let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
       let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
       
@@ -766,42 +1012,126 @@
       }
       
       for (let i = startPage; i <= endPage; i++) {
-        const pageBtn = document.createElement('a');
-        pageBtn.href = '#';
-        pageBtn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
-        pageBtn.textContent = i;
-        pageBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          goToPage(i);
-        });
+        const pageBtn = createPaginationButton(i, i, false, `${i}페이지로 이동`);
+        if (i === currentPage) {
+          pageBtn.classList.add('active');
+          pageBtn.setAttribute('aria-current', 'page');
+        }
         pagination.appendChild(pageBtn);
       }
       
       // 다음 버튼
-      const nextBtn = document.createElement('a');
-      nextBtn.href = '#';
-      nextBtn.className = `pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`;
-      nextBtn.innerHTML = '&raquo;';
-      if (currentPage < totalPages) {
-        nextBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          goToPage(currentPage + 1);
-        });
-      }
+      const nextBtn = createPaginationButton('›', currentPage + 1, currentPage === totalPages, '다음 페이지');
       pagination.appendChild(nextBtn);
     }
     
-    // 특정 페이지로 이동
+    // 페이지네이션 버튼 생성
+    function createPaginationButton(text, page, disabled, label) {
+      const btn = document.createElement('button');
+      btn.className = `pagination-btn ${disabled ? 'disabled' : ''}`;
+      btn.textContent = text;
+      btn.setAttribute('aria-label', label);
+      
+      if (!disabled) {
+        btn.addEventListener('click', () => goToPage(page));
+      } else {
+        btn.setAttribute('aria-disabled', 'true');
+        btn.setAttribute('tabindex', '-1');
+      }
+      
+      return btn;
+    }
+    
+    // 페이지 이동
     function goToPage(page) {
       currentPage = page;
-      renderTable();
+      renderResults();
       
       // 페이지 상단으로 스크롤
-      window.scrollTo({
-        top: document.getElementById('centers-table').offsetTop - 100,
-        behavior: 'smooth'
+      document.querySelector('.results-summary').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
       });
     }
+    
+    // 검색 결과 카운트 업데이트
+    function updateResultsCount() {
+      const totalCount = document.getElementById('total-count');
+      const currentCount = document.getElementById('current-count');
+      
+      if (totalCount) totalCount.textContent = allCenters.length.toLocaleString();
+      if (currentCount) currentCount.textContent = filteredCenters.length.toLocaleString();
+    }
+    
+    // 필터 초기화
+    function resetFilters() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('region-filter').value = '';
+      document.getElementById('capacity-filter').value = '';
+      document.getElementById('sort-select').value = 'name-asc';
+      
+      document.querySelector('.clear-search').style.display = 'none';
+      
+      filteredCenters = [...allCenters];
+      currentPage = 1;
+      renderResults();
+      updateResultsCount();
+      
+      // 포커스를 검색 입력란으로 이동
+      document.getElementById('search-input').focus();
+    }
+    
+    // 전역 함수로 노출
+    window.resetFilters = resetFilters;
+    
+    // 로딩 표시
+    function showLoading(show) {
+      const loading = document.getElementById('loading-container');
+      const tableView = document.getElementById('table-view');
+      const cardView = document.getElementById('card-view');
+      
+      if (loading) loading.style.display = show ? 'block' : 'none';
+      if (tableView) tableView.style.display = show ? 'none' : 'block';
+      if (cardView) cardView.style.display = show ? 'none' : 'flex';
+    }
+    
+    // 결과 없음 표시
+    function showNoResults(show) {
+      const noResults = document.getElementById('no-results');
+      const tableView = document.getElementById('table-view');
+      const cardView = document.getElementById('card-view');
+      const pagination = document.getElementById('pagination');
+      
+      if (noResults) noResults.style.display = show ? 'block' : 'none';
+      if (tableView) tableView.style.display = show ? 'none' : 'block';
+      if (cardView) cardView.style.display = show ? 'none' : 'flex';
+      if (pagination) pagination.innerHTML = show ? '' : pagination.innerHTML;
+    }
+    
+    // 에러 표시
+    function showError(message) {
+      const noResults = document.getElementById('no-results');
+      if (noResults) {
+        noResults.innerHTML = `
+          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+          <h3>오류가 발생했습니다</h3>
+          <p>${message}</p>
+          <button class="reset-button" onclick="location.reload()" aria-label="페이지 새로고침">
+            <i class="fas fa-redo" aria-hidden="true"></i> 새로고침
+          </button>
+        `;
+        noResults.style.display = 'block';
+      }
+    }
+    
+    // 키보드 이벤트 처리
+    document.addEventListener('keydown', function(e) {
+      // Ctrl+F로 검색 입력란에 포커스
+      if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        document.getElementById('search-input').focus();
+      }
+    });
   </script>
 </body>
 </html>

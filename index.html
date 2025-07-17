@@ -2,17 +2,37 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="전국 연수원 위치를 한눈에! 지역별, 수용인원별 연수원 검색과 지도 서비스">
+  <meta name="keywords" content="연수원, 교육시설, 전국연수원, 지도, 검색, 위치안내">
+  <meta name="author" content="연수원 여기어때">
+  
+  <!-- PWA 지원 -->
+  <meta name="theme-color" content="#0077cc">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="연수원 여기어때">
+  
+  <!-- 오픈 그래프 메타 태그 -->
+  <meta property="og:title" content="연수원 여기어때 - 전국 연수원 위치 안내">
+  <meta property="og:description" content="전국 연수원 위치를 한눈에! 지역별, 수용인원별 연수원 검색과 지도 서비스">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://example.com/og-image.jpg">
+  
   <title>연수원 여기어때 - 전국 연수원 위치 안내</title>
   
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Preload 중요 리소스 -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" as="style">
+  <link rel="preload" href="style.css" as="style">
   
-  <!-- 네이버 지도 API  -->
-  <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+  
+  <!-- 네이버 지도 API -->
+  <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue" defer></script>
   
   <!-- 마커 클러스터링 -->
-  <script src="MarkerClustering.js"></script>
+  <script src="MarkerClustering.js" defer></script>
   
   <!-- 폰트어썸 아이콘 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -23,48 +43,94 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   
   <!-- 외부 CSS 파일 로드 -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- 구조화된 데이터 (SEO) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "연수원 여기어때",
+    "description": "전국 연수원 위치를 한눈에! 지역별, 수용인원별 연수원 검색과 지도 서비스",
+    "url": "https://example.com",
+    "applicationCategory": "EducationApplication",
+    "operatingSystem": "Any"
+  }
+  </script>
 </head>
 <body>
+  <!-- 스킵 링크 (접근성) -->
+  <a href="#main-content" class="skip-link" tabindex="1">메인 콘텐츠로 바로가기</a>
+  
   <!-- 헤더 섹션 -->
-  <header class="main-header">
+  <header class="main-header" role="banner">
     <div class="container">
       <div class="logo">
-        <a href="#" id="reset-to-initial">
-          <i class="fas fa-map-marked-alt"></i>
+        <a href="#" id="reset-to-initial" aria-label="연수원 여기어때 홈페이지로 이동">
+          <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
           <h1>연수원 여기어때</h1>
         </a>  
       </div>
-<nav>
-    <ul>
-        <li><a href="index.html" class="active"><i class="fas fa-map"></i> 지도보기</a></li>
-        <li><a href="centers-list.html"><i class="fas fa-list"></i> 연수원 목록</a></li>
-        <li><a href="#"><i class="fas fa-info-circle"></i> 이용안내</a></li>
-    </ul>
-</nav>
+      
+      <!-- 모바일 햄버거 메뉴 버튼 -->
+      <button class="mobile-menu-toggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav">
+        <i class="fas fa-bars" aria-hidden="true"></i>
+      </button>
+      
+      <nav id="main-nav" role="navigation" aria-label="주요 네비게이션">
+        <ul>
+          <li><a href="index.html" class="active" aria-current="page">
+            <i class="fas fa-map" aria-hidden="true"></i> 
+            <span>지도보기</span>
+          </a></li>
+          <li><a href="centers-list.html">
+            <i class="fas fa-list" aria-hidden="true"></i> 
+            <span>연수원 목록</span>
+          </a></li>
+          <li><a href="#about" aria-describedby="about-tooltip">
+            <i class="fas fa-info-circle" aria-hidden="true"></i> 
+            <span>이용안내</span>
+          </a></li>
+        </ul>
+      </nav>
     </div>
   </header>
 
   <!-- 메인 컨텐츠 -->
-  <main>
+  <main id="main-content" role="main">
     <!-- 검색 및 필터 섹션 -->
-    <div class="search-filter-container">
+    <section class="search-filter-container" aria-label="연수원 검색 및 필터">
       <div class="container">
         <div class="search-container">
-          <div class="search-box">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="연수원 이름 검색..." />
-            <i class="fas fa-times clear-icon"></i>
+          <div class="search-box" role="search">
+            <label for="search-input" class="sr-only">연수원 이름 검색</label>
+            <i class="fas fa-search search-icon" aria-hidden="true"></i>
+            <input 
+              type="text" 
+              id="search-input"
+              class="search-input" 
+              placeholder="연수원 이름 검색..."
+              autocomplete="off"
+              spellcheck="false"
+              aria-describedby="search-help"
+            />
+            <button class="clear-icon" aria-label="검색어 지우기" tabindex="-1">
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+            <div id="search-help" class="sr-only">연수원 이름을 입력하여 검색할 수 있습니다</div>
           </div>
-          <div class="search-results"></div>
+          <div class="search-results" role="listbox" aria-label="검색 결과"></div>
         </div>
         
         <div class="filter-container">
-          <button class="filter-toggle"><i class="fas fa-filter"></i> 필터</button>
-          <div class="filter-options">
+          <button class="filter-toggle" aria-expanded="false" aria-controls="filter-options">
+            <i class="fas fa-filter" aria-hidden="true"></i> 
+            <span>필터</span>
+          </button>
+          <div id="filter-options" class="filter-options" role="region" aria-label="검색 필터 옵션">
             <div class="filter-option">
-              <label>지역</label>
-              <select id="region-filter">
+              <label for="region-filter">지역</label>
+              <select id="region-filter" aria-describedby="region-help">
                 <option value="">전체</option>
                 <option value="서울">서울</option>
                 <option value="경기">경기</option>
@@ -74,48 +140,332 @@
                 <option value="경상">경상</option>
                 <option value="제주">제주</option>
               </select>
+              <div id="region-help" class="sr-only">지역별로 연수원을 필터링할 수 있습니다</div>
             </div>
             <div class="filter-option">
-              <label>수용인원</label>
-              <select id="capacity-filter">
+              <label for="capacity-filter">수용인원</label>
+              <select id="capacity-filter" aria-describedby="capacity-help">
                 <option value="">전체</option>
                 <option value="0-50">50명 이하</option>
                 <option value="51-100">51-100명</option>
                 <option value="101-200">101-200명</option>
                 <option value="201+">201명 이상</option>
               </select>
+              <div id="capacity-help" class="sr-only">수용인원별로 연수원을 필터링할 수 있습니다</div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- 지도 컨테이너 -->
-    <div class="map-container">
-      <div id="map"></div>
+    <section class="map-container" aria-label="연수원 위치 지도">
+      <div id="map" role="application" aria-label="네이버 지도 - 연수원 위치"></div>
       
       <!-- 지도 컨트롤 -->
-      <div class="map-controls">
-        <button id="current-location" title="내 위치"><i class="fas fa-location-arrow"></i></button>
-        <button id="zoom-in" title="확대"><i class="fas fa-plus"></i></button>
-        <button id="zoom-out" title="축소"><i class="fas fa-minus"></i></button>
-        <button id="reset-map" title="전체보기"><i class="fas fa-home"></i></button>
+      <div class="map-controls" role="toolbar" aria-label="지도 제어">
+        <button id="current-location" title="내 위치로 이동" aria-label="내 위치로 이동">
+          <i class="fas fa-location-arrow" aria-hidden="true"></i>
+        </button>
+        <button id="zoom-in" title="지도 확대" aria-label="지도 확대">
+          <i class="fas fa-plus" aria-hidden="true"></i>
+        </button>
+        <button id="zoom-out" title="지도 축소" aria-label="지도 축소">
+          <i class="fas fa-minus" aria-hidden="true"></i>
+        </button>
+        <button id="reset-map" title="전체 지역 보기" aria-label="전체 지역 보기">
+          <i class="fas fa-home" aria-hidden="true"></i>
+        </button>
       </div>
-    </div>
+      
+      <!-- 로딩 인디케이터 -->
+      <div id="map-loading" class="map-loading" aria-live="polite" aria-label="지도 로딩 중">
+        <div class="loading-spinner"></div>
+        <p>지도를 불러오는 중...</p>
+      </div>
+    </section>
+    
+    <!-- 연수원 개수 표시 -->
+    <section class="results-summary" aria-live="polite" aria-atomic="true">
+      <div class="container">
+        <p id="results-count" class="results-text">
+          <span class="sr-only">검색 결과: </span>
+          <strong id="visible-count">0</strong>개의 연수원이 표시되고 있습니다
+        </p>
+      </div>
+    </section>
   </main>
 
   <!-- 푸터 -->
-  <footer>
+  <footer role="contentinfo">
     <div class="container">
       <p>&copy; 2025 연수원 여기어때. All rights reserved.</p>
       <div class="contact-info">
-        <a href="mailto:contact@example.com"><i class="fas fa-envelope"></i> hyunnet@gmail.com</a>
-        <a href="tel:+8201012345678"><i class="fas fa-phone"></i> 010-1234-5678</a>
+        <a href="mailto:hyunnet@gmail.com" aria-label="이메일 문의">
+          <i class="fas fa-envelope" aria-hidden="true"></i> 
+          <span>hyunnet@gmail.com</span>
+        </a>
+        <a href="tel:+8201012345678" aria-label="전화 문의">
+          <i class="fas fa-phone" aria-hidden="true"></i> 
+          <span>010-1234-5678</span>
+        </a>
       </div>
     </div>
   </footer>
 
-  <!-- JS 파일 불러오기 (모듈 형식) -->
+  <!-- 접근성을 위한 숨김 텍스트 스타일 -->
+  <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 6px;
+      background: #000;
+      color: #fff;
+      padding: 8px;
+      text-decoration: none;
+      z-index: 9999;
+      border-radius: 4px;
+    }
+    
+    .skip-link:focus {
+      top: 6px;
+    }
+    
+    .map-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0077cc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .results-summary {
+      background: #f8f9fa;
+      padding: 10px 0;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .results-text {
+      margin: 0;
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+    
+    /* 모바일 메뉴 애니메이션 */
+    nav ul {
+      transition: left 0.3s ease-in-out;
+    }
+    
+    /* 포커스 스타일 개선 */
+    button:focus,
+    a:focus,
+    input:focus,
+    select:focus {
+      outline: 2px solid #0077cc;
+      outline-offset: 2px;
+    }
+    
+    /* 고대비 모드 지원 */
+    @media (prefers-contrast: high) {
+      .search-input,
+      .filter-toggle,
+      select {
+        border-width: 2px;
+        border-color: #000;
+      }
+    }
+    
+    /* 애니메이션 줄이기 설정 */
+    @media (prefers-reduced-motion: reduce) {
+      .loading-spinner {
+        animation: none;
+      }
+      
+      nav ul {
+        transition: none;
+      }
+    }
+  </style>
+
+  <!-- JS 파일 불러오기 -->
   <script type="module" src="app.js"></script>
+  
+  <!-- 모바일 메뉴 스크립트 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+      const nav = document.querySelector('nav ul');
+      
+      if (mobileMenuToggle && nav) {
+        mobileMenuToggle.addEventListener('click', function() {
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          
+          // ARIA 상태 업데이트
+          this.setAttribute('aria-expanded', !isExpanded);
+          
+          // 메뉴 토글
+          nav.classList.toggle('show');
+          
+          // 아이콘 변경
+          const icon = this.querySelector('i');
+          if (nav.classList.contains('show')) {
+            icon.className = 'fas fa-times';
+            this.setAttribute('aria-label', '메뉴 닫기');
+          } else {
+            icon.className = 'fas fa-bars';
+            this.setAttribute('aria-label', '메뉴 열기');
+          }
+        });
+        
+        // 메뉴 외부 클릭 시 닫기
+        document.addEventListener('click', function(e) {
+          if (!mobileMenuToggle.contains(e.target) && !nav.contains(e.target)) {
+            nav.classList.remove('show');
+            mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            mobileMenuToggle.setAttribute('aria-label', '메뉴 열기');
+            mobileMenuToggle.querySelector('i').className = 'fas fa-bars';
+          }
+        });
+        
+        // ESC 키로 메뉴 닫기
+        document.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape' && nav.classList.contains('show')) {
+            nav.classList.remove('show');
+            mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            mobileMenuToggle.setAttribute('aria-label', '메뉴 열기');
+            mobileMenuToggle.querySelector('i').className = 'fas fa-bars';
+            mobileMenuToggle.focus();
+          }
+        });
+      }
+      
+      // 필터 토글 기능
+      const filterToggle = document.querySelector('.filter-toggle');
+      const filterOptions = document.querySelector('.filter-options');
+      
+      if (filterToggle && filterOptions) {
+        filterToggle.addEventListener('click', function() {
+          const isExpanded = this.getAttribute('aria-expanded') === 'true';
+          
+          // ARIA 상태 업데이트
+          this.setAttribute('aria-expanded', !isExpanded);
+          
+          // 필터 옵션 토글
+          filterOptions.classList.toggle('show');
+          this.classList.toggle('active');
+        });
+        
+        // 필터 외부 클릭 시 닫기
+        document.addEventListener('click', function(e) {
+          if (!filterToggle.contains(e.target) && !filterOptions.contains(e.target)) {
+            filterOptions.classList.remove('show');
+            filterToggle.classList.remove('active');
+            filterToggle.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+      
+      // 검색 입력 개선
+      const searchInput = document.getElementById('search-input');
+      const clearIcon = document.querySelector('.clear-icon');
+      const searchResults = document.querySelector('.search-results');
+      
+      if (searchInput && clearIcon) {
+        // 입력값 변경 시 클리어 버튼 표시/숨김
+        searchInput.addEventListener('input', function() {
+          if (this.value.length > 0) {
+            clearIcon.style.display = 'block';
+            clearIcon.setAttribute('tabindex', '0');
+          } else {
+            clearIcon.style.display = 'none';
+            clearIcon.setAttribute('tabindex', '-1');
+            if (searchResults) {
+              searchResults.style.display = 'none';
+            }
+          }
+        });
+        
+        // 클리어 버튼 클릭
+        clearIcon.addEventListener('click', function() {
+          searchInput.value = '';
+          searchInput.focus();
+          this.style.display = 'none';
+          this.setAttribute('tabindex', '-1');
+          if (searchResults) {
+            searchResults.style.display = 'none';
+          }
+          
+          // 검색 초기화 이벤트 발생
+          searchInput.dispatchEvent(new Event('input'));
+        });
+        
+        // 엔터 키 처리
+        clearIcon.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.click();
+          }
+        });
+      }
+      
+      // 지도 로딩 표시
+      const mapElement = document.getElementById('map');
+      const mapLoading = document.getElementById('map-loading');
+      
+      if (mapElement && mapLoading) {
+        // 지도 로딩 시작
+        mapLoading.style.display = 'block';
+        
+        // 지도 로드 완료 체크 (app.js에서 호출될 함수)
+        window.hideMapLoading = function() {
+          if (mapLoading) {
+            mapLoading.style.display = 'none';
+          }
+        };
+      }
+      
+      // 연수원 개수 업데이트 함수 (app.js에서 호출될 함수)
+      window.updateResultsCount = function(count) {
+        const visibleCount = document.getElementById('visible-count');
+        if (visibleCount) {
+          visibleCount.textContent = count;
+        }
+      };
+    });
+  </script>
 </body>
 </html>
