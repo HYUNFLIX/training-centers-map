@@ -6,61 +6,52 @@
   <meta name="description" content="전국 연수원 목록을 지역별, 수용인원별로 검색하고 비교할 수 있는 서비스">
   <meta name="keywords" content="연수원목록, 교육시설목록, 연수원비교, 지역별연수원, 수용인원">
   <meta name="author" content="연수원 여기어때">
-  
+
   <!-- PWA 지원 -->
   <meta name="theme-color" content="#0077cc">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="연수원 목록">
-  
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- 파비콘 및 앱 아이콘 -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+
   <!-- 오픈 그래프 메타 태그 -->
   <meta property="og:title" content="연수원 목록 - 연수원 여기어때">
   <meta property="og:description" content="전국 연수원 목록을 지역별, 수용인원별로 검색하고 비교할 수 있는 서비스">
   <meta property="og:type" content="website">
-  
+  <meta property="og:url" content="https://training-centers-map.web.app/centers-list.html">
+  <meta property="og:image" content="https://training-centers-map.web.app/images/og-image.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="연수원 목록 - 연수원 여기어때">
+  <meta name="twitter:description" content="전국 연수원 목록을 검색하고 비교하세요">
+
   <title>연수원 목록 - 연수원 여기어때</title>
-  
+
   <!-- Preload 중요 리소스 -->
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" as="style">
   <link rel="preload" href="style.css" as="style">
-  
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-	
-    // Firebase 설정
-const firebaseConfig = {
-    apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-    authDomain: "training-centers-map.firebaseapp.com",
-    projectId: "training-centers-map",
-    storageBucket: "training-centers-map.firebasestorage.app",
-    messagingSenderId: "943690141587",
-    appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
-};
-    
-    // Firebase 초기화
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    
-    // 전역으로 노출
-    window.firebase = { db, collection, getDocs };
-  </script>
-  
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
-  
+
+  <!-- DNS Prefetch -->
+  <link rel="dns-prefetch" href="https://www.gstatic.com">
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+
   <!-- 폰트어썸 아이콘 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+
   <!-- 구글 폰트 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  
+
   <!-- 외부 CSS 파일 로드 -->
   <link rel="stylesheet" href="style.css">
-  
+
   <!-- 구조화된 데이터 (SEO) -->
   <script type="application/ld+json">
   {
@@ -68,18 +59,60 @@ const firebaseConfig = {
     "@type": "WebPage",
     "name": "연수원 목록",
     "description": "전국 연수원 목록을 지역별, 수용인원별로 검색하고 비교할 수 있는 서비스",
-    "url": "https://example.com/centers-list.html",
+    "url": "https://training-centers-map.web.app/centers-list.html",
     "mainEntity": {
       "@type": "ItemList",
       "name": "전국 연수원 목록"
     }
   }
   </script>
+
+  <!-- 인쇄 스타일 -->
+  <style media="print">
+    @page {
+      margin: 2cm;
+    }
+
+    .main-header, .search-filter-container, .mobile-menu-toggle,
+    footer, .pagination, .action-btn, .toast-container,
+    .filter-controls, .button-container {
+      display: none !important;
+    }
+
+    .page-content {
+      padding: 0 !important;
+    }
+
+    .centers-table {
+      box-shadow: none !important;
+    }
+
+    .centers-table th,
+    .centers-table td {
+      font-size: 12px !important;
+      padding: 8px !important;
+    }
+
+    .page-header h1 {
+      font-size: 24px !important;
+      margin-bottom: 20px !important;
+    }
+
+    @media print {
+      body {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+    }
+  </style>
 </head>
 <body>
   <!-- 스킵 링크 (접근성) -->
   <a href="#main-content" class="skip-link" tabindex="1">메인 콘텐츠로 바로가기</a>
-  
+
+  <!-- 토스트 알림 컨테이너 -->
+  <div class="toast-container" id="toast-container" role="region" aria-live="polite" aria-label="알림"></div>
+
   <!-- 헤더 섹션 -->
   <header class="main-header" role="banner">
     <div class="container">
@@ -89,24 +122,24 @@ const firebaseConfig = {
           <h1>연수원 여기어때</h1>
         </a>
       </div>
-      
+
       <!-- 모바일 햄버거 메뉴 버튼 -->
       <button class="mobile-menu-toggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav">
         <i class="fas fa-bars" aria-hidden="true"></i>
       </button>
-      
+
       <nav id="main-nav" role="navigation" aria-label="주요 네비게이션">
         <ul>
           <li><a href="index.html">
-            <i class="fas fa-map" aria-hidden="true"></i> 
+            <i class="fas fa-map" aria-hidden="true"></i>
             <span>지도보기</span>
           </a></li>
           <li><a href="centers-list.html" class="active" aria-current="page">
-            <i class="fas fa-list" aria-hidden="true"></i> 
+            <i class="fas fa-list" aria-hidden="true"></i>
             <span>연수원 목록</span>
           </a></li>
           <li><a href="#about">
-            <i class="fas fa-info-circle" aria-hidden="true"></i> 
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
             <span>이용안내</span>
           </a></li>
         </ul>
@@ -117,13 +150,13 @@ const firebaseConfig = {
   <!-- 메인 컨텐츠 -->
   <main id="main-content" role="main">
     <div class="container page-content">
-      
+
       <!-- 페이지 헤더 -->
       <section class="page-header" aria-labelledby="page-title">
         <h1 id="page-title">전국 연수원 목록</h1>
         <p class="page-description">지역별, 수용인원별로 연수원을 검색하고 비교해보세요</p>
       </section>
-      
+
       <!-- 상단 통계 -->
       <section class="stats-container" aria-labelledby="stats-title">
         <h2 id="stats-title" class="stats-title">연수원 통계</h2>
@@ -146,32 +179,32 @@ const firebaseConfig = {
           </div>
         </div>
       </section>
-      
+
       <!-- 검색 및 정렬 컨트롤 -->
       <section class="list-controls" aria-label="검색 및 정렬 옵션">
         <div class="search-sort-container">
           <div class="search-box" role="search">
             <label for="search-input" class="sr-only">연수원 이름 검색</label>
             <i class="fas fa-search search-icon" aria-hidden="true"></i>
-            <input 
-              type="text" 
-              id="search-input" 
-              class="search-input" 
+            <input
+              type="text"
+              id="search-input"
+              class="search-input"
               placeholder="연수원 이름 검색..."
               autocomplete="off"
               spellcheck="false"
               aria-describedby="search-help"
-            >
+            />
             <button class="clear-search" aria-label="검색어 지우기" tabindex="-1">
               <i class="fas fa-times" aria-hidden="true"></i>
             </button>
             <div id="search-help" class="sr-only">연수원 이름을 입력하여 검색할 수 있습니다</div>
           </div>
-          
+
           <div class="filter-controls">
             <label for="region-filter" class="sr-only">지역 필터</label>
             <select id="region-filter" class="filter-select" aria-describedby="region-help">
-              <option value="">지역 선택</option>
+              <option value="">전체 지역</option>
               <option value="서울">서울</option>
               <option value="경기">경기</option>
               <option value="강원">강원</option>
@@ -181,17 +214,17 @@ const firebaseConfig = {
               <option value="제주">제주</option>
             </select>
             <div id="region-help" class="sr-only">지역별로 연수원을 필터링할 수 있습니다</div>
-            
+
             <label for="capacity-filter" class="sr-only">수용인원 필터</label>
             <select id="capacity-filter" class="filter-select" aria-describedby="capacity-help">
-              <option value="">수용인원</option>
+              <option value="">전체 수용인원</option>
               <option value="0-50">50명 이하</option>
               <option value="51-100">51-100명</option>
               <option value="101-200">101-200명</option>
               <option value="201+">201명 이상</option>
             </select>
             <div id="capacity-help" class="sr-only">수용인원별로 연수원을 필터링할 수 있습니다</div>
-            
+
             <label for="sort-select" class="sr-only">정렬 옵션</label>
             <select id="sort-select" class="sort-select" aria-describedby="sort-help">
               <option value="name-asc">이름 (가나다순)</option>
@@ -203,21 +236,35 @@ const firebaseConfig = {
             <div id="sort-help" class="sr-only">목록의 정렬 방식을 선택할 수 있습니다</div>
           </div>
         </div>
-        
+
         <div class="button-container">
-          <button class="search-button" id="search-button" aria-describedby="search-btn-help">
-            <i class="fas fa-search" aria-hidden="true"></i> 
-            <span>검색</span>
+          <button class="view-toggle-btn" id="view-toggle" title="보기 전환">
+            <i class="fas fa-th" aria-hidden="true"></i>
+            <span class="sr-only">카드/테이블 보기 전환</span>
           </button>
-          <button class="reset-button" id="reset-button" aria-describedby="reset-btn-help">
-            <i class="fas fa-redo" aria-hidden="true"></i> 
+
+          <button class="export-btn" id="export-csv-btn" title="CSV 내보내기">
+            <i class="fas fa-file-csv" aria-hidden="true"></i>
+            <span>CSV</span>
+          </button>
+
+          <button class="export-btn" id="export-excel-btn" title="Excel 내보내기">
+            <i class="fas fa-file-excel" aria-hidden="true"></i>
+            <span>Excel</span>
+          </button>
+
+          <button class="print-btn" id="print-btn" title="인쇄">
+            <i class="fas fa-print" aria-hidden="true"></i>
+            <span>인쇄</span>
+          </button>
+
+          <button class="reset-button" id="reset-button" aria-label="검색 조건 초기화">
+            <i class="fas fa-redo" aria-hidden="true"></i>
             <span>초기화</span>
           </button>
-          <div id="search-btn-help" class="sr-only">현재 설정된 검색 조건으로 연수원을 검색합니다</div>
-          <div id="reset-btn-help" class="sr-only">모든 검색 조건을 초기화합니다</div>
         </div>
       </section>
-      
+
       <!-- 검색 결과 요약 -->
       <section class="results-summary" aria-live="polite" aria-atomic="true">
         <p id="results-count" class="results-text">
@@ -225,13 +272,13 @@ const firebaseConfig = {
           전체 <strong id="total-count">0</strong>개 중 <strong id="current-count">0</strong>개의 연수원이 표시되고 있습니다
         </p>
       </section>
-      
+
       <!-- 로딩 표시 -->
       <div id="loading-container" class="loading" aria-live="polite" aria-label="데이터 로딩 중">
         <div class="loading-spinner"></div>
         <p><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> 연수원 목록을 불러오는 중...</p>
       </div>
-      
+
       <!-- 연수원 목록 테이블 (데스크톱) -->
       <div class="centers-table-container" id="table-view">
         <table class="centers-table" id="centers-table" role="table" aria-labelledby="table-caption">
@@ -250,23 +297,23 @@ const firebaseConfig = {
           </tbody>
         </table>
       </div>
-      
+
       <!-- 연수원 목록 카드 (모바일) -->
       <div class="centers-cards" id="card-view" role="list" aria-labelledby="card-list-title">
         <h2 id="card-list-title" class="sr-only">연수원 목록</h2>
         <!-- 동적으로 채워짐 -->
       </div>
-      
+
       <!-- 검색 결과 없음 -->
       <div id="no-results" class="no-centers" style="display: none;" role="status" aria-live="polite">
         <i class="fas fa-search" aria-hidden="true"></i>
         <h3>검색 결과가 없습니다</h3>
         <p>다른 검색 조건을 시도해보세요</p>
-        <button class="reset-button" onclick="resetFilters()" aria-label="검색 조건 초기화">
+        <button class="reset-button" onclick="window.centersApp?.resetFilters()" aria-label="검색 조건 초기화">
           <i class="fas fa-redo" aria-hidden="true"></i> 초기화
         </button>
       </div>
-      
+
       <!-- 페이지네이션 -->
       <nav class="pagination-container" aria-label="페이지 네비게이션">
         <div class="pagination" id="pagination" role="navigation">
@@ -282,856 +329,33 @@ const firebaseConfig = {
       <p>&copy; 2025 연수원 여기어때. All rights reserved.</p>
       <div class="contact-info">
         <a href="mailto:hyunnet@gmail.com" aria-label="이메일 문의">
-          <i class="fas fa-envelope" aria-hidden="true"></i> 
+          <i class="fas fa-envelope" aria-hidden="true"></i>
           <span>hyunnet@gmail.com</span>
         </a>
         <a href="tel:+8201012345678" aria-label="전화 문의">
-          <i class="fas fa-phone" aria-hidden="true"></i> 
+          <i class="fas fa-phone" aria-hidden="true"></i>
           <span>010-1234-5678</span>
         </a>
       </div>
     </div>
   </footer>
 
-  <!-- 접근성을 위한 숨김 텍스트 및 추가 스타일 -->
-  <style>
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-    
-    .skip-link {
-      position: absolute;
-      top: -40px;
-      left: 6px;
-      background: #000;
-      color: #fff;
-      padding: 8px;
-      text-decoration: none;
-      z-index: 9999;
-      border-radius: 4px;
-    }
-    
-    .skip-link:focus {
-      top: 6px;
-    }
-    
-    .page-header {
-      text-align: center;
-      margin-bottom: 30px;
-      padding: 20px 0;
-    }
-    
-    .page-header h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 8px;
-    }
-    
-    .page-description {
-      font-size: 1.1rem;
-      color: #666;
-      margin: 0;
-    }
-    
-    .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #0077cc;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 15px;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .results-summary {
-      background: #f8f9fa;
-      padding: 12px 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border-left: 4px solid #0077cc;
-    }
-    
-    .results-text {
-      margin: 0;
-      font-size: 14px;
-      color: #666;
-    }
-    
-    .clear-search {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: #666;
-      cursor: pointer;
-      padding: 5px;
-      display: none;
-    }
-    
-    .clear-search:hover {
-      color: #333;
-    }
-    
-    .search-input:not(:placeholder-shown) + .clear-search {
-      display: block;
-    }
-    
-    .filter-controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    
-    .filter-select, .sort-select {
-      padding: 10px 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
-      background-color: white;
-      min-height: 44px;
-      min-width: 120px;
-    }
-    
-    .button-container {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    
-    .search-button, .reset-button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .search-button {
-      background: #0077cc;
-      color: white;
-    }
-    
-    .search-button:hover {
-      background: #0066b3;
-    }
-    
-    .reset-button {
-      background: #6c757d;
-      color: white;
-    }
-    
-    .reset-button:hover {
-      background: #5a6268;
-    }
-    
-    .no-centers {
-      text-align: center;
-      padding: 60px 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-    
-    .no-centers i {
-      font-size: 3rem;
-      color: #dee2e6;
-      margin-bottom: 20px;
-    }
-    
-    .no-centers h3 {
-      font-size: 1.5rem;
-      color: #6c757d;
-      margin-bottom: 10px;
-    }
-    
-    .no-centers p {
-      color: #adb5bd;
-      margin-bottom: 20px;
-    }
-    
-    .pagination-container {
-      margin-top: 30px;
-      text-align: center;
-    }
-    
-    /* 모바일 메뉴 애니메이션 */
-    nav ul {
-      transition: left 0.3s ease-in-out;
-    }
-    
-    /* 포커스 스타일 개선 */
-    button:focus,
-    a:focus,
-    input:focus,
-    select:focus {
-      outline: 2px solid #0077cc;
-      outline-offset: 2px;
-    }
-    
-    /* 고대비 모드 지원 */
-    @media (prefers-contrast: high) {
-      .search-input,
-      .filter-select,
-      .sort-select {
-        border-width: 2px;
-        border-color: #000;
-      }
-    }
-    
-    /* 애니메이션 줄이기 설정 */
-    @media (prefers-reduced-motion: reduce) {
-      .loading-spinner {
-        animation: none;
-      }
-      
-      nav ul {
-        transition: none;
-      }
-      
-      * {
-        transition-duration: 0.01ms !important;
-      }
-    }
-    
-    /* 모바일 최적화 */
-    @media (max-width: 768px) {
-      .page-header h1 {
-        font-size: 1.5rem;
-      }
-      
-      .page-description {
-        font-size: 1rem;
-      }
-      
-      .search-sort-container {
-        flex-direction: column;
-        gap: 15px;
-      }
-      
-      .filter-controls {
-        width: 100%;
-      }
-      
-      .filter-select, .sort-select {
-        flex: 1;
-        min-width: auto;
-      }
-      
-      .button-container {
-        width: 100%;
-        justify-content: space-between;
-      }
-      
-      .search-button, .reset-button {
-        flex: 1;
-        justify-content: center;
-      }
-    }
-  </style>
-
-  <!-- 메인 JavaScript -->
+  <!-- Service Worker 등록 -->
   <script>
-    // 전역 변수
-    let allCenters = [];
-    let filteredCenters = [];
-    let currentPage = 1;
-    const itemsPerPage = 10;
-    
-    // 페이지 로드 후 초기화
-    document.addEventListener('DOMContentLoaded', function() {
-      initializePage();
-      loadCenters();
-    });
-    
-    // 페이지 초기화
-    function initializePage() {
-      setupMobileMenu();
-      setupSearchControls();
-      setupEventListeners();
-    }
-    
-    // 모바일 메뉴 설정
-    function setupMobileMenu() {
-      const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-      const nav = document.querySelector('nav ul');
-      
-      if (mobileMenuToggle && nav) {
-        mobileMenuToggle.addEventListener('click', function() {
-          const isExpanded = this.getAttribute('aria-expanded') === 'true';
-          
-          this.setAttribute('aria-expanded', !isExpanded);
-          nav.classList.toggle('show');
-          
-          const icon = this.querySelector('i');
-          if (nav.classList.contains('show')) {
-            icon.className = 'fas fa-times';
-            this.setAttribute('aria-label', '메뉴 닫기');
-          } else {
-            icon.className = 'fas fa-bars';
-            this.setAttribute('aria-label', '메뉴 열기');
-          }
-        });
-        
-        // 메뉴 외부 클릭 시 닫기
-        document.addEventListener('click', function(e) {
-          if (!mobileMenuToggle.contains(e.target) && !nav.contains(e.target)) {
-            nav.classList.remove('show');
-            mobileMenuToggle.setAttribute('aria-expanded', 'false');
-            mobileMenuToggle.setAttribute('aria-label', '메뉴 열기');
-            mobileMenuToggle.querySelector('i').className = 'fas fa-bars';
-          }
-        });
-        
-        // ESC 키로 메뉴 닫기
-        document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape' && nav.classList.contains('show')) {
-            nav.classList.remove('show');
-            mobileMenuToggle.setAttribute('aria-expanded', 'false');
-            mobileMenuToggle.setAttribute('aria-label', '메뉴 열기');
-            mobileMenuToggle.querySelector('i').className = 'fas fa-bars';
-            mobileMenuToggle.focus();
-          }
-        });
-      }
-    }
-    
-    // 검색 컨트롤 설정
-    function setupSearchControls() {
-      const searchInput = document.getElementById('search-input');
-      const clearButton = document.querySelector('.clear-search');
-      
-      if (searchInput && clearButton) {
-        searchInput.addEventListener('input', function() {
-          if (this.value.length > 0) {
-            clearButton.style.display = 'block';
-            clearButton.setAttribute('tabindex', '0');
-          } else {
-            clearButton.style.display = 'none';
-            clearButton.setAttribute('tabindex', '-1');
-          }
-          
-          // 실시간 검색 (500ms 디바운싱)
-          clearTimeout(this.searchTimeout);
-          this.searchTimeout = setTimeout(() => {
-            applyFilters();
-          }, 500);
-        });
-        
-        clearButton.addEventListener('click', function() {
-          searchInput.value = '';
-          searchInput.focus();
-          this.style.display = 'none';
-          this.setAttribute('tabindex', '-1');
-          applyFilters();
-        });
-        
-        clearButton.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            this.click();
-          }
-        });
-      }
-    }
-    
-    // 이벤트 리스너 설정
-    function setupEventListeners() {
-      const regionFilter = document.getElementById('region-filter');
-      const capacityFilter = document.getElementById('capacity-filter');
-      const sortSelect = document.getElementById('sort-select');
-      const searchButton = document.getElementById('search-button');
-      const resetButton = document.getElementById('reset-button');
-      
-      [regionFilter, capacityFilter, sortSelect].forEach(element => {
-        if (element) {
-          element.addEventListener('change', applyFilters);
-        }
-      });
-      
-      if (searchButton) {
-        searchButton.addEventListener('click', applyFilters);
-      }
-      
-      if (resetButton) {
-        resetButton.addEventListener('click', resetFilters);
-      }
-    }
-    
-    // 연수원 데이터 로드
-    async function loadCenters() {
-      try {
-        showLoading(true);
-        
-        // Firebase에서 데이터 로드
-        if (window.firebase) {
-          const { db, collection, getDocs } = window.firebase;
-          const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-          
-          allCenters = [];
-          querySnapshot.forEach(doc => {
-            const center = doc.data();
-            center.id = doc.id;
-            allCenters.push(center);
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('✅ Service Worker 등록 성공:', registration.scope);
+          })
+          .catch((error) => {
+            console.warn('⚠️ Service Worker 등록 실패:', error);
           });
-        } else {
-          // 샘플 데이터 (Firebase 연결 실패 시)
-          allCenters = generateSampleData();
-        }
-        
-        updateStatistics();
-        filteredCenters = [...allCenters];
-        applyFilters();
-        showLoading(false);
-        
-      } catch (error) {
-        console.error('연수원 목록 로드 실패:', error);
-        showError('데이터를 불러오는 데 실패했습니다.');
-        showLoading(false);
-      }
-    }
-    
-    // 샘플 데이터 생성 (Firebase 연결 실패 시)
-    function generateSampleData() {
-      return [
-        {
-          id: '1',
-          name: '서울교육연수원',
-          branch: '강남지점',
-          basicInfo: '최신 시설을 갖춘 교육전문 연수원',
-          region: '서울',
-          capacity: 150,
-          links: { website: 'https://example.com' }
-        },
-        {
-          id: '2',
-          name: '경기연수원',
-          branch: '수원지점',
-          basicInfo: '자연 친화적 환경의 대규모 연수시설',
-          region: '경기',
-          capacity: 300,
-          links: { website: 'https://example.com' }
-        }
-        // 더 많은 샘플 데이터...
-      ];
-    }
-    
-    // 통계 업데이트
-    function updateStatistics() {
-      const totalCenters = allCenters.length;
-      const uniqueRegions = new Set(allCenters.map(c => c.region).filter(Boolean)).size;
-      
-      let totalCapacity = 0;
-      let maxCapacity = 0;
-      let capacityCount = 0;
-      
-      allCenters.forEach(center => {
-        if (center.capacity) {
-          const capacity = parseInt(center.capacity);
-          if (!isNaN(capacity)) {
-            totalCapacity += capacity;
-            maxCapacity = Math.max(maxCapacity, capacity);
-            capacityCount++;
-          }
-        }
-      });
-      
-      const avgCapacity = capacityCount > 0 ? Math.round(totalCapacity / capacityCount) : 0;
-      
-      // 애니메이션과 함께 업데이트
-      animateValue('total-centers', 0, totalCenters, 1000);
-      animateValue('total-regions', 0, uniqueRegions, 1200);
-      animateValue('avg-capacity', 0, avgCapacity, 1400);
-      animateValue('max-capacity', 0, maxCapacity, 1600);
-    }
-    
-    // 숫자 애니메이션
-    function animateValue(elementId, start, end, duration) {
-      const element = document.getElementById(elementId);
-      if (!element) return;
-      
-      const range = end - start;
-      const startTime = Date.now();
-      
-      function updateValue() {
-        const now = Date.now();
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        const current = Math.floor(start + range * progress);
-        element.textContent = current.toLocaleString();
-        
-        if (progress < 1) {
-          requestAnimationFrame(updateValue);
-        }
-      }
-      
-      updateValue();
-    }
-    
-    // 필터 적용
-    function applyFilters() {
-      const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
-      const regionFilter = document.getElementById('region-filter').value;
-      const capacityFilter = document.getElementById('capacity-filter').value;
-      const sortOption = document.getElementById('sort-select').value;
-      
-      // 필터링
-      filteredCenters = allCenters.filter(center => {
-        // 검색어 필터
-        if (searchTerm) {
-          const searchFields = [
-            center.name || '',
-            center.branch || '',
-            center.basicInfo || '',
-            center.region || ''
-          ].join(' ').toLowerCase();
-          
-          if (!searchFields.includes(searchTerm)) {
-            return false;
-          }
-        }
-        
-        // 지역 필터
-        if (regionFilter && center.region !== regionFilter) {
-          return false;
-        }
-        
-        // 수용인원 필터
-        if (capacityFilter) {
-          const capacity = parseInt(center.capacity) || 0;
-          switch (capacityFilter) {
-            case '0-50':
-              if (capacity > 50) return false;
-              break;
-            case '51-100':
-              if (capacity < 51 || capacity > 100) return false;
-              break;
-            case '101-200':
-              if (capacity < 101 || capacity > 200) return false;
-              break;
-            case '201+':
-              if (capacity < 201) return false;
-              break;
-          }
-        }
-        
-        return true;
-      });
-      
-      // 정렬
-      sortCenters(sortOption);
-      
-      // 페이지 리셋 및 렌더링
-      currentPage = 1;
-      renderResults();
-      updateResultsCount();
-    }
-    
-    // 정렬
-    function sortCenters(option) {
-      filteredCenters.sort((a, b) => {
-        switch (option) {
-          case 'name-asc':
-            return (a.name || '').localeCompare(b.name || '');
-          case 'name-desc':
-            return (b.name || '').localeCompare(a.name || '');
-          case 'region-asc':
-            return (a.region || '').localeCompare(b.region || '');
-          case 'capacity-desc':
-            return (parseInt(b.capacity) || 0) - (parseInt(a.capacity) || 0);
-          case 'capacity-asc':
-            return (parseInt(a.capacity) || 0) - (parseInt(b.capacity) || 0);
-          default:
-            return 0;
-        }
       });
     }
-    
-    // 결과 렌더링
-    function renderResults() {
-      if (filteredCenters.length === 0) {
-        showNoResults(true);
-        return;
-      }
-      
-      showNoResults(false);
-      
-      // 페이지네이션 계산
-      const totalPages = Math.ceil(filteredCenters.length / itemsPerPage);
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = Math.min(startIndex + itemsPerPage, filteredCenters.length);
-      const currentPageCenters = filteredCenters.slice(startIndex, endIndex);
-      
-      // 테이블 렌더링 (데스크톱)
-      renderTable(currentPageCenters);
-      
-      // 카드 렌더링 (모바일)
-      renderCards(currentPageCenters);
-      
-      // 페이지네이션 렌더링
-      renderPagination(totalPages);
-    }
-    
-    // 테이블 렌더링
-    function renderTable(centers) {
-      const tbody = document.getElementById('centers-tbody');
-      if (!tbody) return;
-      
-      tbody.innerHTML = '';
-      
-      centers.forEach(center => {
-        const row = document.createElement('tr');
-        row.setAttribute('role', 'row');
-        
-        const basicInfo = (center.basicInfo || '정보 없음').length > 100 
-          ? center.basicInfo.substring(0, 100) + '...' 
-          : center.basicInfo || '정보 없음';
-        
-        row.innerHTML = `
-          <td class="col-center">
-            <div class="center-name">${center.name || '이름 없음'}</div>
-            <div class="center-branch">${center.branch || ''}</div>
-          </td>
-          <td class="col-capacity">
-            ${center.capacity ? 
-              `<span class="capacity-badge">${center.capacity}명</span>` : 
-              '<span class="no-data">-</span>'}
-          </td>
-          <td class="col-region">
-            ${center.region ? 
-              `<span class="region-badge">${center.region}</span>` : 
-              '<span class="no-data">-</span>'}
-          </td>
-          <td class="col-info">${basicInfo}</td>
-          <td class="col-actions">
-            <div class="table-actions">
-              <a href="index.html?center=${center.id}" class="action-btn view-btn" aria-label="${center.name} 지도에서 보기">
-                <i class="fas fa-map" aria-hidden="true"></i> 지도보기
-              </a>
-              ${center.links?.website ? 
-                `<a href="${center.links.website}" target="_blank" rel="noopener noreferrer" class="action-btn detail-btn" aria-label="${center.name} 상세정보 보기">
-                  <i class="fas fa-external-link-alt" aria-hidden="true"></i> 상세보기
-                </a>` : 
-                ''}
-            </div>
-          </td>
-        `;
-        
-        tbody.appendChild(row);
-      });
-    }
-    
-    // 카드 렌더링
-    function renderCards(centers) {
-      const cardsContainer = document.getElementById('card-view');
-      if (!cardsContainer) return;
-      
-      cardsContainer.innerHTML = '';
-      
-      centers.forEach(center => {
-        const card = document.createElement('div');
-        card.className = 'center-card';
-        card.setAttribute('role', 'listitem');
-        
-        const basicInfo = (center.basicInfo || '정보 없음').length > 150 
-          ? center.basicInfo.substring(0, 150) + '...' 
-          : center.basicInfo || '정보 없음';
-        
-        card.innerHTML = `
-          <div class="center-card-header">
-            <div>
-              <h3 class="center-card-title">${center.name || '이름 없음'}</h3>
-              ${center.branch ? `<div class="center-card-branch">${center.branch}</div>` : ''}
-            </div>
-          </div>
-          <div class="center-card-info">${basicInfo}</div>
-          <div class="center-card-meta">
-            ${center.capacity ? 
-              `<span class="capacity-badge">${center.capacity}명</span>` : ''}
-            ${center.region ? 
-              `<span class="region-badge">${center.region}</span>` : ''}
-          </div>
-          <div class="center-card-actions">
-            <a href="index.html?center=${center.id}" class="btn-directions" aria-label="${center.name} 지도에서 보기">
-              <i class="fas fa-map" aria-hidden="true"></i> 지도보기
-            </a>
-            ${center.links?.website ? 
-              `<a href="${center.links.website}" target="_blank" rel="noopener noreferrer" class="detail-btn" aria-label="${center.name} 상세정보 보기">
-                <i class="fas fa-external-link-alt" aria-hidden="true"></i> 상세보기
-              </a>` : 
-              ''}
-          </div>
-        `;
-        
-        cardsContainer.appendChild(card);
-      });
-    }
-    
-    // 페이지네이션 렌더링
-    function renderPagination(totalPages) {
-      const pagination = document.getElementById('pagination');
-      if (!pagination || totalPages <= 1) {
-        pagination.innerHTML = '';
-        return;
-      }
-      
-      pagination.innerHTML = '';
-      
-      // 이전 버튼
-      const prevBtn = createPaginationButton('‹', currentPage - 1, currentPage === 1, '이전 페이지');
-      pagination.appendChild(prevBtn);
-      
-      // 페이지 번호
-      const maxPageButtons = window.innerWidth < 600 ? 3 : 5;
-      let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
-      let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
-      
-      if (endPage - startPage + 1 < maxPageButtons) {
-        startPage = Math.max(1, endPage - maxPageButtons + 1);
-      }
-      
-      for (let i = startPage; i <= endPage; i++) {
-        const pageBtn = createPaginationButton(i, i, false, `${i}페이지로 이동`);
-        if (i === currentPage) {
-          pageBtn.classList.add('active');
-          pageBtn.setAttribute('aria-current', 'page');
-        }
-        pagination.appendChild(pageBtn);
-      }
-      
-      // 다음 버튼
-      const nextBtn = createPaginationButton('›', currentPage + 1, currentPage === totalPages, '다음 페이지');
-      pagination.appendChild(nextBtn);
-    }
-    
-    // 페이지네이션 버튼 생성
-    function createPaginationButton(text, page, disabled, label) {
-      const btn = document.createElement('button');
-      btn.className = `pagination-btn ${disabled ? 'disabled' : ''}`;
-      btn.textContent = text;
-      btn.setAttribute('aria-label', label);
-      
-      if (!disabled) {
-        btn.addEventListener('click', () => goToPage(page));
-      } else {
-        btn.setAttribute('aria-disabled', 'true');
-        btn.setAttribute('tabindex', '-1');
-      }
-      
-      return btn;
-    }
-    
-    // 페이지 이동
-    function goToPage(page) {
-      currentPage = page;
-      renderResults();
-      
-      // 페이지 상단으로 스크롤
-      document.querySelector('.results-summary').scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-    
-    // 검색 결과 카운트 업데이트
-    function updateResultsCount() {
-      const totalCount = document.getElementById('total-count');
-      const currentCount = document.getElementById('current-count');
-      
-      if (totalCount) totalCount.textContent = allCenters.length.toLocaleString();
-      if (currentCount) currentCount.textContent = filteredCenters.length.toLocaleString();
-    }
-    
-    // 필터 초기화
-    function resetFilters() {
-      document.getElementById('search-input').value = '';
-      document.getElementById('region-filter').value = '';
-      document.getElementById('capacity-filter').value = '';
-      document.getElementById('sort-select').value = 'name-asc';
-      
-      document.querySelector('.clear-search').style.display = 'none';
-      
-      filteredCenters = [...allCenters];
-      currentPage = 1;
-      renderResults();
-      updateResultsCount();
-      
-      // 포커스를 검색 입력란으로 이동
-      document.getElementById('search-input').focus();
-    }
-    
-    // 전역 함수로 노출
-    window.resetFilters = resetFilters;
-    
-    // 로딩 표시
-    function showLoading(show) {
-      const loading = document.getElementById('loading-container');
-      const tableView = document.getElementById('table-view');
-      const cardView = document.getElementById('card-view');
-      
-      if (loading) loading.style.display = show ? 'block' : 'none';
-      if (tableView) tableView.style.display = show ? 'none' : 'block';
-      if (cardView) cardView.style.display = show ? 'none' : 'flex';
-    }
-    
-    // 결과 없음 표시
-    function showNoResults(show) {
-      const noResults = document.getElementById('no-results');
-      const tableView = document.getElementById('table-view');
-      const cardView = document.getElementById('card-view');
-      const pagination = document.getElementById('pagination');
-      
-      if (noResults) noResults.style.display = show ? 'block' : 'none';
-      if (tableView) tableView.style.display = show ? 'none' : 'block';
-      if (cardView) cardView.style.display = show ? 'none' : 'flex';
-      if (pagination) pagination.innerHTML = show ? '' : pagination.innerHTML;
-    }
-    
-    // 에러 표시
-    function showError(message) {
-      const noResults = document.getElementById('no-results');
-      if (noResults) {
-        noResults.innerHTML = `
-          <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
-          <h3>오류가 발생했습니다</h3>
-          <p>${message}</p>
-          <button class="reset-button" onclick="location.reload()" aria-label="페이지 새로고침">
-            <i class="fas fa-redo" aria-hidden="true"></i> 새로고침
-          </button>
-        `;
-        noResults.style.display = 'block';
-      }
-    }
-    
-    // 키보드 이벤트 처리
-    document.addEventListener('keydown', function(e) {
-      // Ctrl+F로 검색 입력란에 포커스
-      if (e.ctrlKey && e.key === 'f') {
-        e.preventDefault();
-        document.getElementById('search-input').focus();
-      }
-    });
   </script>
+
+  <!-- 메인 JavaScript (모듈 방식) -->
+  <script type="module" src="centers-list.js"></script>
 </body>
 </html>
