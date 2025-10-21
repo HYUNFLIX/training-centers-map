@@ -172,35 +172,49 @@ class FavoritesManager {
     }
 }
 
-// ==================== Firebase 초기화 ====================
+// ==================== Firebase 초기화 (타임아웃 포함) ====================
 async function initializeFirebase() {
+    const TIMEOUT = 5000; // 5초 타임아웃
+
     try {
         console.log('🔄 Firebase 초기화 시도 중...');
 
-        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js');
-        const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js');
+        // 타임아웃 Promise
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Firebase 연결 시간 초과')), TIMEOUT);
+        });
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD7_SPFK8I82WGM5IpqFn7kPxDOo8WUxIc",
-            authDomain: "training-centers-map.firebaseapp.com",
-            projectId: "training-centers-map",
-            storageBucket: "training-centers-map.firebasestorage.app",
-            messagingSenderId: "649959142602",
-            appId: "1:649959142602:web:b34cdb7d5d3e49e82e9e48",
-            measurementId: "G-P4VJ0JPQP5"
-        };
+        // Firebase 초기화 Promise
+        const firebasePromise = (async () => {
+            const { initializeApp } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js');
+            const { getFirestore, collection, getDocs } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js');
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+            const firebaseConfig = {
+                apiKey: "AIzaSyD7_SPFK8I82WGM5IpqFn7kPxDOo8WUxIc",
+                authDomain: "training-centers-map.firebaseapp.com",
+                projectId: "training-centers-map",
+                storageBucket: "training-centers-map.firebasestorage.app",
+                messagingSenderId: "649959142602",
+                appId: "1:649959142602:web:b34cdb7d5d3e49e82e9e48",
+                measurementId: "G-P4VJ0JPQP5"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+
+            return { db, collection, getDocs };
+        })();
+
+        // 타임아웃과 Firebase 초기화 중 먼저 완료되는 것 사용
+        const result = await Promise.race([firebasePromise, timeoutPromise]);
 
         console.log('✅ Firebase 초기화 성공');
         firebaseLoaded = true;
 
-        return { db, collection, getDocs };
+        return result;
     } catch (error) {
-        console.warn('⚠️ Firebase 초기화 실패, 샘플 데이터로 진행:', error);
+        console.warn('⚠️ Firebase 초기화 실패:', error.message);
         firebaseLoaded = false;
-        toast.warning('실시간 데이터 연결에 실패했습니다. 샘플 데이터를 표시합니다.', 'Firebase 연결 실패', 8000);
         return null;
     }
 }
@@ -247,10 +261,101 @@ function getSampleData() {
     ];
 }
 
-// ==================== 연수원 데이터 로드 ====================
-async function loadCenters() {
-    showLoading(true);
+// ==================== 캐시 관리 ====================
+const CACHE_KEY = 'training-centers-cache';
+const CACHE_TIMESTAMP_KEY = 'training-centers-cache-timestamp';
+const CACHE_DURATION = 1000 * 60 * 30; // 30분
 
+function getCachedData() {
+    try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY);
+
+        if (cached && timestamp) {
+            const age = Date.now() - parseInt(timestamp);
+            if (age < CACHE_DURATION) {
+                console.log('✅ 캐시된 데이터 사용 (나이:', Math.round(age / 1000), '초)');
+                return JSON.parse(cached);
+            } else {
+                console.log('⏰ 캐시 만료됨');
+            }
+        }
+    } catch (error) {
+        console.error('❌ 캐시 읽기 실패:', error);
+    }
+    return null;
+}
+
+function setCachedData(data) {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+        console.log('💾 데이터 캐시 저장 완료');
+    } catch (error) {
+        console.error('❌ 캐시 저장 실패:', error);
+    }
+}
+
+// ==================== 연수원 데이터 로드 (최적화) ====================
+async function loadCenters() {
+    // 1단계: 캐시된 데이터 즉시 표시 (초고속)
+    const cachedData = getCachedData();
+    if (cachedData && cachedData.length > 0) {
+        allCenters = cachedData;
+        applyFilters();
+        updateStats();
+        console.log(`⚡ 캐시에서 ${allCenters.length}개 연수원 즉시 로드`);
+
+        // 백그라운드에서 새 데이터 로드
+        loadFromFirebaseInBackground();
+    } else {
+        // 캐시 없으면 로딩 표시하고 Firebase 로드
+        showLoading(true);
+        await loadFromFirebase();
+        showLoading(false);
+    }
+}
+
+// Firebase에서 데이터 로드 (백그라운드)
+async function loadFromFirebaseInBackground() {
+    try {
+        console.log('🔄 백그라운드에서 Firebase 데이터 업데이트 중...');
+
+        const firebase = await initializeFirebase();
+
+        if (firebase && firebaseLoaded) {
+            const { db, collection, getDocs } = firebase;
+            const querySnapshot = await getDocs(collection(db, 'trainingCenters'));
+
+            const newCenters = [];
+            querySnapshot.forEach((doc) => {
+                newCenters.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+
+            // 데이터가 변경되었으면 업데이트
+            if (newCenters.length > 0 && newCenters.length !== allCenters.length) {
+                allCenters = newCenters;
+                setCachedData(allCenters);
+                applyFilters();
+                updateStats();
+                console.log(`✅ Firebase에서 ${allCenters.length}개 연수원 업데이트 완료`);
+                toast.success(`최신 데이터로 업데이트되었습니다! (${allCenters.length}개)`, '업데이트 완료', 3000);
+            } else if (newCenters.length > 0) {
+                console.log('✅ 최신 데이터 확인 완료 (변경 없음)');
+                setCachedData(newCenters);
+            }
+        }
+    } catch (error) {
+        console.warn('⚠️ 백그라운드 업데이트 실패:', error);
+        // 에러는 무시 (캐시 데이터 사용 중)
+    }
+}
+
+// Firebase에서 데이터 로드 (전면)
+async function loadFromFirebase() {
     try {
         const firebase = await initializeFirebase();
 
@@ -267,11 +372,16 @@ async function loadCenters() {
             });
 
             console.log(`✅ Firebase에서 ${allCenters.length}개 연수원 로드 완료`);
-            toast.success(`${allCenters.length}개의 연수원 데이터를 불러왔습니다!`, '데이터 로드 완료', 3000);
+
+            if (allCenters.length > 0) {
+                setCachedData(allCenters);
+                toast.success(`${allCenters.length}개의 연수원 데이터를 불러왔습니다!`, '데이터 로드 완료', 3000);
+            }
         } else {
-            // 샘플 데이터 사용
+            // Firebase 실패 시 샘플 데이터 사용
             allCenters = getSampleData();
             console.log('ℹ️ 샘플 데이터 사용 중');
+            toast.warning('실시간 데이터 연결에 실패했습니다. 샘플 데이터를 표시합니다.', 'Firebase 연결 실패', 6000);
         }
 
         // 초기 필터링 및 표시
@@ -284,8 +394,6 @@ async function loadCenters() {
         allCenters = getSampleData();
         applyFilters();
         updateStats();
-    } finally {
-        showLoading(false);
     }
 }
 
