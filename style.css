@@ -1018,6 +1018,273 @@ footer .container {
   font-size: 14px;
 }
 
+/* 카드 그리드 레이아웃 */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* 연수원 카드 스타일 (centers-list 전용) */
+.center-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.center-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.card-branch {
+  font-size: 14px;
+  color: #0077cc;
+  font-weight: 500;
+  margin-left: 6px;
+}
+
+.card-body {
+  flex: 1;
+  margin-bottom: 15px;
+}
+
+.card-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.card-info i {
+  color: #0077cc;
+  margin-top: 2px;
+  flex-shrink: 0;
+  width: 16px;
+}
+
+.card-footer {
+  display: flex;
+  gap: 8px;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+  flex-wrap: wrap;
+}
+
+.card-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+}
+
+.card-btn:hover {
+  background: #f8f9fa;
+  border-color: #0077cc;
+  text-decoration: none;
+}
+
+.card-btn i {
+  font-size: 13px;
+}
+
+/* 즐겨찾기 버튼 */
+.favorite-btn {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #999;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.favorite-btn:hover {
+  color: #ff4757;
+  border-color: #ff4757;
+  background: #fff5f7;
+}
+
+.favorite-btn.active {
+  color: #ff4757;
+  border-color: #ff4757;
+  background: #fff5f7;
+}
+
+.favorite-btn.active i {
+  animation: heartBeat 0.3s ease-out;
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(1.1); }
+}
+
+/* 테이블 반응형 래퍼 */
+.table-responsive {
+  overflow-x: auto;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 테이블 정렬 헤더 */
+.centers-table th[data-sort] {
+  user-select: none;
+  position: relative;
+  padding-right: 30px;
+}
+
+.centers-table th[data-sort]:hover {
+  background-color: #e9ecef;
+}
+
+.centers-table th[data-sort].active {
+  background-color: #e3f2fd;
+  color: #0077cc;
+}
+
+.sort-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #999;
+}
+
+.centers-table th[data-sort].active .sort-icon {
+  color: #0077cc;
+}
+
+/* 테이블 셀 특정 스타일 */
+.name-cell {
+  font-weight: 600;
+  color: #333;
+}
+
+.address-cell {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.capacity-cell {
+  font-weight: 500;
+  color: #0077cc;
+}
+
+.action-column {
+  white-space: nowrap;
+}
+
+/* 페이지네이션 컨트롤 */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 30px 0;
+  flex-wrap: wrap;
+}
+
+.pagination-ellipsis {
+  padding: 0 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* 결과 카운트 */
+#results-count {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 15px;
+}
+
+/* 로딩 스피너 개선 */
+.loading-spinner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 10000;
+}
+
+.loading-spinner .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0077cc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.loading-spinner p {
+  color: #333;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* 토스트 알림 */
 .toast-container {
   position: fixed;
@@ -1500,6 +1767,74 @@ footer .container {
   .center-card-actions a {
     min-width: 100%;
   }
+
+  /* 카드 그리드 모바일 */
+  .cards-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .card-title {
+    font-size: 16px;
+  }
+
+  .card-info {
+    font-size: 13px;
+  }
+
+  .card-footer {
+    flex-direction: column;
+  }
+
+  .card-btn {
+    width: 100%;
+  }
+
+  /* 페이지네이션 모바일 */
+  .pagination-controls {
+    gap: 4px;
+    margin: 20px 0;
+  }
+
+  .pagination-btn {
+    min-width: 36px;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .pagination-ellipsis {
+    padding: 0 4px;
+    font-size: 12px;
+  }
+
+  /* 테이블 모바일 */
+  .table-responsive {
+    margin-top: 15px;
+  }
+
+  .centers-table th,
+  .centers-table td {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .address-cell {
+    max-width: 150px;
+  }
+
+  .action-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  /* 버튼 모바일 */
+  .view-toggle-btn, .export-btn, .print-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+    min-height: 40px;
+  }
 }
 
 /* 가로 모드 최적화 */
@@ -1783,6 +2118,150 @@ footer .container {
     background-color: #2a2a2a;
     border-right-color: #0077cc;
     border-bottom-color: #0077cc;
+  }
+
+  /* 카드 뷰 다크 모드 */
+  .center-card {
+    background-color: #2a2a2a;
+    border-color: #444;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .center-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .card-title {
+    color: #e0e0e0;
+  }
+
+  .card-branch {
+    color: #4da6ff;
+  }
+
+  .card-info {
+    color: #b0b0b0;
+  }
+
+  .card-info i {
+    color: #4da6ff;
+  }
+
+  .card-footer {
+    border-top-color: #3a3a3a;
+  }
+
+  .card-btn {
+    background-color: #333;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+
+  .card-btn:hover {
+    background-color: #3a3a3a;
+    border-color: #0077cc;
+  }
+
+  /* 즐겨찾기 버튼 다크 모드 */
+  .favorite-btn {
+    background-color: #333;
+    border-color: #444;
+    color: #999;
+  }
+
+  .favorite-btn:hover {
+    background-color: #2a1f1f;
+    border-color: #ff4757;
+  }
+
+  .favorite-btn.active {
+    background-color: #2a1f1f;
+    border-color: #ff4757;
+  }
+
+  /* 테이블 다크 모드 */
+  .table-responsive {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .centers-table th[data-sort]:hover {
+    background-color: #3a3a3a;
+  }
+
+  .centers-table th[data-sort].active {
+    background-color: #1a3a52;
+    color: #4da6ff;
+  }
+
+  .sort-icon {
+    color: #999;
+  }
+
+  .centers-table th[data-sort].active .sort-icon {
+    color: #4da6ff;
+  }
+
+  .name-cell {
+    color: #e0e0e0;
+  }
+
+  .capacity-cell {
+    color: #4da6ff;
+  }
+
+  /* 페이지네이션 다크 모드 */
+  .pagination-ellipsis {
+    color: #999;
+  }
+
+  #results-count {
+    color: #b0b0b0;
+  }
+
+  /* 로딩 스피너 다크 모드 */
+  .loading-spinner {
+    background: rgba(26, 26, 26, 0.95);
+  }
+
+  .loading-spinner .spinner {
+    border-color: #333;
+    border-top-color: #0077cc;
+  }
+
+  .loading-spinner p {
+    color: #e0e0e0;
+  }
+
+  /* 버튼 다크 모드 */
+  .view-toggle-btn, .print-btn {
+    background-color: #333;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+
+  .view-toggle-btn:hover, .print-btn:hover {
+    background-color: #3a3a3a;
+    border-color: #0077cc;
+  }
+
+  .export-btn {
+    background-color: #1e7e34;
+    border-color: #1c7430;
+  }
+
+  .export-btn:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+  }
+
+  .action-btn {
+    background-color: #333;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+
+  .action-btn:hover {
+    background-color: #3a3a3a;
   }
 }
 
