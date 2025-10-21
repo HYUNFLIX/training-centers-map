@@ -853,6 +853,171 @@ footer .container {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
+/* centers-list 페이지 전용 스타일 */
+.page-header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px 0;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.page-description {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+.view-toggle-btn, .export-btn, .print-btn {
+  padding: 10px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.view-toggle-btn:hover, .export-btn:hover, .print-btn:hover {
+  background: #f8f9fa;
+  border-color: #0077cc;
+}
+
+.export-btn {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.export-btn:hover {
+  background: #218838;
+  border-color: #1e7e34;
+}
+
+.print-btn {
+  background: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.print-btn:hover {
+  background: #5a6268;
+  border-color: #545b62;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #0077cc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+.clear-search {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 5px;
+  display: none;
+  z-index: 2;
+}
+
+.clear-search:hover {
+  color: #333;
+}
+
+.center-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.center-branch {
+  font-size: 13px;
+  color: #0077cc;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #333;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background: #f8f9fa;
+  text-decoration: none;
+}
+
+.view-btn {
+  background: #0077cc;
+  color: white;
+  border-color: #0077cc;
+}
+
+.view-btn:hover {
+  background: #0066b3;
+}
+
+.detail-btn {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.detail-btn:hover {
+  background: #218838;
+}
+
+.share-btn {
+  background: #17a2b8;
+  color: white;
+  border-color: #17a2b8;
+  padding: 6px 10px;
+}
+
+.share-btn:hover {
+  background: #138496;
+}
+
+.table-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.no-data {
+  color: #adb5bd;
+  font-size: 14px;
+}
+
 /* 토스트 알림 */
 .toast-container {
   position: fixed;
