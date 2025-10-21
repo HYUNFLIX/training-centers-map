@@ -12,22 +12,43 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="연수원 여기어때">
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- 파비콘 및 앱 아이콘 -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-touch-icon-76x76.png">
   
   <!-- 오픈 그래프 메타 태그 -->
   <meta property="og:title" content="연수원 여기어때 - 전국 연수원 위치 안내">
   <meta property="og:description" content="전국 연수원 위치를 한눈에! 지역별, 수용인원별 연수원 검색과 지도 서비스">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="https://example.com/og-image.jpg">
+  <meta property="og:url" content="https://training-centers-map.web.app">
+  <meta property="og:image" content="https://training-centers-map.web.app/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="연수원 여기어때 - 전국 연수원 지도">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="연수원 여기어때 - 전국 연수원 위치 안내">
+  <meta name="twitter:description" content="전국 연수원 위치를 한눈에! 지역별, 수용인원별 연수원 검색과 지도 서비스">
+  <meta name="twitter:image" content="https://training-centers-map.web.app/images/og-image.png">
   
   <title>연수원 여기어때 - 전국 연수원 위치 안내</title>
   
   <!-- Preload 중요 리소스 -->
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" as="style">
   <link rel="preload" href="style.css" as="style">
-  
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
-  
+
+  <!-- DNS Prefetch 및 Preconnect -->
+  <link rel="preconnect" href="https://openapi.map.naver.com">
+  <link rel="dns-prefetch" href="https://www.gstatic.com">
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+
   <!-- 네이버 지도 API -->
   <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue" defer></script>
   
@@ -52,16 +73,28 @@
     "@type": "WebApplication",
     "name": "연수원 여기어때",
     "description": "전국 연수원 위치를 한눈에! 지역별, 수용인원별 연수원 검색과 지도 서비스",
-    "url": "https://example.com",
+    "url": "https://training-centers-map.web.app",
     "applicationCategory": "EducationApplication",
-    "operatingSystem": "Any"
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "KRW"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "연수원 여기어때"
+    }
   }
   </script>
 </head>
 <body>
   <!-- 스킵 링크 (접근성) -->
   <a href="#main-content" class="skip-link" tabindex="1">메인 콘텐츠로 바로가기</a>
-  
+
+  <!-- 토스트 알림 컨테이너 -->
+  <div class="toast-container" id="toast-container" role="region" aria-live="polite" aria-label="알림"></div>
+
   <!-- 헤더 섹션 -->
   <header class="main-header" role="banner">
     <div class="container">
@@ -324,6 +357,22 @@
   <!-- JS 파일 불러오기 -->
   <script type="module" src="app.js"></script>
   
+  <!-- Service Worker 등록 -->
+  <script>
+    // Service Worker 등록
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((registration) => {
+            console.log('✅ Service Worker 등록 성공:', registration.scope);
+          })
+          .catch((error) => {
+            console.warn('⚠️ Service Worker 등록 실패:', error);
+          });
+      });
+    }
+  </script>
+
   <!-- 모바일 메뉴 스크립트 -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {

@@ -10,6 +10,93 @@ let infoWindowManager = null;
 let firebaseLoaded = false;
 let mapInitialized = false;
 
+// ===== 토스트 알림 관리자 =====
+class ToastManager {
+    constructor() {
+        this.container = document.getElementById('toast-container');
+        if (!this.container) {
+            this.container = document.createElement('div');
+            this.container.id = 'toast-container';
+            this.container.className = 'toast-container';
+            this.container.setAttribute('role', 'region');
+            this.container.setAttribute('aria-live', 'polite');
+            this.container.setAttribute('aria-label', '알림');
+            document.body.appendChild(this.container);
+        }
+    }
+
+    show(message, type = 'info', title = null, duration = 5000) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            warning: 'fa-exclamation-triangle',
+            info: 'fa-info-circle'
+        };
+
+        const titles = {
+            success: title || '성공',
+            error: title || '오류',
+            warning: title || '주의',
+            info: title || '알림'
+        };
+
+        toast.innerHTML = `
+            <i class="fas ${icons[type]} toast-icon" aria-hidden="true"></i>
+            <div class="toast-content">
+                <div class="toast-title">${titles[type]}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" aria-label="알림 닫기">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+        const closeBtn = toast.querySelector('.toast-close');
+        closeBtn.addEventListener('click', () => this.remove(toast));
+
+        this.container.appendChild(toast);
+
+        // 자동 제거
+        if (duration > 0) {
+            setTimeout(() => this.remove(toast), duration);
+        }
+
+        console.log(`📢 토스트 알림 [${type}]: ${message}`);
+        return toast;
+    }
+
+    remove(toast) {
+        toast.classList.add('closing');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }
+
+    success(message, title = null, duration = 5000) {
+        return this.show(message, 'success', title, duration);
+    }
+
+    error(message, title = null, duration = 7000) {
+        return this.show(message, 'error', title, duration);
+    }
+
+    warning(message, title = null, duration = 6000) {
+        return this.show(message, 'warning', title, duration);
+    }
+
+    info(message, title = null, duration = 5000) {
+        return this.show(message, 'info', title, duration);
+    }
+}
+
+// 전역 토스트 매니저 인스턴스
+const toast = new ToastManager();
+
 // ===== Firebase 초기화 (안전한 에러 처리) =====
 async function initializeFirebase() {
     try {
@@ -40,6 +127,7 @@ async function initializeFirebase() {
     } catch (error) {
         console.warn('⚠️ Firebase 초기화 실패, 샘플 데이터로 진행:', error);
         firebaseLoaded = false;
+        toast.warning('실시간 데이터 연결에 실패했습니다. 샘플 데이터를 표시합니다.', 'Firebase 연결 실패', 8000);
         return null;
     }
 }
@@ -165,7 +253,7 @@ const createInfoWindowContent = (center) => {
     
     // 버튼들
     let buttonsHtml = '';
-    
+
     if (center.links?.naver) {
         buttonsHtml += `
             <a href="${center.links.naver}" target="_blank" rel="noopener noreferrer" class="directions-button">
@@ -173,7 +261,7 @@ const createInfoWindowContent = (center) => {
             </a>
         `;
     }
-    
+
     if (center.links?.website) {
         buttonsHtml += `
             <a href="${center.links.website}" target="_blank" rel="noopener noreferrer" class="search-button">
@@ -181,6 +269,13 @@ const createInfoWindowContent = (center) => {
             </a>
         `;
     }
+
+    // 공유 버튼 추가
+    buttonsHtml += `
+        <button class="share-button search-button" data-center-id="${center.id}" onclick="shareCenter('${center.id}')">
+            <i class="fas fa-share-alt"></i> 공유
+        </button>
+    `;
 
     // 추가 정보 태그
     let tagsHtml = '';
@@ -432,10 +527,12 @@ const loadCenters = async () => {
                 });
                 
                 console.log(`✅ Firebase에서 ${centersData.length}개 연수원 로드 완료`);
-                
+                toast.success(`${centersData.length}개의 연수원 정보를 불러왔습니다.`, '데이터 로드 완료', 4000);
+
             } catch (firebaseError) {
                 console.warn('⚠️ Firebase 데이터 로드 실패, 샘플 데이터 사용:', firebaseError);
                 centersData = generateSampleData();
+                toast.warning('데이터 로드 실패. 샘플 데이터를 표시합니다.', 'Firebase 오류', 6000);
             }
         } else {
             console.log('📋 Firebase 연결 실패, 샘플 데이터 사용');
@@ -789,29 +886,76 @@ const setupSearchEvents = () => {
         });
     }
 
+    // 관련성 점수 계산 함수
+    function calculateRelevance(center, query) {
+        const lowerQuery = query.toLowerCase();
+        let score = 0;
+
+        // 이름에 정확히 일치 (가장 높은 점수)
+        if (center.name && center.name.toLowerCase() === lowerQuery) {
+            score += 100;
+        }
+        // 이름에 시작 (높은 점수)
+        else if (center.name && center.name.toLowerCase().startsWith(lowerQuery)) {
+            score += 50;
+        }
+        // 이름에 포함 (중간 점수)
+        else if (center.name && center.name.toLowerCase().includes(lowerQuery)) {
+            score += 30;
+        }
+
+        // 지점명에 일치
+        if (center.branch && center.branch.toLowerCase().includes(lowerQuery)) {
+            score += 20;
+        }
+
+        // 지역에 일치
+        if (center.region && center.region.toLowerCase().includes(lowerQuery)) {
+            score += 15;
+        }
+
+        // 기본 정보에 일치
+        if (center.basicInfo && center.basicInfo.toLowerCase().includes(lowerQuery)) {
+            score += 5;
+        }
+
+        return score;
+    }
+
+    // 텍스트 하이라이트 함수
+    function highlightText(text, query) {
+        if (!text || !query) return text;
+
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<mark style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500;">$1</mark>');
+    }
+
     // 검색 결과 표시 함수
     function showSearchResults(query) {
         if (!searchResults || !allMarkers.length) return;
-        
-        const matches = allMarkers.filter(marker => {
-            const center = marker.centerData;
-            const searchFields = [
-                center.name || '',
-                center.branch || '',
-                center.basicInfo || '',
-                center.region || ''
-            ].join(' ').toLowerCase();
-            
-            return searchFields.includes(query.toLowerCase());
-        }).slice(0, 5); // 최대 5개만 표시
+
+        // 관련성 점수 계산 및 필터링
+        const matches = allMarkers
+            .map(marker => ({
+                marker,
+                score: calculateRelevance(marker.centerData, query)
+            }))
+            .filter(item => item.score > 0)
+            .sort((a, b) => b.score - a.score) // 점수 내림차순 정렬
+            .slice(0, 5) // 최대 5개만 표시
+            .map(item => item.marker);
 
         if (matches.length > 0) {
             const resultsHtml = matches.map(marker => {
                 const center = marker.centerData;
+                const highlightedName = highlightText(center.name, query);
+                const highlightedBranch = center.branch ? highlightText(center.branch, query) : '';
+                const highlightedRegion = center.region ? highlightText(center.region, query) : '';
+
                 return `
                     <div class="search-result-item" data-center-id="${center.id}">
-                        <div class="search-result-name">${center.name}</div>
-                        <div class="search-result-info">${center.branch || ''} ${center.region ? '• ' + center.region : ''}</div>
+                        <div class="search-result-name">${highlightedName}</div>
+                        <div class="search-result-info">${highlightedBranch}${highlightedBranch && highlightedRegion ? ' • ' : ''}${highlightedRegion}</div>
                     </div>
                 `;
             }).join('');
@@ -1111,6 +1255,133 @@ document.addEventListener('DOMContentLoaded', () => {
     checkNaverMaps();
 });
 
+// ===== 공유 기능 =====
+async function shareCenter(centerId) {
+    try {
+        const marker = allMarkers.find(m => m.centerData.id === centerId);
+        if (!marker) {
+            toast.error('연수원 정보를 찾을 수 없습니다.', '공유 실패');
+            return;
+        }
+
+        const center = marker.centerData;
+        const shareUrl = `${window.location.origin}${window.location.pathname}?center=${centerId}`;
+        const shareData = {
+            title: `${center.name} - 연수원 여기어때`,
+            text: `${center.name}${center.branch ? ' (' + center.branch + ')' : ''} - ${center.address || '위치 정보'}`,
+            url: shareUrl
+        };
+
+        // Web Share API 지원 여부 확인
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+            toast.success('공유가 완료되었습니다!', '공유 성공', 3000);
+            console.log('✅ 공유 성공:', shareData);
+        } else {
+            // 폴백: 클립보드에 복사
+            await navigator.clipboard.writeText(shareUrl);
+            toast.success('링크가 클립보드에 복사되었습니다!', '링크 복사', 4000);
+            console.log('📋 클립보드 복사:', shareUrl);
+        }
+    } catch (error) {
+        console.error('❌ 공유 실패:', error);
+
+        // 공유 실패 시 클립보드 복사 시도
+        try {
+            const marker = allMarkers.find(m => m.centerData.id === centerId);
+            if (marker) {
+                const shareUrl = `${window.location.origin}${window.location.pathname}?center=${centerId}`;
+                await navigator.clipboard.writeText(shareUrl);
+                toast.info('링크가 클립보드에 복사되었습니다.', '링크 복사', 4000);
+            }
+        } catch (clipboardError) {
+            toast.error('공유에 실패했습니다. 다시 시도해주세요.', '공유 실패');
+        }
+    }
+}
+
+// 전역에 노출
+window.shareCenter = shareCenter;
+
+// ===== 즐겨찾기 관리자 =====
+class FavoritesManager {
+    constructor() {
+        this.storageKey = 'training-centers-favorites';
+        this.favorites = this.load();
+    }
+
+    load() {
+        try {
+            const data = localStorage.getItem(this.storageKey);
+            return data ? JSON.parse(data) : [];
+        } catch (error) {
+            console.error('❌ 즐겨찾기 로드 실패:', error);
+            return [];
+        }
+    }
+
+    save() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.favorites));
+            return true;
+        } catch (error) {
+            console.error('❌ 즐겨찾기 저장 실패:', error);
+            return false;
+        }
+    }
+
+    add(centerId) {
+        if (!this.favorites.includes(centerId)) {
+            this.favorites.push(centerId);
+            if (this.save()) {
+                toast.success('즐겨찾기에 추가되었습니다!', '즐겨찾기', 3000);
+                console.log('⭐ 즐겨찾기 추가:', centerId);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    remove(centerId) {
+        const index = this.favorites.indexOf(centerId);
+        if (index > -1) {
+            this.favorites.splice(index, 1);
+            if (this.save()) {
+                toast.info('즐겨찾기에서 제거되었습니다.', '즐겨찾기', 3000);
+                console.log('⭐ 즐겨찾기 제거:', centerId);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    toggle(centerId) {
+        if (this.has(centerId)) {
+            return this.remove(centerId);
+        } else {
+            return this.add(centerId);
+        }
+    }
+
+    has(centerId) {
+        return this.favorites.includes(centerId);
+    }
+
+    getAll() {
+        return [...this.favorites];
+    }
+
+    clear() {
+        this.favorites = [];
+        this.save();
+        toast.info('모든 즐겨찾기가 제거되었습니다.', '즐겨찾기', 3000);
+    }
+}
+
+// 전역 즐겨찾기 매니저
+const favoritesManager = new FavoritesManager();
+window.favoritesManager = favoritesManager;
+
 // ===== 디버깅을 위한 전역 함수들 =====
 window.debugInfo = {
     getCurrentInfoWindow: () => infoWindowManager?.getCurrentInfoWindow(),
@@ -1126,7 +1397,8 @@ window.debugInfo = {
     reloadCenters: () => loadCenters(),
     applyFilters: () => applyFilters(),
     resetFilters: () => resetAllFilters(),
-    showSampleData: () => generateSampleData()
+    showSampleData: () => generateSampleData(),
+    getFavorites: () => favoritesManager.getAll()
 };
 
 // ===== 전역 에러 처리 =====

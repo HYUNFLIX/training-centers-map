@@ -853,6 +853,154 @@ footer .container {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
+/* 토스트 알림 */
+.toast-container {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 400px;
+}
+
+.toast {
+  background-color: white;
+  border-radius: 8px;
+  padding: 15px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideInRight 0.3s ease-out;
+  border-left: 4px solid #0077cc;
+  min-width: 300px;
+}
+
+.toast.success {
+  border-left-color: #28a745;
+}
+
+.toast.warning {
+  border-left-color: #ffc107;
+}
+
+.toast.error {
+  border-left-color: #dc3545;
+}
+
+.toast.info {
+  border-left-color: #17a2b8;
+}
+
+.toast-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.toast.success .toast-icon {
+  color: #28a745;
+}
+
+.toast.warning .toast-icon {
+  color: #ffc107;
+}
+
+.toast.error .toast-icon {
+  color: #dc3545;
+}
+
+.toast.info .toast-icon {
+  color: #17a2b8;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #333;
+  font-size: 14px;
+}
+
+.toast-message {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.toast-close:hover {
+  color: #333;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+.toast.closing {
+  animation: slideOutRight 0.3s ease-in;
+}
+
+/* 모바일 토스트 */
+@media (max-width: 600px) {
+  .toast-container {
+    top: 60px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+
+  .toast {
+    min-width: auto;
+    padding: 12px 15px;
+  }
+
+  .toast-title {
+    font-size: 13px;
+  }
+
+  .toast-message {
+    font-size: 12px;
+  }
+}
+
 /* ================== 반응형 스타일 ================== */
 
 /* 큰 태블릿 (768px 이하) */
@@ -1228,9 +1376,249 @@ footer .container {
   }
 }
 
-/* 다크 모드 지원 (선택사항) */
+/* 다크 모드 지원 */
 @media (prefers-color-scheme: dark) {
-  /* 필요시 다크 모드 스타일 추가 */
+  body {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+  }
+
+  .main-header {
+    background-color: #0066aa;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .search-filter-container {
+    background-color: #2a2a2a;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .search-input {
+    background-color: #333;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+
+  .search-input::placeholder {
+    color: #999;
+  }
+
+  .search-input:focus {
+    background-color: #3a3a3a;
+    border-color: #0077cc;
+  }
+
+  .search-results {
+    background-color: #2a2a2a;
+    border-color: #444;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .search-result-item {
+    border-bottom-color: #3a3a3a;
+  }
+
+  .search-result-item:hover {
+    background-color: #333;
+  }
+
+  .search-result-name {
+    color: #e0e0e0;
+  }
+
+  .search-result-info {
+    color: #999;
+  }
+
+  .filter-toggle {
+    background-color: #333;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+
+  .filter-toggle:hover {
+    background-color: #3a3a3a;
+  }
+
+  .filter-toggle.active {
+    background-color: #0077cc;
+    border-color: #0077cc;
+  }
+
+  .filter-options {
+    background-color: #2a2a2a;
+    border-color: #444;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .filter-option select {
+    background-color: #333;
+    color: #e0e0e0;
+    border-color: #444;
+  }
+
+  .filter-option label {
+    color: #e0e0e0;
+  }
+
+  .map-controls button {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+
+  .map-controls button:hover {
+    background-color: #333;
+  }
+
+  .results-summary {
+    background-color: #2a2a2a;
+    border-top-color: #444;
+  }
+
+  .results-text {
+    color: #999;
+  }
+
+  footer {
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+  }
+
+  .contact-info a {
+    color: #e0e0e0;
+  }
+
+  /* 정보창 다크모드 */
+  .info-window {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+  }
+
+  .info-window-title {
+    color: #e0e0e0;
+  }
+
+  .info-window-branch {
+    color: #4da6ff;
+  }
+
+  .info-window-info {
+    color: #b0b0b0;
+  }
+
+  .search-button {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+  }
+
+  .search-button:hover {
+    background-color: #444;
+  }
+
+  /* 센터 목록 다크모드 */
+  .stats-container {
+    background-color: #2a2a2a;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .stats-title {
+    color: #e0e0e0;
+  }
+
+  .stat-card {
+    background-color: #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .stat-label {
+    color: #999;
+  }
+
+  .centers-table {
+    background-color: #2a2a2a;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .centers-table th {
+    background-color: #333;
+    color: #e0e0e0;
+  }
+
+  .centers-table td {
+    color: #e0e0e0;
+    border-bottom-color: #3a3a3a;
+  }
+
+  .centers-table tr:hover {
+    background-color: #333;
+  }
+
+  .center-card {
+    background-color: #2a2a2a;
+    border-color: #444;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  .center-card-title {
+    color: #e0e0e0;
+  }
+
+  .center-card-branch {
+    color: #4da6ff;
+  }
+
+  .center-card-info {
+    color: #b0b0b0;
+  }
+
+  .capacity-badge {
+    background-color: #1a3a52;
+    color: #66b3ff;
+  }
+
+  .region-badge {
+    background-color: #3a3a3a;
+    color: #b0b0b0;
+  }
+
+  .pagination-btn {
+    background-color: #333;
+    color: #e0e0e0;
+  }
+
+  .pagination-btn:hover:not(.disabled) {
+    background-color: #3a3a3a;
+  }
+
+  .pagination-btn.disabled {
+    background-color: #2a2a2a;
+    color: #666;
+  }
+
+  .loading,
+  .no-centers {
+    background-color: #2a2a2a;
+    color: #999;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  }
+
+  /* 마커 다크모드 */
+  .marker-content {
+    background-color: #2a2a2a;
+    border-color: #0077cc;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+  }
+
+  .marker-text {
+    color: #e0e0e0;
+  }
+
+  .marker-pointer {
+    background-color: #2a2a2a;
+    border-right-color: #0077cc;
+    border-bottom-color: #0077cc;
+  }
 }
 
 /* 애니메이션 줄이기 설정 */
