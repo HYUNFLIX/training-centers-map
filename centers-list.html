@@ -195,7 +195,7 @@
               spellcheck="false"
               aria-describedby="search-help"
             />
-            <button class="clear-search" aria-label="검색어 지우기" tabindex="-1">
+            <button id="clear-search" class="clear-search" aria-label="검색어 지우기" tabindex="-1" style="display: none;">
               <i class="fas fa-times" aria-hidden="true"></i>
             </button>
             <div id="search-help" class="sr-only">연수원 이름을 입력하여 검색할 수 있습니다</div>
@@ -204,36 +204,28 @@
           <div class="filter-controls">
             <label for="region-filter" class="sr-only">지역 필터</label>
             <select id="region-filter" class="filter-select" aria-describedby="region-help">
-              <option value="">전체 지역</option>
+              <option value="all">전체 지역</option>
               <option value="서울">서울</option>
               <option value="경기">경기</option>
               <option value="강원">강원</option>
-              <option value="충청">충청</option>
-              <option value="전라">전라</option>
-              <option value="경상">경상</option>
+              <option value="충북">충북</option>
+              <option value="충남">충남</option>
+              <option value="전북">전북</option>
+              <option value="전남">전남</option>
+              <option value="경북">경북</option>
+              <option value="경남">경남</option>
               <option value="제주">제주</option>
             </select>
             <div id="region-help" class="sr-only">지역별로 연수원을 필터링할 수 있습니다</div>
 
             <label for="capacity-filter" class="sr-only">수용인원 필터</label>
             <select id="capacity-filter" class="filter-select" aria-describedby="capacity-help">
-              <option value="">전체 수용인원</option>
-              <option value="0-50">50명 이하</option>
-              <option value="51-100">51-100명</option>
-              <option value="101-200">101-200명</option>
-              <option value="201+">201명 이상</option>
+              <option value="all">전체 수용인원</option>
+              <option value="small">소규모 (100명 미만)</option>
+              <option value="medium">중규모 (100-300명)</option>
+              <option value="large">대규모 (300명 이상)</option>
             </select>
             <div id="capacity-help" class="sr-only">수용인원별로 연수원을 필터링할 수 있습니다</div>
-
-            <label for="sort-select" class="sr-only">정렬 옵션</label>
-            <select id="sort-select" class="sort-select" aria-describedby="sort-help">
-              <option value="name-asc">이름 (가나다순)</option>
-              <option value="name-desc">이름 (역순)</option>
-              <option value="region-asc">지역 (가나다순)</option>
-              <option value="capacity-desc">수용인원 (많은순)</option>
-              <option value="capacity-asc">수용인원 (적은순)</option>
-            </select>
-            <div id="sort-help" class="sr-only">목록의 정렬 방식을 선택할 수 있습니다</div>
           </div>
         </div>
 
@@ -257,61 +249,17 @@
             <i class="fas fa-print" aria-hidden="true"></i>
             <span>인쇄</span>
           </button>
-
-          <button class="reset-button" id="reset-button" aria-label="검색 조건 초기화">
-            <i class="fas fa-redo" aria-hidden="true"></i>
-            <span>초기화</span>
-          </button>
         </div>
       </section>
 
       <!-- 검색 결과 요약 -->
       <section class="results-summary" aria-live="polite" aria-atomic="true">
-        <p id="results-count" class="results-text">
-          <span class="sr-only">검색 결과: </span>
-          전체 <strong id="total-count">0</strong>개 중 <strong id="current-count">0</strong>개의 연수원이 표시되고 있습니다
-        </p>
+        <p id="results-count" class="results-text"></p>
       </section>
 
-      <!-- 로딩 표시 -->
-      <div id="loading-container" class="loading" aria-live="polite" aria-label="데이터 로딩 중">
-        <div class="loading-spinner"></div>
-        <p><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> 연수원 목록을 불러오는 중...</p>
-      </div>
-
-      <!-- 연수원 목록 테이블 (데스크톱) -->
-      <div class="centers-table-container" id="table-view">
-        <table class="centers-table" id="centers-table" role="table" aria-labelledby="table-caption">
-          <caption id="table-caption" class="sr-only">연수원 목록 테이블</caption>
-          <thead>
-            <tr role="row">
-              <th scope="col" class="col-center">연수원</th>
-              <th scope="col" class="col-capacity">수용인원</th>
-              <th scope="col" class="col-region">지역</th>
-              <th scope="col" class="col-info">기본정보</th>
-              <th scope="col" class="col-actions">관리</th>
-            </tr>
-          </thead>
-          <tbody id="centers-tbody" role="rowgroup">
-            <!-- 동적으로 채워짐 -->
-          </tbody>
-        </table>
-      </div>
-
-      <!-- 연수원 목록 카드 (모바일) -->
-      <div class="centers-cards" id="card-view" role="list" aria-labelledby="card-list-title">
-        <h2 id="card-list-title" class="sr-only">연수원 목록</h2>
-        <!-- 동적으로 채워짐 -->
-      </div>
-
-      <!-- 검색 결과 없음 -->
-      <div id="no-results" class="no-centers" style="display: none;" role="status" aria-live="polite">
-        <i class="fas fa-search" aria-hidden="true"></i>
-        <h3>검색 결과가 없습니다</h3>
-        <p>다른 검색 조건을 시도해보세요</p>
-        <button class="reset-button" onclick="window.centersApp?.resetFilters()" aria-label="검색 조건 초기화">
-          <i class="fas fa-redo" aria-hidden="true"></i> 초기화
-        </button>
+      <!-- 연수원 목록 컨테이너 (동적으로 테이블 또는 카드 뷰가 렌더링됨) -->
+      <div id="centers-container" role="region" aria-live="polite" aria-label="연수원 목록">
+        <!-- JavaScript가 동적으로 테이블 또는 카드 뷰를 렌더링합니다 -->
       </div>
 
       <!-- 페이지네이션 -->

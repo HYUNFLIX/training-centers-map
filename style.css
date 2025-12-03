@@ -38,6 +38,37 @@ button {
   min-width: 44px;
 }
 
+/* 접근성: 스크린 리더 전용 텍스트 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 스킵 링크 (접근성) */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #0077cc;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 10000;
+  border-radius: 0 0 4px 0;
+  font-weight: 500;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
 /* 헤더 스타일 */
 .main-header {
   background-color: #0077cc;
