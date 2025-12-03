@@ -139,7 +139,7 @@ async function loadData() {
   showLoading(false);
 }
 
-async function loadFromFirebase(showToast = true) {
+async function loadFromFirebase(shouldShowToast = true) {
   try {
     // Firebase SDK 로드 (타임아웃 5초)
     const firebase = await Promise.race([
@@ -167,7 +167,7 @@ async function loadFromFirebase(showToast = true) {
       applyFiltersAndRender();
       updateStats();
 
-      if (showToast) {
+      if (shouldShowToast) {
         showToast(`${centers.length}개의 연수원을 불러왔습니다!`, 'success');
       }
     }
