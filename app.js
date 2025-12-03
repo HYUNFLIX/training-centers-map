@@ -163,7 +163,7 @@ class InfoWindowManager {
 
     openInfoWindow(map, marker, content) {
         this.closeCurrentInfoWindow();
-        
+
         try {
             const infoWindow = new naver.maps.InfoWindow({
                 content: content,
@@ -184,10 +184,23 @@ class InfoWindowManager {
             infoWindow.open(map, marker);
             this.currentInfoWindow = infoWindow;
             this.currentMarker = marker;
-            
+
+            // InfoWindow가 열린 후 닫기 버튼에 이벤트 바인딩
+            setTimeout(() => {
+                const closeBtn = document.querySelector('.info-window-close');
+                if (closeBtn) {
+                    closeBtn.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.closeCurrentInfoWindow();
+                        console.log('🔽 정보창 닫힘 (X 버튼)');
+                    };
+                }
+            }, 100);
+
             console.log('🔼 정보창 열림:', marker.getTitle());
             return infoWindow;
-            
+
         } catch (error) {
             console.error('❌ 정보창 열기 실패:', error);
             return null;
@@ -620,32 +633,6 @@ const applyMarkerClustering = async () => {
     try {
         if (typeof MarkerClustering !== 'undefined' && allMarkers.length > 0) {
             console.log('🔗 마커 클러스터링 적용 중...');
-            
-            // 클러스터 옵션 생성 함수
-            const createClusterIcon = (count) => {
-                let className = 'cluster-marker-1';
-                let size = 40;
-                
-                if (count >= 50) {
-                    className = 'cluster-marker-5';
-                    size = 80;
-                } else if (count >= 20) {
-                    className = 'cluster-marker-4';
-                    size = 70;
-                } else if (count >= 10) {
-                    className = 'cluster-marker-3';
-                    size = 60;
-                } else if (count >= 5) {
-                    className = 'cluster-marker-2';
-                    size = 50;
-                }
-                
-                return {
-                    content: `<div class="cluster-marker ${className}">${count}</div>`,
-                    size: new naver.maps.Size(size, size),
-                    anchor: new naver.maps.Point(size/2, size/2)
-                };
-            };
 
             clusterer = new MarkerClustering({
                 minClusterSize: 2,
@@ -654,24 +641,38 @@ const applyMarkerClustering = async () => {
                 markers: allMarkers,
                 disableClickZoom: false,
                 gridSize: 120,
-                icons: [
-                    createClusterIcon(2),
-                    createClusterIcon(5),
-                    createClusterIcon(10),
-                    createClusterIcon(20),
-                    createClusterIcon(50)
-                ],
-                indexGenerator: [2, 5, 10, 20, 50],
                 stylingFunction: function(clusterMarker, count) {
-                    return createClusterIcon(count);
+                    // 클러스터 마커 HTML 동적 생성
+                    let className = 'cluster-marker-1';
+                    let size = 40;
+
+                    if (count >= 50) {
+                        className = 'cluster-marker-5';
+                        size = 80;
+                    } else if (count >= 20) {
+                        className = 'cluster-marker-4';
+                        size = 70;
+                    } else if (count >= 10) {
+                        className = 'cluster-marker-3';
+                        size = 60;
+                    } else if (count >= 5) {
+                        className = 'cluster-marker-2';
+                        size = 50;
+                    }
+
+                    // 실제 count 값을 표시
+                    const element = clusterMarker.getElement();
+                    element.innerHTML = `<div class="cluster-marker ${className}">${count}</div>`;
+                    element.style.width = size + 'px';
+                    element.style.height = size + 'px';
                 }
             });
-            
+
             console.log('✅ 마커 클러스터링 적용 완료');
-            
+
         } else {
             console.warn('⚠️ MarkerClustering 라이브러리 없음, 개별 마커 표시');
-            
+
             // 클러스터링 없이 개별 마커 표시
             allMarkers.forEach(marker => {
                 marker.setMap(map);
