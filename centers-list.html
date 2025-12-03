@@ -2,46 +2,11 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="description" content="전국 연수원 목록을 지역별, 수용인원별로 검색하고 비교할 수 있는 서비스">
-  <meta name="keywords" content="연수원목록, 교육시설목록, 연수원비교, 지역별연수원, 수용인원">
-  <meta name="author" content="연수원 여기어때">
-
-  <!-- PWA 지원 -->
-  <meta name="theme-color" content="#0077cc">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="연수원 목록">
-  <link rel="manifest" href="/manifest.json">
-
-  <!-- 파비콘 및 앱 아이콘 -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
-
-  <!-- 오픈 그래프 메타 태그 -->
-  <meta property="og:title" content="연수원 목록 - 연수원 여기어때">
-  <meta property="og:description" content="전국 연수원 목록을 지역별, 수용인원별로 검색하고 비교할 수 있는 서비스">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://training-centers-map.web.app/centers-list.html">
-  <meta property="og:image" content="https://training-centers-map.web.app/images/og-image.png">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="연수원 목록 - 연수원 여기어때">
-  <meta name="twitter:description" content="전국 연수원 목록을 검색하고 비교하세요">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="전국 연수원 목록을 검색하고 비교하세요">
   <title>연수원 목록 - 연수원 여기어때</title>
 
-  <!-- Preload 중요 리소스 -->
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" as="style">
-  <link rel="preload" href="style.css" as="style">
-
-  <!-- DNS Prefetch -->
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
-  <link rel="dns-prefetch" href="https://firestore.googleapis.com">
-
-  <!-- 폰트어썸 아이콘 -->
+  <!-- 폰트어썸 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <!-- 구글 폰트 -->
@@ -49,261 +14,579 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <!-- 외부 CSS 파일 로드 -->
+  <!-- 메인 스타일 -->
   <link rel="stylesheet" href="style.css">
 
-  <!-- 구조화된 데이터 (SEO) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    "name": "연수원 목록",
-    "description": "전국 연수원 목록을 지역별, 수용인원별로 검색하고 비교할 수 있는 서비스",
-    "url": "https://training-centers-map.web.app/centers-list.html",
-    "mainEntity": {
-      "@type": "ItemList",
-      "name": "전국 연수원 목록"
-    }
-  }
-  </script>
-
-  <!-- 인쇄 스타일 -->
-  <style media="print">
-    @page {
-      margin: 2cm;
+  <style>
+    /* 페이지 전용 스타일 */
+    .page-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
     }
 
-    .main-header, .search-filter-container, .mobile-menu-toggle,
-    footer, .pagination, .action-btn, .toast-container,
-    .filter-controls, .button-container {
-      display: none !important;
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #333;
     }
 
-    .page-content {
-      padding: 0 !important;
+    .page-subtitle {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    /* 통계 카드 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #0077cc;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    /* 컨트롤 바 */
+    .controls-bar {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .controls-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 250px;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #0077cc;
+    }
+
+    .filter-select {
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: #0077cc;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: #0077cc;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #005fa3;
+    }
+
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #218838;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    .btn-outline {
+      background: white;
+      color: #333;
+      border: 2px solid #ddd;
+    }
+
+    .btn-outline:hover {
+      background: #f8f9fa;
+      border-color: #0077cc;
+    }
+
+    /* 결과 정보 */
+    .results-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 10px 0;
+    }
+
+    .results-count {
+      font-size: 1rem;
+      color: #666;
+    }
+
+    .results-count strong {
+      color: #0077cc;
+      font-weight: 700;
+    }
+
+    /* 테이블 스타일 */
+    .table-container {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
     }
 
     .centers-table {
-      box-shadow: none !important;
+      width: 100%;
+      border-collapse: collapse;
     }
 
-    .centers-table th,
+    .centers-table thead {
+      background: #f8f9fa;
+    }
+
+    .centers-table th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 2px solid #dee2e6;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    .centers-table th:hover {
+      background: #e9ecef;
+    }
+
+    .centers-table th.sortable::after {
+      content: '⇅';
+      position: absolute;
+      right: 10px;
+      opacity: 0.3;
+    }
+
+    .centers-table th.sorted-asc::after {
+      content: '↑';
+      opacity: 1;
+    }
+
+    .centers-table th.sorted-desc::after {
+      content: '↓';
+      opacity: 1;
+    }
+
     .centers-table td {
-      font-size: 12px !important;
-      padding: 8px !important;
+      padding: 15px;
+      border-bottom: 1px solid #dee2e6;
     }
 
-    .page-header h1 {
-      font-size: 24px !important;
-      margin-bottom: 20px !important;
+    .centers-table tbody tr:hover {
+      background: #f8f9fa;
     }
 
+    .center-name {
+      font-weight: 600;
+      color: #0077cc;
+    }
+
+    .center-branch {
+      font-size: 0.9rem;
+      color: #666;
+      margin-left: 8px;
+    }
+
+    .center-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.85rem;
+    }
+
+    /* 카드 뷰 */
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .center-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .center-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    .card-header {
+      margin-bottom: 15px;
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #0077cc;
+      margin-bottom: 5px;
+    }
+
+    .card-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      color: #666;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #dee2e6;
+    }
+
+    /* 페이지네이션 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      margin-top: 30px;
+    }
+
+    .page-btn {
+      padding: 8px 12px;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .page-btn:hover:not(.active):not(:disabled) {
+      border-color: #0077cc;
+      color: #0077cc;
+    }
+
+    .page-btn.active {
+      background: #0077cc;
+      color: white;
+      border-color: #0077cc;
+    }
+
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 로딩 스피너 */
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0077cc;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 빈 상태 */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    /* 토스트 알림 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 10000;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .toast.success { border-left: 4px solid #28a745; }
+    .toast.error { border-left: 4px solid #dc3545; }
+    .toast.info { border-left: 4px solid #17a2b8; }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 1.5rem;
+      }
+
+      .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .search-input,
+      .filter-select,
+      .btn {
+        width: 100%;
+      }
+
+      .results-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      .centers-table {
+        min-width: 600px;
+      }
+
+      .cards-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 인쇄 스타일 */
     @media print {
-      body {
-        print-color-adjust: exact;
-        -webkit-print-color-adjust: exact;
+      .controls-bar,
+      .main-header,
+      footer {
+        display: none !important;
+      }
+
+      .page-container {
+        padding: 0;
+      }
+
+      .center-actions {
+        display: none !important;
       }
     }
   </style>
 </head>
 <body>
-  <!-- 스킵 링크 (접근성) -->
-  <a href="#main-content" class="skip-link" tabindex="1">메인 콘텐츠로 바로가기</a>
-
-  <!-- 토스트 알림 컨테이너 -->
-  <div class="toast-container" id="toast-container" role="region" aria-live="polite" aria-label="알림"></div>
-
-  <!-- 헤더 섹션 -->
-  <header class="main-header" role="banner">
+  <!-- 헤더 -->
+  <header class="main-header">
     <div class="container">
       <div class="logo">
-        <a href="index.html" aria-label="연수원 여기어때 메인 페이지로 이동">
-          <i class="fas fa-map-marked-alt" aria-hidden="true"></i>
+        <a href="index.html">
+          <i class="fas fa-map-marked-alt"></i>
           <h1>연수원 여기어때</h1>
         </a>
       </div>
-
-      <!-- 모바일 햄버거 메뉴 버튼 -->
-      <button class="mobile-menu-toggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav">
-        <i class="fas fa-bars" aria-hidden="true"></i>
-      </button>
-
-      <nav id="main-nav" role="navigation" aria-label="주요 네비게이션">
+      <nav>
         <ul>
-          <li><a href="index.html">
-            <i class="fas fa-map" aria-hidden="true"></i>
-            <span>지도보기</span>
-          </a></li>
-          <li><a href="centers-list.html" class="active" aria-current="page">
-            <i class="fas fa-list" aria-hidden="true"></i>
-            <span>연수원 목록</span>
-          </a></li>
-          <li><a href="#about">
-            <i class="fas fa-info-circle" aria-hidden="true"></i>
-            <span>이용안내</span>
-          </a></li>
+          <li><a href="index.html"><i class="fas fa-map"></i> 지도보기</a></li>
+          <li><a href="centers-list.html" class="active"><i class="fas fa-list"></i> 연수원 목록</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <!-- 메인 컨텐츠 -->
-  <main id="main-content" role="main">
-    <div class="container page-content">
+  <!-- 메인 콘텐츠 -->
+  <div class="page-container">
+    <h1 class="page-title">전국 연수원 목록</h1>
+    <p class="page-subtitle">지역별, 수용인원별로 연수원을 검색하고 비교해보세요</p>
 
-      <!-- 페이지 헤더 -->
-      <section class="page-header" aria-labelledby="page-title">
-        <h1 id="page-title">전국 연수원 목록</h1>
-        <p class="page-description">지역별, 수용인원별로 연수원을 검색하고 비교해보세요</p>
-      </section>
-
-      <!-- 상단 통계 -->
-      <section class="stats-container" aria-labelledby="stats-title">
-        <h2 id="stats-title" class="stats-title">연수원 통계</h2>
-        <div class="stats-cards" role="group" aria-label="연수원 통계 정보">
-          <div class="stat-card" role="img" aria-labelledby="total-centers-label">
-            <div class="stat-value" id="total-centers" aria-live="polite">0</div>
-            <div class="stat-label" id="total-centers-label">총 연수원 수</div>
-          </div>
-          <div class="stat-card" role="img" aria-labelledby="total-regions-label">
-            <div class="stat-value" id="total-regions" aria-live="polite">0</div>
-            <div class="stat-label" id="total-regions-label">지역 수</div>
-          </div>
-          <div class="stat-card" role="img" aria-labelledby="avg-capacity-label">
-            <div class="stat-value" id="avg-capacity" aria-live="polite">0</div>
-            <div class="stat-label" id="avg-capacity-label">평균 수용 인원</div>
-          </div>
-          <div class="stat-card" role="img" aria-labelledby="max-capacity-label">
-            <div class="stat-value" id="max-capacity" aria-live="polite">0</div>
-            <div class="stat-label" id="max-capacity-label">최대 수용 인원</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 검색 및 정렬 컨트롤 -->
-      <section class="list-controls" aria-label="검색 및 정렬 옵션">
-        <div class="search-sort-container">
-          <div class="search-box" role="search">
-            <label for="search-input" class="sr-only">연수원 이름 검색</label>
-            <i class="fas fa-search search-icon" aria-hidden="true"></i>
-            <input
-              type="text"
-              id="search-input"
-              class="search-input"
-              placeholder="연수원 이름 검색..."
-              autocomplete="off"
-              spellcheck="false"
-              aria-describedby="search-help"
-            />
-            <button id="clear-search" class="clear-search" aria-label="검색어 지우기" tabindex="-1" style="display: none;">
-              <i class="fas fa-times" aria-hidden="true"></i>
-            </button>
-            <div id="search-help" class="sr-only">연수원 이름을 입력하여 검색할 수 있습니다</div>
-          </div>
-
-          <div class="filter-controls">
-            <label for="region-filter" class="sr-only">지역 필터</label>
-            <select id="region-filter" class="filter-select" aria-describedby="region-help">
-              <option value="all">전체 지역</option>
-              <option value="서울">서울</option>
-              <option value="경기">경기</option>
-              <option value="강원">강원</option>
-              <option value="충북">충북</option>
-              <option value="충남">충남</option>
-              <option value="전북">전북</option>
-              <option value="전남">전남</option>
-              <option value="경북">경북</option>
-              <option value="경남">경남</option>
-              <option value="제주">제주</option>
-            </select>
-            <div id="region-help" class="sr-only">지역별로 연수원을 필터링할 수 있습니다</div>
-
-            <label for="capacity-filter" class="sr-only">수용인원 필터</label>
-            <select id="capacity-filter" class="filter-select" aria-describedby="capacity-help">
-              <option value="all">전체 수용인원</option>
-              <option value="small">소규모 (100명 미만)</option>
-              <option value="medium">중규모 (100-300명)</option>
-              <option value="large">대규모 (300명 이상)</option>
-            </select>
-            <div id="capacity-help" class="sr-only">수용인원별로 연수원을 필터링할 수 있습니다</div>
-          </div>
-        </div>
-
-        <div class="button-container">
-          <button class="view-toggle-btn" id="view-toggle" title="보기 전환">
-            <i class="fas fa-th" aria-hidden="true"></i>
-            <span class="sr-only">카드/테이블 보기 전환</span>
-          </button>
-
-          <button class="export-btn" id="export-csv-btn" title="CSV 내보내기">
-            <i class="fas fa-file-csv" aria-hidden="true"></i>
-            <span>CSV</span>
-          </button>
-
-          <button class="export-btn" id="export-excel-btn" title="Excel 내보내기">
-            <i class="fas fa-file-excel" aria-hidden="true"></i>
-            <span>Excel</span>
-          </button>
-
-          <button class="print-btn" id="print-btn" title="인쇄">
-            <i class="fas fa-print" aria-hidden="true"></i>
-            <span>인쇄</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- 검색 결과 요약 -->
-      <section class="results-summary" aria-live="polite" aria-atomic="true">
-        <p id="results-count" class="results-text"></p>
-      </section>
-
-      <!-- 연수원 목록 컨테이너 (동적으로 테이블 또는 카드 뷰가 렌더링됨) -->
-      <div id="centers-container" role="region" aria-live="polite" aria-label="연수원 목록">
-        <!-- JavaScript가 동적으로 테이블 또는 카드 뷰를 렌더링합니다 -->
+    <!-- 통계 -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-label">총 연수원</div>
       </div>
-
-      <!-- 페이지네이션 -->
-      <nav class="pagination-container" aria-label="페이지 네비게이션">
-        <div class="pagination" id="pagination" role="navigation">
-          <!-- 동적으로 채워짐 -->
-        </div>
-      </nav>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-regions">0</div>
+        <div class="stat-label">지역 수</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-avg">0</div>
+        <div class="stat-label">평균 수용인원</div>
+      </div>
     </div>
-  </main>
+
+    <!-- 컨트롤 -->
+    <div class="controls-bar">
+      <div class="controls-row">
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="🔍 연수원 이름, 지역, 주소 검색..."
+        >
+        <select id="regionFilter" class="filter-select">
+          <option value="all">전체 지역</option>
+          <option value="서울">서울</option>
+          <option value="경기">경기</option>
+          <option value="강원">강원</option>
+          <option value="충북">충북</option>
+          <option value="충남">충남</option>
+          <option value="전북">전북</option>
+          <option value="전남">전남</option>
+          <option value="경북">경북</option>
+          <option value="경남">경남</option>
+          <option value="제주">제주</option>
+        </select>
+        <select id="capacityFilter" class="filter-select">
+          <option value="all">전체 규모</option>
+          <option value="small">소규모 (100명 미만)</option>
+          <option value="medium">중규모 (100-300명)</option>
+          <option value="large">대규모 (300명 이상)</option>
+        </select>
+      </div>
+      <div class="controls-row">
+        <button id="viewToggle" class="btn btn-outline">
+          <i class="fas fa-th"></i> 카드 보기
+        </button>
+        <button id="exportCsv" class="btn btn-success">
+          <i class="fas fa-file-csv"></i> CSV 내보내기
+        </button>
+        <button id="exportExcel" class="btn btn-success">
+          <i class="fas fa-file-excel"></i> Excel 내보내기
+        </button>
+        <button id="printBtn" class="btn btn-secondary">
+          <i class="fas fa-print"></i> 인쇄
+        </button>
+      </div>
+    </div>
+
+    <!-- 결과 정보 -->
+    <div class="results-info">
+      <div class="results-count" id="resultsCount">검색 결과: 0개</div>
+      <div class="view-mode" id="viewMode">테이블 보기</div>
+    </div>
+
+    <!-- 로딩 -->
+    <div id="loading" class="loading" style="display:none;">
+      <div class="spinner"></div>
+      <p>연수원 목록을 불러오는 중...</p>
+    </div>
+
+    <!-- 연수원 목록 (테이블/카드) -->
+    <div id="centersContainer"></div>
+
+    <!-- 빈 상태 -->
+    <div id="emptyState" class="empty-state" style="display:none;">
+      <i class="fas fa-search"></i>
+      <h3>검색 결과가 없습니다</h3>
+      <p>다른 검색어나 필터를 시도해보세요</p>
+    </div>
+
+    <!-- 페이지네이션 -->
+    <div id="pagination" class="pagination"></div>
+  </div>
 
   <!-- 푸터 -->
-  <footer role="contentinfo">
+  <footer>
     <div class="container">
       <p>&copy; 2025 연수원 여기어때. All rights reserved.</p>
-      <div class="contact-info">
-        <a href="mailto:hyunnet@gmail.com" aria-label="이메일 문의">
-          <i class="fas fa-envelope" aria-hidden="true"></i>
-          <span>hyunnet@gmail.com</span>
-        </a>
-        <a href="tel:+8201012345678" aria-label="전화 문의">
-          <i class="fas fa-phone" aria-hidden="true"></i>
-          <span>010-1234-5678</span>
-        </a>
-      </div>
     </div>
   </footer>
 
-  <!-- Service Worker 등록 -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then((registration) => {
-            console.log('✅ Service Worker 등록 성공:', registration.scope);
-          })
-          .catch((error) => {
-            console.warn('⚠️ Service Worker 등록 실패:', error);
-          });
-      });
-    }
-  </script>
-
-  <!-- 메인 JavaScript (모듈 방식) -->
+  <!-- JavaScript -->
   <script type="module" src="centers-list.js"></script>
 </body>
 </html>
