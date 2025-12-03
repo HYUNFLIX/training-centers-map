@@ -1,6 +1,6 @@
 // Service Worker for 연수원 여기어때
-const CACHE_NAME = 'training-centers-v1.0.0';
-const RUNTIME_CACHE = 'runtime-cache-v1.0.0';
+const CACHE_NAME = 'training-centers-v1.1.0';
+const RUNTIME_CACHE = 'runtime-cache-v1.1.0';
 
 // 캐시할 정적 리소스들
 const STATIC_ASSETS = [
@@ -76,6 +76,12 @@ self.addEventListener('fetch', (event) => {
     url.origin.includes('naver.com') ||
     url.origin.includes('firestore')
   ) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // centers-list.js는 항상 네트워크 우선 (최신 버전 보장)
+  if (url.pathname.includes('centers-list.js')) {
     event.respondWith(networkFirst(request));
     return;
   }
