@@ -1462,26 +1462,44 @@ function initAddCenterModal() {
     const modalClose = addCenterModal?.querySelector('.modal-close');
     const cancelBtn = document.getElementById('cancel-btn');
 
+    console.log('🔍 모달 초기화 시작...');
+    console.log('- addCenterModal:', addCenterModal ? '✓' : '✗');
+    console.log('- addCenterForm:', addCenterForm ? '✓' : '✗');
+    console.log('- addCenterBtn:', addCenterBtn ? '✓' : '✗');
+
     if (!addCenterModal || !addCenterForm) {
-        console.warn('⚠️ 연수원 추가 모달이 없습니다');
+        console.error('❌ 연수원 추가 모달 요소를 찾을 수 없습니다');
+        console.log('현재 DOM 상태:', document.readyState);
         return;
+    }
+
+    if (!addCenterBtn) {
+        console.warn('⚠️ 연수원 추가 버튼을 찾을 수 없습니다');
     }
 
     // 모달 열기
     addCenterBtn?.addEventListener('click', (e) => {
         e.preventDefault();
+        console.log('🔘 연수원 추가 버튼 클릭');
         openAddCenterModal();
     });
 
     // 모달 닫기 (X 버튼)
-    modalClose?.addEventListener('click', closeAddCenterModal);
+    modalClose?.addEventListener('click', (e) => {
+        console.log('🔘 모달 닫기 (X)');
+        closeAddCenterModal();
+    });
 
     // 모달 닫기 (취소 버튼)
-    cancelBtn?.addEventListener('click', closeAddCenterModal);
+    cancelBtn?.addEventListener('click', (e) => {
+        console.log('🔘 모달 닫기 (취소)');
+        closeAddCenterModal();
+    });
 
     // 모달 닫기 (배경 클릭)
     addCenterModal.addEventListener('click', (e) => {
         if (e.target === addCenterModal) {
+            console.log('🔘 모달 닫기 (배경 클릭)');
             closeAddCenterModal();
         }
     });
@@ -1489,6 +1507,7 @@ function initAddCenterModal() {
     // ESC 키로 모달 닫기
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && addCenterModal.classList.contains('active')) {
+            console.log('🔘 모달 닫기 (ESC)');
             closeAddCenterModal();
         }
     });
@@ -1497,7 +1516,10 @@ function initAddCenterModal() {
     initAddressAutocomplete();
 
     // 폼 제출
-    addCenterForm.addEventListener('submit', handleAddCenterSubmit);
+    addCenterForm.addEventListener('submit', (e) => {
+        console.log('📝 폼 제출 이벤트 발생');
+        handleAddCenterSubmit(e);
+    });
 
     console.log('✅ 연수원 추가 모달 초기화 완료');
 }
@@ -1583,15 +1605,22 @@ function extractRegion(address) {
 
 // 폼 제출 처리
 async function handleAddCenterSubmit(e) {
+    console.log('🚀 handleAddCenterSubmit 호출됨');
     e.preventDefault();
+    e.stopPropagation();
 
     const submitBtn = addCenterForm.querySelector('button[type="submit"]');
+    if (!submitBtn) {
+        console.error('❌ 제출 버튼을 찾을 수 없습니다');
+        return;
+    }
     const originalBtnText = submitBtn.innerHTML;
 
     try {
         // 버튼 비활성화 및 로딩 표시
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 추가 중...';
+        console.log('🔄 버튼 상태 변경: 비활성화');
 
         // 폼 데이터 수집
         const formData = new FormData(addCenterForm);
@@ -1604,6 +1633,7 @@ async function handleAddCenterSubmit(e) {
         const basicInfo = formData.get('basicInfo');
 
         console.log('📝 연수원 추가 시작:', name);
+        console.log('📋 폼 데이터:', { name, address, phone, capacity });
 
         // 주소 → 좌표 변환
         toastManager.show('주소를 좌표로 변환하는 중...', 'info', '위치 검색');
@@ -1687,6 +1717,13 @@ async function saveToFirebase(centerData) {
 
 // 지도에 마커 추가
 function addMarkerToMap(centerData) {
+    console.log('📍 마커 추가 시작:', centerData.name);
+
+    if (!map) {
+        console.error('❌ 지도 객체가 없습니다');
+        throw new Error('지도가 초기화되지 않았습니다');
+    }
+
     const marker = new naver.maps.Marker({
         position: new naver.maps.LatLng(centerData.location.lat, centerData.location.lng),
         map: map,
@@ -1696,6 +1733,9 @@ function addMarkerToMap(centerData) {
             anchor: new naver.maps.Point(15, 40)
         }
     });
+
+    // centerData를 마커 객체에 저장
+    marker.centerData = centerData;
 
     // 마커 클릭 이벤트
     naver.maps.Event.addListener(marker, 'click', function() {
@@ -1707,17 +1747,22 @@ function addMarkerToMap(centerData) {
     allMarkers.push(marker);
     filteredMarkers.push(marker);
 
+    console.log('📍 현재 마커 수:', allMarkers.length);
+
     // 클러스터 재적용
     if (clusterer) {
+        console.log('🔄 클러스터 재적용');
         clusterer.clearMarkers();
         clusterer.setMarkers(allMarkers);
+    } else {
+        console.warn('⚠️ 클러스터 객체가 없습니다');
     }
 
     // 해당 위치로 지도 이동
     map.setCenter(new naver.maps.LatLng(centerData.location.lat, centerData.location.lng));
     map.setZoom(15);
 
-    console.log('📍 지도에 마커 추가 완료:', centerData.name);
+    console.log('✅ 지도에 마커 추가 완료:', centerData.name);
 }
 
 // DOMContentLoaded 이벤트에 모달 초기화 추가
