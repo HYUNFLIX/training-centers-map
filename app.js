@@ -641,8 +641,16 @@ const applyMarkerClustering = async () => {
                 markers: allMarkers,
                 disableClickZoom: false,
                 gridSize: 120,
+                icons: [
+                    {
+                        content: '<div class="cluster-marker cluster-marker-1">0</div>',
+                        size: new naver.maps.Size(40, 40),
+                        anchor: new naver.maps.Point(20, 20)
+                    }
+                ],
+                indexGenerator: [10, 100, 200, 500, 1000],
                 stylingFunction: function(clusterMarker, count) {
-                    // 클러스터 마커 스타일 동적 생성
+                    // 클러스터 크기별 클래스 및 사이즈 결정
                     let className = 'cluster-marker-1';
                     let size = 40;
 
@@ -660,12 +668,15 @@ const applyMarkerClustering = async () => {
                         size = 50;
                     }
 
-                    // 객체 반환 (실제 count 값 표시)
-                    return {
-                        content: `<div class="cluster-marker ${className}">${count}</div>`,
-                        size: new naver.maps.Size(size, size),
-                        anchor: new naver.maps.Point(size / 2, size / 2)
-                    };
+                    // DOM 직접 업데이트로 실제 count 표시
+                    const element = clusterMarker.getElement();
+                    if (element) {
+                        element.innerHTML = `<div class="cluster-marker ${className}">${count}</div>`;
+                        element.style.width = size + 'px';
+                        element.style.height = size + 'px';
+                    }
+
+                    console.log(`📍 클러스터 생성: ${count}개 마커`);
                 }
             });
 
