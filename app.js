@@ -1854,10 +1854,13 @@ async function searchAddress(query, suggestionsDiv) {
 
         suggestionsDiv.innerHTML = html;
 
-        // 클릭 이벤트 추가
+        // 클릭 이벤트 추가 (mousedown 사용하여 blur 전에 처리)
         const items = suggestionsDiv.querySelectorAll('.address-suggestion-item');
         items.forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('mousedown', function(e) {
+                e.preventDefault(); // blur 방지
+                e.stopPropagation();
+
                 const address = this.getAttribute('data-address');
                 const addressInput = document.getElementById('center-address');
 
