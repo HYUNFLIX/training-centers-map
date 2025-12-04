@@ -649,17 +649,26 @@ const applyMarkerClustering = async () => {
                 maxZoom: 13,
                 map: map,
                 markers: allMarkers,
-                disableClickZoom: false,
+                disableClickZoom: true, // 기본 줌 동작 비활성화 (커스텀 핸들러 사용)
                 gridSize: 120,
                 icons: [
                     {
-                        content: '<div class="cluster-marker cluster-marker-1">0</div>',
+                        content: '<div class="cluster-marker cluster-marker-1"></div>',
                         size: new naver.maps.Size(40, 40),
                         anchor: new naver.maps.Point(20, 20)
                     }
                 ],
                 indexGenerator: [10, 100, 200, 500, 1000],
                 stylingFunction: function(clusterMarker, count) {
+                    // 0개 또는 1개일 때는 클러스터 마커 숨김
+                    if (count <= 1) {
+                        const element = clusterMarker.getElement();
+                        if (element) {
+                            element.style.display = 'none';
+                        }
+                        return;
+                    }
+
                     // 클러스터 크기별 클래스 및 사이즈 결정
                     let className = 'cluster-marker-1';
                     let size = 40;
@@ -681,12 +690,30 @@ const applyMarkerClustering = async () => {
                     // DOM 직접 업데이트로 실제 count 표시
                     const element = clusterMarker.getElement();
                     if (element) {
+                        element.style.display = 'block';
                         element.innerHTML = `<div class="cluster-marker ${className}">${count}</div>`;
                         element.style.width = size + 'px';
                         element.style.height = size + 'px';
+                        element.style.cursor = 'pointer';
                     }
 
-                    console.log(`📍 클러스터 생성: ${count}개 마커`);
+                    // 클러스터 클릭 이벤트 추가 (한 번만)
+                    if (!clusterMarker._customClickHandler) {
+                        clusterMarker._customClickHandler = true;
+                        naver.maps.Event.addListener(clusterMarker, 'click', function() {
+                            const position = clusterMarker.getPosition();
+                            const currentZoom = map.getZoom();
+                            const newZoom = Math.min(currentZoom + 2, 18);
+
+                            // 부드러운 애니메이션으로 이동 및 줌인
+                            map.morph(position, newZoom, {
+                                duration: 500,
+                                easing: 'easeOutCubic'
+                            });
+
+                            console.log(`📍 클러스터 클릭: ${count}개 마커, 줌 ${currentZoom} → ${newZoom}`);
+                        });
+                    }
                 }
             });
 
