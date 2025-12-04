@@ -1,20 +1,17 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+// Firebase 공통 설정 import
+import { FIREBASE_CONFIG, FIREBASE_SDK_VERSION, getFirebaseUrl, COLLECTIONS } from '../firebase-config.js';
 
-// Firebase 초기화
-const firebaseConfig = {
-    apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-    authDomain: "training-centers-map.firebaseapp.com",
-    projectId: "training-centers-map",
-    storageBucket: "training-centers-map.appspot.com",
-    messagingSenderId: "943690141587",
-    appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
-};
+// Firebase SDK 동적 import
+const { initializeApp } = await import(getFirebaseUrl('app'));
+const { getFirestore, collection, addDoc } = await import(getFirebaseUrl('firestore'));
+const { getAuth, onAuthStateChanged } = await import(getFirebaseUrl('auth'));
 
-const app = initializeApp(firebaseConfig);
+// Firebase 초기화 (공통 설정 사용)
+const app = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+console.log('✅ Firebase 초기화 완료 (SDK v' + FIREBASE_SDK_VERSION + ', 공통 설정 사용)');
 
 // 인증 상태 확인
 onAuthStateChanged(auth, (user) => {
@@ -111,7 +108,7 @@ document.getElementById('centerForm').addEventListener('submit', async function 
             return;
         }
 
-        await addDoc(collection(db, "trainingCenters"), data);
+        await addDoc(collection(db, COLLECTIONS.TRAINING_CENTERS), data);
         alert('연수원이 성공적으로 추가되었습니다!');
         document.getElementById('centerForm').reset();
         marker.setMap(null);

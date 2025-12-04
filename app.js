@@ -1,5 +1,8 @@
 // ====== 완전히 개선된 app.js 파일 (모든 문제 해결) ======
 
+// ===== Firebase 공통 설정 import =====
+import { FIREBASE_CONFIG, FIREBASE_SDK_VERSION, getFirebaseUrl, COLLECTIONS } from './firebase-config.js';
+
 // ===== 전역 변수 선언 =====
 let map = null;
 let db = null;
@@ -100,30 +103,23 @@ const toast = new ToastManager();
 // ===== Firebase 초기화 (안전한 에러 처리) =====
 async function initializeFirebase() {
     try {
-        console.log('🔥 Firebase 초기화 시도...');
-        
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js");
-        const { getFirestore, collection, getDocs } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        console.log('🔥 Firebase 초기화 시도... (공통 설정 사용)');
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-            authDomain: "training-centers-map.firebaseapp.com",
-            projectId: "training-centers-map",
-            storageBucket: "training-centers-map.firebasestorage.app",
-            messagingSenderId: "943690141587",
-            appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
-        };
+        // 공통 설정에서 가져온 URL 사용
+        const { initializeApp } = await import(getFirebaseUrl('app'));
+        const { getFirestore, collection, getDocs, addDoc } = await import(getFirebaseUrl('firestore'));
 
-        const app = initializeApp(firebaseConfig);
+        // 공통 설정 사용 (firebase-config.js)
+        const app = initializeApp(FIREBASE_CONFIG);
         db = getFirestore(app);
         firebaseLoaded = true;
-        
+
         // 전역으로 노출
-        window.firebase = { db, collection, getDocs };
-        
-        console.log('✅ Firebase 초기화 성공');
-        return { db, collection, getDocs };
-        
+        window.firebase = { db, collection, getDocs, addDoc };
+
+        console.log('✅ Firebase 초기화 성공 (SDK v' + FIREBASE_SDK_VERSION + ')');
+        return { db, collection, getDocs, addDoc };
+
     } catch (error) {
         console.warn('⚠️ Firebase 초기화 실패, 샘플 데이터로 진행:', error);
         firebaseLoaded = false;
@@ -1606,7 +1602,7 @@ async function handleAddCenterSubmit(e) {
         console.log('📝 연수원 추가 시작:', name);
 
         // 주소 → 좌표 변환
-        toastManager.show('주소를 좌표로 변환하는 중...', 'info', '위치 검색');
+        toast.show('주소를 좌표로 변환하는 중...', 'info', '위치 검색');
         const location = await geocodeAddress(address);
         console.log('📍 좌표 변환 완료:', location);
 
@@ -1631,7 +1627,7 @@ async function handleAddCenterSubmit(e) {
         };
 
         // Firebase에 저장
-        toastManager.show('Firebase에 저장하는 중...', 'info', '데이터 저장');
+        toast.show('Firebase에 저장하는 중...', 'info', '데이터 저장');
         const docRef = await saveToFirebase(centerData);
         console.log('💾 Firebase 저장 완료:', docRef.id);
 
@@ -1640,7 +1636,7 @@ async function handleAddCenterSubmit(e) {
         addMarkerToMap(centerData);
 
         // 성공 메시지
-        toastManager.show(`"${name}" 연수원이 성공적으로 추가되었습니다!`, 'success', '추가 완료');
+        toast.show(`"${name}" 연수원이 성공적으로 추가되었습니다!`, 'success', '추가 완료');
 
         // 모달 닫기
         setTimeout(() => {
@@ -1649,7 +1645,7 @@ async function handleAddCenterSubmit(e) {
 
     } catch (error) {
         console.error('❌ 연수원 추가 실패:', error);
-        toastManager.show(
+        toast.show(
             error.message || '연수원 추가 중 오류가 발생했습니다',
             'error',
             '추가 실패'
@@ -1661,26 +1657,23 @@ async function handleAddCenterSubmit(e) {
     }
 }
 
-// Firebase에 저장
+// Firebase에 저장 (공통 설정 사용)
 async function saveToFirebase(centerData) {
-    const { initializeApp } = await import(
-        'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js'
-    );
-    const { getFirestore, collection, addDoc } = await import(
-        'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js'
-    );
+    // 이미 초기화된 Firebase 인스턴스 사용
+    if (window.firebase && window.firebase.db && window.firebase.addDoc) {
+        const { db, collection, addDoc } = window.firebase;
+        const docRef = await addDoc(collection(db, COLLECTIONS.TRAINING_CENTERS), centerData);
+        return docRef;
+    }
 
-    const app = initializeApp({
-        apiKey: "AIzaSyD7_SPFK8I82WGM5IpqFn7kPxDOo8WUxIc",
-        authDomain: "training-centers-map.firebaseapp.com",
-        projectId: "training-centers-map",
-        storageBucket: "training-centers-map.firebasestorage.app",
-        messagingSenderId: "649959142602",
-        appId: "1:649959142602:web:b34cdb7d5d3e49e82e9e48"
-    });
+    // Firebase가 초기화되지 않은 경우 초기화
+    const { initializeApp } = await import(getFirebaseUrl('app'));
+    const { getFirestore, collection, addDoc } = await import(getFirebaseUrl('firestore'));
 
-    const db = getFirestore(app);
-    const docRef = await addDoc(collection(db, 'trainingCenters'), centerData);
+    // 공통 설정 사용 (firebase-config.js)
+    const app = initializeApp(FIREBASE_CONFIG);
+    const firebaseDb = getFirestore(app);
+    const docRef = await addDoc(collection(firebaseDb, COLLECTIONS.TRAINING_CENTERS), centerData);
 
     return docRef;
 }
@@ -1870,7 +1863,7 @@ async function searchAddress(query, suggestionsDiv) {
                 selectedAddressSuggestion = -1;
 
                 console.log('📍 주소 선택:', address);
-                toastManager.show('주소가 선택되었습니다', 'success', '선택 완료');
+                toast.show('주소가 선택되었습니다', 'success', '선택 완료');
             });
         });
     });
