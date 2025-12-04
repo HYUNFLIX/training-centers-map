@@ -263,6 +263,17 @@ const createInfoWindowContent = (center) => {
     // 버튼들
     let buttonsHtml = '';
 
+    // 즐겨찾기 버튼 추가
+    const isFavorite = favoritesManager.has(center.id);
+    buttonsHtml += `
+        <button class="favorite-button ${isFavorite ? 'active' : ''}"
+                data-center-id="${center.id}"
+                onclick="toggleFavorite('${center.id}')"
+                aria-label="${isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}">
+            <i class="fas fa-star"></i>
+        </button>
+    `;
+
     if (center.links?.naver) {
         buttonsHtml += `
             <a href="${center.links.naver}" target="_blank" rel="noopener noreferrer" class="directions-button">
@@ -502,7 +513,10 @@ const initMap = async () => {
         // 초기화 완료
         mapInitialized = true;
         hideMapLoading();
-        
+
+        // 즐겨찾기 카운트 초기화
+        updateFavoritesCount();
+
         console.log('🎉 지도 초기화 완료');
 
     } catch (error) {
@@ -1020,7 +1034,12 @@ const applyFilters = () => {
 
     filteredMarkers = allMarkers.filter(marker => {
         const center = marker.centerData;
-        
+
+        // 즐겨찾기 필터
+        if (showOnlyFavorites && !favoritesManager.has(center.id)) {
+            return false;
+        }
+
         // 검색어 필터
         if (searchTerm) {
             const searchFields = [
@@ -1311,6 +1330,71 @@ async function shareCenter(centerId) {
 
 // 전역에 노출
 window.shareCenter = shareCenter;
+
+// ===== 즐겨찾기 토글 함수 =====
+function toggleFavorite(centerId) {
+    const result = favoritesManager.toggle(centerId);
+
+    // 정보창 내 버튼 상태 업데이트
+    const favoriteBtn = document.querySelector(`.favorite-button[data-center-id="${centerId}"]`);
+    if (favoriteBtn) {
+        const isFavorite = favoritesManager.has(centerId);
+        favoriteBtn.classList.toggle('active', isFavorite);
+        favoriteBtn.setAttribute('aria-label', isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가');
+    }
+
+    // 즐겨찾기 필터가 활성화되어 있으면 필터 다시 적용
+    const favoritesFilter = document.getElementById('favorites-filter');
+    if (favoritesFilter && favoritesFilter.classList.contains('active')) {
+        applyFilters();
+    }
+
+    // 즐겨찾기 카운트 업데이트
+    updateFavoritesCount();
+
+    return result;
+}
+
+// 전역에 노출
+window.toggleFavorite = toggleFavorite;
+
+// ===== 즐겨찾기 필터 토글 =====
+let showOnlyFavorites = false;
+
+function toggleFavoritesFilter() {
+    showOnlyFavorites = !showOnlyFavorites;
+
+    const favoritesFilter = document.getElementById('favorites-filter');
+    if (favoritesFilter) {
+        favoritesFilter.classList.toggle('active', showOnlyFavorites);
+
+        const icon = favoritesFilter.querySelector('i');
+        const text = favoritesFilter.querySelector('span');
+        if (icon && text) {
+            icon.className = showOnlyFavorites ? 'fas fa-star' : 'far fa-star';
+            text.textContent = showOnlyFavorites ? '전체 보기' : '즐겨찾기';
+        }
+    }
+
+    applyFilters();
+
+    if (showOnlyFavorites) {
+        const count = favoritesManager.getAll().length;
+        toast.info(`즐겨찾기 ${count}개를 표시합니다.`, '즐겨찾기 필터', 3000);
+    }
+}
+
+window.toggleFavoritesFilter = toggleFavoritesFilter;
+
+// ===== 즐겨찾기 카운트 업데이트 =====
+function updateFavoritesCount() {
+    const countElement = document.getElementById('favorites-count');
+    if (countElement) {
+        const count = favoritesManager.getAll().length;
+        countElement.textContent = count;
+        countElement.style.display = count > 0 ? 'inline-flex' : 'none';
+    }
+}
 
 // ===== 즐겨찾기 관리자 =====
 class FavoritesManager {
