@@ -12,6 +12,7 @@ let clusterer = null;
 let infoWindowManager = null;
 let firebaseLoaded = false;
 let mapInitialized = false;
+let favoritesManager = null; // 나중에 초기화
 
 // ===== 토스트 알림 관리자 =====
 class ToastManager {
@@ -264,7 +265,7 @@ const createInfoWindowContent = (center) => {
     let buttonsHtml = '';
 
     // 즐겨찾기 버튼 추가
-    const isFavorite = favoritesManager.has(center.id);
+    const isFavorite = favoritesManager ? favoritesManager.has(center.id) : false;
     buttonsHtml += `
         <button class="favorite-button ${isFavorite ? 'active' : ''}"
                 data-center-id="${center.id}"
@@ -711,24 +712,26 @@ const applyMarkerClustering = async () => {
                         element.style.width = size + 'px';
                         element.style.height = size + 'px';
                         element.style.cursor = 'pointer';
-                    }
 
-                    // 클러스터 클릭 이벤트 추가 (한 번만)
-                    if (!clusterMarker._customClickHandler) {
-                        clusterMarker._customClickHandler = true;
-                        naver.maps.Event.addListener(clusterMarker, 'click', function() {
-                            const position = clusterMarker.getPosition();
-                            const currentZoom = map.getZoom();
-                            const newZoom = Math.min(currentZoom + 2, 18);
+                        // DOM 요소에 직접 클릭 이벤트 추가 (한 번만)
+                        if (!element._clusterClickBound) {
+                            element._clusterClickBound = true;
+                            element.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                const position = clusterMarker.getPosition();
+                                if (position) {
+                                    const currentZoom = map.getZoom();
+                                    const newZoom = Math.min(currentZoom + 2, 18);
 
-                            // 부드러운 애니메이션으로 이동 및 줌인
-                            map.morph(position, newZoom, {
-                                duration: 500,
-                                easing: 'easeOutCubic'
+                                    map.morph(position, newZoom, {
+                                        duration: 500,
+                                        easing: 'easeOutCubic'
+                                    });
+
+                                    console.log(`📍 클러스터 클릭: ${count}개 마커, 줌 ${currentZoom} → ${newZoom}`);
+                                }
                             });
-
-                            console.log(`📍 클러스터 클릭: ${count}개 마커, 줌 ${currentZoom} → ${newZoom}`);
-                        });
+                        }
                     }
                 }
             });
@@ -1079,7 +1082,7 @@ const applyFilters = () => {
         const center = marker.centerData;
 
         // 즐겨찾기 필터
-        if (showOnlyFavorites && !favoritesManager.has(center.id)) {
+        if (showOnlyFavorites && favoritesManager && !favoritesManager.has(center.id)) {
             return false;
         }
 
@@ -1376,6 +1379,12 @@ window.shareCenter = shareCenter;
 
 // ===== 즐겨찾기 토글 함수 =====
 function toggleFavorite(centerId) {
+    if (!favoritesManager) {
+        console.warn('⚠️ 즐겨찾기 매니저가 초기화되지 않았습니다.');
+        toast.error('잠시 후 다시 시도해주세요.', '오류');
+        return false;
+    }
+
     const result = favoritesManager.toggle(centerId);
 
     // 정보창 내 버튼 상태 업데이트
@@ -1405,6 +1414,12 @@ window.toggleFavorite = toggleFavorite;
 let showOnlyFavorites = false;
 
 function toggleFavoritesFilter() {
+    if (!favoritesManager) {
+        console.warn('⚠️ 즐겨찾기 매니저가 초기화되지 않았습니다.');
+        toast.error('잠시 후 다시 시도해주세요.', '오류');
+        return;
+    }
+
     showOnlyFavorites = !showOnlyFavorites;
 
     const favoritesFilter = document.getElementById('favorites-filter');
@@ -1432,7 +1447,7 @@ window.toggleFavoritesFilter = toggleFavoritesFilter;
 // ===== 즐겨찾기 카운트 업데이트 =====
 function updateFavoritesCount() {
     const countElement = document.getElementById('favorites-count');
-    if (countElement) {
+    if (countElement && favoritesManager) {
         const count = favoritesManager.getAll().length;
         countElement.textContent = count;
         countElement.style.display = count > 0 ? 'inline-flex' : 'none';
@@ -1514,8 +1529,8 @@ class FavoritesManager {
     }
 }
 
-// 전역 즐겨찾기 매니저
-const favoritesManager = new FavoritesManager();
+// 전역 즐겨찾기 매니저 초기화
+favoritesManager = new FavoritesManager();
 window.favoritesManager = favoritesManager;
 
 // ===== 디버깅을 위한 전역 함수들 =====
