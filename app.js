@@ -1493,6 +1493,10 @@ function initAddCenterModal() {
         }
     });
 
+    // 주소 검색 버튼
+    const searchAddressBtn = document.getElementById('search-address-btn');
+    searchAddressBtn?.addEventListener('click', openAddressSearch);
+
     // 폼 제출
     addCenterForm.addEventListener('submit', handleAddCenterSubmit);
 
@@ -1726,3 +1730,47 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 console.log('✅ 연수원 추가 기능 로드 완료');
+
+// 주소 검색 팝업 열기
+function openAddressSearch() {
+    if (typeof daum === 'undefined' || typeof daum.Postcode === 'undefined') {
+        toastManager.show('주소 검색 서비스를 로드 중입니다. 잠시 후 다시 시도해주세요.', 'warning', '로딩 중');
+        return;
+    }
+
+    new daum.Postcode({
+        oncomplete: function(data) {
+            // 도로명 주소 또는 지번 주소 선택
+            let fullAddress = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+
+            // 건물명이 있고, 공동주택일 경우 추가
+            if (data.buildingName !== '' && data.apartment === 'Y') {
+                fullAddress += (fullAddress !== '' ? ', ' : '') + data.buildingName;
+            }
+
+            // 주소 필드에 입력
+            const addressInput = document.getElementById('center-address');
+            if (addressInput) {
+                addressInput.value = fullAddress;
+                console.log('📍 주소 선택 완료:', fullAddress);
+                toastManager.show('주소가 선택되었습니다', 'success', '선택 완료');
+            }
+        },
+        onclose: function(state) {
+            // 팝업이 닫힐 때 처리
+            if (state === 'COMPLETE_CLOSE') {
+                console.log('✅ 주소 검색 완료');
+            } else {
+                console.log('❌ 주소 검색 취소');
+            }
+        },
+        width: '100%',
+        height: '100%'
+    }).open({
+        popupTitle: '주소 검색',
+        left: (window.screen.width / 2) - (500 / 2),
+        top: (window.screen.height / 2) - (600 / 2)
+    });
+}
+
+console.log('✅ 주소 검색 기능 로드 완료');

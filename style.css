@@ -2602,3 +2602,61 @@ footer .container {
     color: #e0e0e0;
   }
 }
+
+/* 주소 검색 입력 그룹 */
+.address-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.address-input-group input {
+  flex: 1;
+}
+
+.btn-search-address {
+  padding: 12px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.btn-search-address:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-search-address:active {
+  transform: translateY(0);
+}
+
+/* 다크 모드 */
+@media (prefers-color-scheme: dark) {
+  .btn-search-address {
+    background-color: #2ea44f;
+  }
+
+  .btn-search-address:hover {
+    background-color: #26883d;
+  }
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .address-input-group {
+    flex-direction: column;
+  }
+
+  .btn-search-address {
+    width: 100%;
+    justify-content: center;
+  }
+}
