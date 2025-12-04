@@ -642,7 +642,7 @@ const applyMarkerClustering = async () => {
                 disableClickZoom: false,
                 gridSize: 120,
                 stylingFunction: function(clusterMarker, count) {
-                    // 클러스터 마커 HTML 동적 생성
+                    // 클러스터 마커 스타일 동적 생성
                     let className = 'cluster-marker-1';
                     let size = 40;
 
@@ -660,11 +660,12 @@ const applyMarkerClustering = async () => {
                         size = 50;
                     }
 
-                    // 실제 count 값을 표시
-                    const element = clusterMarker.getElement();
-                    element.innerHTML = `<div class="cluster-marker ${className}">${count}</div>`;
-                    element.style.width = size + 'px';
-                    element.style.height = size + 'px';
+                    // 객체 반환 (실제 count 값 표시)
+                    return {
+                        content: `<div class="cluster-marker ${className}">${count}</div>`,
+                        size: new naver.maps.Size(size, size),
+                        anchor: new naver.maps.Point(size / 2, size / 2)
+                    };
                 }
             });
 
