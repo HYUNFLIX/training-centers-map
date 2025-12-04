@@ -1,6 +1,9 @@
 // ==================== 연수원 목록 페이지 - 완전히 새로 작성 ====================
 
-console.log('🚀 centers-list.js 로딩 시작');
+// ===== Firebase 공통 설정 import =====
+import { FIREBASE_CONFIG, FIREBASE_SDK_VERSION, getFirebaseUrl, COLLECTIONS } from './firebase-config.js';
+
+console.log('🚀 centers-list.js 로딩 시작 (공통 설정 사용)');
 
 // ==================== 전역 상태 ====================
 const state = {
@@ -149,9 +152,9 @@ async function loadFromFirebase(shouldShowToast = true) {
       )
     ]);
 
-    // Firestore에서 데이터 가져오기
+    // Firestore에서 데이터 가져오기 (공통 컬렉션 이름 사용)
     const querySnapshot = await firebase.getDocs(
-      firebase.collection(firebase.db, 'trainingCenters')
+      firebase.collection(firebase.db, COLLECTIONS.TRAINING_CENTERS)
     );
 
     const centers = [];
@@ -185,22 +188,14 @@ async function loadFromFirebase(shouldShowToast = true) {
 }
 
 async function loadFirebaseSDK() {
-  const { initializeApp } = await import(
-    'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js'
-  );
-  const { getFirestore, collection, getDocs } = await import(
-    'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js'
-  );
+  // 공통 설정에서 가져온 URL 사용
+  const { initializeApp } = await import(getFirebaseUrl('app'));
+  const { getFirestore, collection, getDocs } = await import(getFirebaseUrl('firestore'));
 
-  const app = initializeApp({
-    apiKey: "AIzaSyD7_SPFK8I82WGM5IpqFn7kPxDOo8WUxIc",
-    authDomain: "training-centers-map.firebaseapp.com",
-    projectId: "training-centers-map",
-    storageBucket: "training-centers-map.firebasestorage.app",
-    messagingSenderId: "649959142602",
-    appId: "1:649959142602:web:b34cdb7d5d3e49e82e9e48"
-  });
+  // 공통 설정 사용 (firebase-config.js)
+  const app = initializeApp(FIREBASE_CONFIG);
 
+  console.log('✅ Firebase SDK 로드 완료 (v' + FIREBASE_SDK_VERSION + ')');
   return { db: getFirestore(app), collection, getDocs };
 }
 

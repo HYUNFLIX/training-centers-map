@@ -52,21 +52,18 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // Firebase 공통 설정 import
+        import { FIREBASE_CONFIG, getFirebaseUrl } from '../firebase-config.js';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-            authDomain: "training-centers-map.firebaseapp.com",
-            projectId: "training-centers-map",
-            storageBucket: "training-centers-map.appspot.storage.googleapis.com",
-            messagingSenderId: "943690141587",
-            appId: "1:943690141587:web:1a0bdd995ef6efbf662266",
-            measurementId: "G-MEASUREMENT_ID"
-        };
+        // Firebase SDK 동적 import
+        const { initializeApp } = await import(getFirebaseUrl('app'));
+        const { getAuth, signInWithEmailAndPassword } = await import(getFirebaseUrl('auth'));
 
-        const app = initializeApp(firebaseConfig);
+        // 공통 설정으로 Firebase 초기화
+        const app = initializeApp(FIREBASE_CONFIG);
         const auth = getAuth(app);
+
+        console.log('✅ Firebase 초기화 완료 (공통 설정 사용)');
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();

@@ -1,6 +1,6 @@
 // Service Worker for 연수원 여기어때
-const CACHE_NAME = 'training-centers-v1.1.0';
-const RUNTIME_CACHE = 'runtime-cache-v1.1.0';
+const CACHE_NAME = 'training-centers-v1.2.0';
+const RUNTIME_CACHE = 'runtime-cache-v1.2.0';
 
 // 캐시할 정적 리소스들
 const STATIC_ASSETS = [
@@ -8,8 +8,8 @@ const STATIC_ASSETS = [
   '/index.html',
   '/centers-list.html',
   '/style.css',
-  '/search.css',
   '/app.js',
+  '/firebase-config.js',
   '/MarkerClustering.js',
   '/manifest.json',
   // 폰트 및 아이콘
