@@ -52,9 +52,6 @@
   <!-- 네이버 지도 API -->
   <script src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue" defer></script>
 
-  <!-- Daum 우편번호 서비스 -->
-  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-
   <!-- 마커 클러스터링 -->
   <script src="MarkerClustering.js" defer></script>
   
@@ -543,13 +540,11 @@
 
           <div class="form-group">
             <label for="center-address">주소 <span class="required">*</span></label>
-            <div class="address-input-group">
-              <input type="text" id="center-address" name="address" required placeholder="주소 검색 버튼을 클릭하세요" readonly>
-              <button type="button" id="search-address-btn" class="btn-search-address">
-                <i class="fas fa-search"></i> 주소 검색
-              </button>
+            <div class="address-search-wrapper">
+              <input type="text" id="center-address" name="address" required placeholder="주소를 입력하세요 (예: 서울시 강남구 테헤란로)" autocomplete="off">
+              <div id="address-suggestions" class="address-suggestions"></div>
             </div>
-            <small class="form-help">주소 검색 버튼을 클릭하여 정확한 주소를 선택하세요</small>
+            <small class="form-help">주소를 입력하면 네이버 지도에서 검색 결과를 표시합니다</small>
           </div>
 
           <div class="form-row">

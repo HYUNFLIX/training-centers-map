@@ -2603,60 +2603,103 @@ footer .container {
   }
 }
 
-/* 주소 검색 입력 그룹 */
-.address-input-group {
-  display: flex;
-  gap: 10px;
+/* 주소 검색 자동완성 */
+.address-search-wrapper {
+  position: relative;
 }
 
-.address-input-group input {
-  flex: 1;
+.address-suggestions {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #0077cc;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-top: -2px;
 }
 
-.btn-search-address {
-  padding: 12px 20px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
+.address-suggestions.active {
+  display: block;
+}
+
+.address-suggestion-item {
+  padding: 12px 15px;
   cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.btn-search-address:hover {
-  background-color: #218838;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+.address-suggestion-item:last-child {
+  border-bottom: none;
 }
 
-.btn-search-address:active {
-  transform: translateY(0);
+.address-suggestion-item:hover {
+  background-color: #f8f9fa;
+}
+
+.address-suggestion-item.selected {
+  background-color: #e3f2fd;
+}
+
+.address-suggestion-main {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.address-suggestion-sub {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.address-suggestion-loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.address-suggestion-empty {
+  padding: 20px;
+  text-align: center;
+  color: #999;
 }
 
 /* 다크 모드 */
 @media (prefers-color-scheme: dark) {
-  .btn-search-address {
-    background-color: #2ea44f;
+  .address-suggestions {
+    background: #3d3d3d;
+    border-color: #0088dd;
   }
 
-  .btn-search-address:hover {
-    background-color: #26883d;
-  }
-}
-
-/* 모바일 반응형 */
-@media (max-width: 768px) {
-  .address-input-group {
-    flex-direction: column;
+  .address-suggestion-item {
+    border-bottom-color: #555;
   }
 
-  .btn-search-address {
-    width: 100%;
-    justify-content: center;
+  .address-suggestion-item:hover {
+    background-color: #4d4d4d;
+  }
+
+  .address-suggestion-item.selected {
+    background-color: #1a4d6d;
+  }
+
+  .address-suggestion-main {
+    color: #e0e0e0;
+  }
+
+  .address-suggestion-sub {
+    color: #aaa;
+  }
+
+  .address-suggestion-loading,
+  .address-suggestion-empty {
+    color: #999;
   }
 }

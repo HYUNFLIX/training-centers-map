@@ -1493,9 +1493,8 @@ function initAddCenterModal() {
         }
     });
 
-    // 주소 검색 버튼
-    const searchAddressBtn = document.getElementById('search-address-btn');
-    searchAddressBtn?.addEventListener('click', openAddressSearch);
+    // 주소 자동완성 초기화
+    initAddressAutocomplete();
 
     // 폼 제출
     addCenterForm.addEventListener('submit', handleAddCenterSubmit);
@@ -1731,46 +1730,150 @@ document.addEventListener('DOMContentLoaded', () => {
 
 console.log('✅ 연수원 추가 기능 로드 완료');
 
-// 주소 검색 팝업 열기
-function openAddressSearch() {
-    if (typeof daum === 'undefined' || typeof daum.Postcode === 'undefined') {
-        toastManager.show('주소 검색 서비스를 로드 중입니다. 잠시 후 다시 시도해주세요.', 'warning', '로딩 중');
+// 주소 자동완성 초기화
+let addressSearchTimeout = null;
+let selectedAddressSuggestion = -1;
+
+function initAddressAutocomplete() {
+    const addressInput = document.getElementById('center-address');
+    const suggestionsDiv = document.getElementById('address-suggestions');
+
+    if (!addressInput || !suggestionsDiv) {
+        console.warn('⚠️ 주소 입력 필드를 찾을 수 없습니다');
         return;
     }
 
-    new daum.Postcode({
-        oncomplete: function(data) {
-            // 도로명 주소 또는 지번 주소 선택
-            let fullAddress = data.userSelectedType === 'R' ? data.roadAddress : data.jibunAddress;
+    // 입력 이벤트 (디바운스)
+    addressInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
 
-            // 건물명이 있고, 공동주택일 경우 추가
-            if (data.buildingName !== '' && data.apartment === 'Y') {
-                fullAddress += (fullAddress !== '' ? ', ' : '') + data.buildingName;
-            }
+        // 타임아웃 클리어
+        clearTimeout(addressSearchTimeout);
 
-            // 주소 필드에 입력
-            const addressInput = document.getElementById('center-address');
-            if (addressInput) {
-                addressInput.value = fullAddress;
-                console.log('📍 주소 선택 완료:', fullAddress);
-                toastManager.show('주소가 선택되었습니다', 'success', '선택 완료');
+        if (query.length < 2) {
+            hideSuggestions();
+            return;
+        }
+
+        // 300ms 디바운스
+        addressSearchTimeout = setTimeout(() => {
+            searchAddress(query, suggestionsDiv);
+        }, 300);
+    });
+
+    // 키보드 네비게이션
+    addressInput.addEventListener('keydown', function(e) {
+        const items = suggestionsDiv.querySelectorAll('.address-suggestion-item');
+
+        if (items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedAddressSuggestion = Math.min(selectedAddressSuggestion + 1, items.length - 1);
+            updateSuggestionSelection(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedAddressSuggestion = Math.max(selectedAddressSuggestion - 1, 0);
+            updateSuggestionSelection(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedAddressSuggestion >= 0 && items[selectedAddressSuggestion]) {
+                items[selectedAddressSuggestion].click();
             }
-        },
-        onclose: function(state) {
-            // 팝업이 닫힐 때 처리
-            if (state === 'COMPLETE_CLOSE') {
-                console.log('✅ 주소 검색 완료');
+        } else if (e.key === 'Escape') {
+            hideSuggestions();
+        }
+    });
+
+    // 외부 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+        if (!addressInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+
+    function hideSuggestions() {
+        suggestionsDiv.classList.remove('active');
+        suggestionsDiv.innerHTML = '';
+        selectedAddressSuggestion = -1;
+    }
+
+    function updateSuggestionSelection(items) {
+        items.forEach((item, index) => {
+            if (index === selectedAddressSuggestion) {
+                item.classList.add('selected');
+                item.scrollIntoView({ block: 'nearest' });
             } else {
-                console.log('❌ 주소 검색 취소');
+                item.classList.remove('selected');
             }
-        },
-        width: '100%',
-        height: '100%'
-    }).open({
-        popupTitle: '주소 검색',
-        left: (window.screen.width / 2) - (500 / 2),
-        top: (window.screen.height / 2) - (600 / 2)
+        });
+    }
+
+    console.log('✅ 주소 자동완성 초기화 완료');
+}
+
+// 주소 검색 (네이버 Geocoding API)
+async function searchAddress(query, suggestionsDiv) {
+    if (!window.naver || !window.naver.maps || !window.naver.maps.Service) {
+        console.warn('⚠️ 네이버 지도 API가 로드되지 않았습니다');
+        return;
+    }
+
+    // 로딩 표시
+    suggestionsDiv.innerHTML = '<div class="address-suggestion-loading"><i class="fas fa-spinner fa-spin"></i> 검색 중...</div>';
+    suggestionsDiv.classList.add('active');
+
+    naver.maps.Service.geocode({
+        query: query
+    }, function(status, response) {
+        if (status !== naver.maps.Service.Status.OK) {
+            suggestionsDiv.innerHTML = '<div class="address-suggestion-empty">주소를 찾을 수 없습니다</div>';
+            return;
+        }
+
+        if (!response.v2 || !response.v2.addresses || response.v2.addresses.length === 0) {
+            suggestionsDiv.innerHTML = '<div class="address-suggestion-empty">검색 결과가 없습니다</div>';
+            return;
+        }
+
+        // 결과 표시
+        const addresses = response.v2.addresses;
+        let html = '';
+
+        addresses.forEach((addr, index) => {
+            const roadAddress = addr.roadAddress || addr.jibunAddress;
+            const jibunAddress = addr.jibunAddress;
+
+            html += `
+                <div class="address-suggestion-item" data-index="${index}" data-address="${roadAddress}" data-lat="${addr.y}" data-lng="${addr.x}">
+                    <div class="address-suggestion-main">${roadAddress}</div>
+                    ${jibunAddress && jibunAddress !== roadAddress ? `<div class="address-suggestion-sub">(지번) ${jibunAddress}</div>` : ''}
+                </div>
+            `;
+        });
+
+        suggestionsDiv.innerHTML = html;
+
+        // 클릭 이벤트 추가
+        const items = suggestionsDiv.querySelectorAll('.address-suggestion-item');
+        items.forEach(item => {
+            item.addEventListener('click', function() {
+                const address = this.getAttribute('data-address');
+                const addressInput = document.getElementById('center-address');
+
+                if (addressInput) {
+                    addressInput.value = address;
+                }
+
+                suggestionsDiv.classList.remove('active');
+                suggestionsDiv.innerHTML = '';
+                selectedAddressSuggestion = -1;
+
+                console.log('📍 주소 선택:', address);
+                toastManager.show('주소가 선택되었습니다', 'success', '선택 완료');
+            });
+        });
     });
 }
 
-console.log('✅ 주소 검색 기능 로드 완료');
+console.log('✅ 네이버 주소 검색 기능 로드 완료');
