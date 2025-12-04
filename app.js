@@ -653,18 +653,26 @@ const applyMarkerClustering = async () => {
                 gridSize: 120,
                 icons: [
                     {
-                        content: '<div class="cluster-marker cluster-marker-1"></div>',
+                        content: '<div style="display:none;"></div>',
                         size: new naver.maps.Size(40, 40),
                         anchor: new naver.maps.Point(20, 20)
                     }
                 ],
                 indexGenerator: [10, 100, 200, 500, 1000],
                 stylingFunction: function(clusterMarker, count) {
-                    // 0개 또는 1개일 때는 클러스터 마커 숨김
+                    // 0개 또는 1개일 때는 클러스터 마커 완전히 숨김
                     if (count <= 1) {
+                        // Naver Maps API로 마커 숨김
+                        if (typeof clusterMarker.setVisible === 'function') {
+                            clusterMarker.setVisible(false);
+                        }
+                        // DOM 요소도 숨김 처리
                         const element = clusterMarker.getElement();
                         if (element) {
                             element.style.display = 'none';
+                            element.style.visibility = 'hidden';
+                            element.style.opacity = '0';
+                            element.style.pointerEvents = 'none';
                         }
                         return;
                     }
@@ -687,10 +695,18 @@ const applyMarkerClustering = async () => {
                         size = 50;
                     }
 
+                    // 클러스터 마커 보이기
+                    if (typeof clusterMarker.setVisible === 'function') {
+                        clusterMarker.setVisible(true);
+                    }
+
                     // DOM 직접 업데이트로 실제 count 표시
                     const element = clusterMarker.getElement();
                     if (element) {
                         element.style.display = 'block';
+                        element.style.visibility = 'visible';
+                        element.style.opacity = '1';
+                        element.style.pointerEvents = 'auto';
                         element.innerHTML = `<div class="cluster-marker ${className}">${count}</div>`;
                         element.style.width = size + 'px';
                         element.style.height = size + 'px';
