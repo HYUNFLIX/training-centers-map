@@ -121,8 +121,12 @@
             <span>연수원 목록</span>
           </a></li>
           <li><a href="#about" aria-describedby="about-tooltip">
-            <i class="fas fa-info-circle" aria-hidden="true"></i> 
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
             <span>이용안내</span>
+          </a></li>
+          <li><a href="#" id="add-center-btn" aria-label="연수원 추가하기">
+            <i class="fas fa-plus-circle" aria-hidden="true"></i>
+            <span>연수원 추가</span>
           </a></li>
         </ul>
       </nav>
@@ -516,5 +520,66 @@
       };
     });
   </script>
+
+  <!-- 연수원 추가 모달 -->
+  <div id="add-center-modal" class="modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">연수원 추가하기</h2>
+        <button class="modal-close" aria-label="모달 닫기">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form id="add-center-form">
+          <div class="form-group">
+            <label for="center-name">연수원 이름 <span class="required">*</span></label>
+            <input type="text" id="center-name" name="name" required placeholder="예: 서울교육연수원">
+          </div>
+
+          <div class="form-group">
+            <label for="center-address">주소 <span class="required">*</span></label>
+            <input type="text" id="center-address" name="address" required placeholder="예: 서울특별시 강남구 테헤란로 123">
+            <small class="form-help">정확한 주소를 입력하면 지도에서 자동으로 위치를 찾습니다</small>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="center-phone">전화번호</label>
+              <input type="tel" id="center-phone" name="phone" placeholder="예: 02-1234-5678">
+            </div>
+
+            <div class="form-group">
+              <label for="center-capacity">수용인원</label>
+              <input type="number" id="center-capacity" name="capacity" placeholder="예: 150" min="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="center-naver-url">네이버 지도 URL</label>
+            <input type="url" id="center-naver-url" name="naverUrl" placeholder="https://map.naver.com/...">
+          </div>
+
+          <div class="form-group">
+            <label for="center-website">공식 홈페이지 URL</label>
+            <input type="url" id="center-website" name="website" placeholder="https://example.com">
+          </div>
+
+          <div class="form-group">
+            <label for="center-info">소개 정보</label>
+            <textarea id="center-info" name="basicInfo" rows="4" placeholder="연수원에 대한 간단한 소개를 입력하세요"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" id="cancel-btn">취소</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-plus-circle"></i> 추가하기
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

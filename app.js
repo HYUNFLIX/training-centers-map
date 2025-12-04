@@ -1450,3 +1450,279 @@ window.addEventListener('unhandledrejection', (event) => {
 })();
 
 console.log('✅ 완전히 개선된 app.js 로드 완료 - 모든 문제 해결됨');
+// ==================== 연수원 추가 기능 ====================
+let addCenterModal = null;
+let addCenterForm = null;
+
+// 모달 초기화
+function initAddCenterModal() {
+    addCenterModal = document.getElementById('add-center-modal');
+    addCenterForm = document.getElementById('add-center-form');
+    const addCenterBtn = document.getElementById('add-center-btn');
+    const modalClose = addCenterModal?.querySelector('.modal-close');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    if (!addCenterModal || !addCenterForm) {
+        console.warn('⚠️ 연수원 추가 모달이 없습니다');
+        return;
+    }
+
+    // 모달 열기
+    addCenterBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openAddCenterModal();
+    });
+
+    // 모달 닫기 (X 버튼)
+    modalClose?.addEventListener('click', closeAddCenterModal);
+
+    // 모달 닫기 (취소 버튼)
+    cancelBtn?.addEventListener('click', closeAddCenterModal);
+
+    // 모달 닫기 (배경 클릭)
+    addCenterModal.addEventListener('click', (e) => {
+        if (e.target === addCenterModal) {
+            closeAddCenterModal();
+        }
+    });
+
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && addCenterModal.classList.contains('active')) {
+            closeAddCenterModal();
+        }
+    });
+
+    // 폼 제출
+    addCenterForm.addEventListener('submit', handleAddCenterSubmit);
+
+    console.log('✅ 연수원 추가 모달 초기화 완료');
+}
+
+// 모달 열기
+function openAddCenterModal() {
+    addCenterModal.classList.add('active');
+    addCenterModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden'; // 스크롤 방지
+    console.log('📝 연수원 추가 모달 열림');
+}
+
+// 모달 닫기
+function closeAddCenterModal() {
+    addCenterModal.classList.remove('active');
+    addCenterModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = ''; // 스크롤 복원
+    addCenterForm.reset(); // 폼 리셋
+    console.log('✖️ 연수원 추가 모달 닫힘');
+}
+
+// 주소 → 좌표 변환 (네이버 Geocoding)
+async function geocodeAddress(address) {
+    return new Promise((resolve, reject) => {
+        if (!window.naver || !window.naver.maps || !window.naver.maps.Service) {
+            reject(new Error('네이버 지도 API가 로드되지 않았습니다'));
+            return;
+        }
+
+        naver.maps.Service.geocode({
+            query: address
+        }, function(status, response) {
+            if (status !== naver.maps.Service.Status.OK) {
+                reject(new Error('주소를 찾을 수 없습니다'));
+                return;
+            }
+
+            if (response.v2.addresses.length === 0) {
+                reject(new Error('주소 결과가 없습니다'));
+                return;
+            }
+
+            const result = response.v2.addresses[0];
+            const lat = parseFloat(result.y);
+            const lng = parseFloat(result.x);
+
+            resolve({ lat, lng });
+        });
+    });
+}
+
+// 지역 추출 함수
+function extractRegion(address) {
+    // 주소에서 지역 추출 (서울, 경기, 부산 등)
+    const regionMap = {
+        '서울': '서울',
+        '경기': '경기',
+        '인천': '인천',
+        '부산': '부산',
+        '대구': '대구',
+        '대전': '대전',
+        '광주': '광주',
+        '울산': '울산',
+        '세종': '세종',
+        '강원': '강원',
+        '충북': '충북',
+        '충남': '충남',
+        '전북': '전북',
+        '전남': '전남',
+        '경북': '경북',
+        '경남': '경남',
+        '제주': '제주'
+    };
+
+    for (const [key, value] of Object.entries(regionMap)) {
+        if (address.includes(key)) {
+            return value;
+        }
+    }
+
+    return '기타';
+}
+
+// 폼 제출 처리
+async function handleAddCenterSubmit(e) {
+    e.preventDefault();
+
+    const submitBtn = addCenterForm.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+
+    try {
+        // 버튼 비활성화 및 로딩 표시
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 추가 중...';
+
+        // 폼 데이터 수집
+        const formData = new FormData(addCenterForm);
+        const name = formData.get('name');
+        const address = formData.get('address');
+        const phone = formData.get('phone');
+        const capacity = formData.get('capacity');
+        const naverUrl = formData.get('naverUrl');
+        const website = formData.get('website');
+        const basicInfo = formData.get('basicInfo');
+
+        console.log('📝 연수원 추가 시작:', name);
+
+        // 주소 → 좌표 변환
+        toastManager.show('주소를 좌표로 변환하는 중...', 'info', '위치 검색');
+        const location = await geocodeAddress(address);
+        console.log('📍 좌표 변환 완료:', location);
+
+        // 지역 추출
+        const region = extractRegion(address);
+
+        // Firebase에 저장할 데이터
+        const centerData = {
+            name: name,
+            address: address,
+            location: location,
+            region: region,
+            phone: phone || null,
+            capacity: capacity ? parseInt(capacity) : null,
+            basicInfo: basicInfo || null,
+            links: {
+                naver: naverUrl || null,
+                website: website || null
+            },
+            createdAt: new Date().toISOString(),
+            createdBy: 'user' // 추후 인증 시스템 추가 시 변경 가능
+        };
+
+        // Firebase에 저장
+        toastManager.show('Firebase에 저장하는 중...', 'info', '데이터 저장');
+        const docRef = await saveToFirebase(centerData);
+        console.log('💾 Firebase 저장 완료:', docRef.id);
+
+        // 지도에 마커 추가
+        centerData.id = docRef.id;
+        addMarkerToMap(centerData);
+
+        // 성공 메시지
+        toastManager.show(`"${name}" 연수원이 성공적으로 추가되었습니다!`, 'success', '추가 완료');
+
+        // 모달 닫기
+        setTimeout(() => {
+            closeAddCenterModal();
+        }, 1000);
+
+    } catch (error) {
+        console.error('❌ 연수원 추가 실패:', error);
+        toastManager.show(
+            error.message || '연수원 추가 중 오류가 발생했습니다',
+            'error',
+            '추가 실패'
+        );
+    } finally {
+        // 버튼 복원
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+    }
+}
+
+// Firebase에 저장
+async function saveToFirebase(centerData) {
+    const { initializeApp } = await import(
+        'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js'
+    );
+    const { getFirestore, collection, addDoc } = await import(
+        'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js'
+    );
+
+    const app = initializeApp({
+        apiKey: "AIzaSyD7_SPFK8I82WGM5IpqFn7kPxDOo8WUxIc",
+        authDomain: "training-centers-map.firebaseapp.com",
+        projectId: "training-centers-map",
+        storageBucket: "training-centers-map.firebasestorage.app",
+        messagingSenderId: "649959142602",
+        appId: "1:649959142602:web:b34cdb7d5d3e49e82e9e48"
+    });
+
+    const db = getFirestore(app);
+    const docRef = await addDoc(collection(db, 'trainingCenters'), centerData);
+
+    return docRef;
+}
+
+// 지도에 마커 추가
+function addMarkerToMap(centerData) {
+    const marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(centerData.location.lat, centerData.location.lng),
+        map: map,
+        title: centerData.name,
+        icon: {
+            content: `<div class="custom-marker"><i class="fas fa-map-marker-alt"></i></div>`,
+            anchor: new naver.maps.Point(15, 40)
+        }
+    });
+
+    // 마커 클릭 이벤트
+    naver.maps.Event.addListener(marker, 'click', function() {
+        const content = generateInfoWindowContent(centerData);
+        infoWindowManager.openInfoWindow(map, marker, content);
+    });
+
+    // 전역 마커 배열에 추가
+    allMarkers.push(marker);
+    filteredMarkers.push(marker);
+
+    // 클러스터 재적용
+    if (clusterer) {
+        clusterer.clearMarkers();
+        clusterer.setMarkers(allMarkers);
+    }
+
+    // 해당 위치로 지도 이동
+    map.setCenter(new naver.maps.LatLng(centerData.location.lat, centerData.location.lng));
+    map.setZoom(15);
+
+    console.log('📍 지도에 마커 추가 완료:', centerData.name);
+}
+
+// DOMContentLoaded 이벤트에 모달 초기화 추가
+document.addEventListener('DOMContentLoaded', () => {
+    // 기존 초기화 후 모달 초기화
+    setTimeout(() => {
+        initAddCenterModal();
+    }, 100);
+});
+
+console.log('✅ 연수원 추가 기능 로드 완료');
