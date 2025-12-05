@@ -12,7 +12,6 @@ let clusterer = null;
 let infoWindowManager = null;
 let firebaseLoaded = false;
 let mapInitialized = false;
-let favoritesManager = null; // 나중에 초기화
 
 // ===== 토스트 알림 관리자 =====
 class ToastManager {
@@ -264,17 +263,6 @@ const createInfoWindowContent = (center) => {
     // 버튼들
     let buttonsHtml = '';
 
-    // 즐겨찾기 버튼 추가
-    const isFavorite = favoritesManager ? favoritesManager.has(center.id) : false;
-    buttonsHtml += `
-        <button class="favorite-button ${isFavorite ? 'active' : ''}"
-                data-center-id="${center.id}"
-                onclick="toggleFavorite('${center.id}')"
-                aria-label="${isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}">
-            <i class="fas fa-star"></i>
-        </button>
-    `;
-
     if (center.links?.naver) {
         buttonsHtml += `
             <a href="${center.links.naver}" target="_blank" rel="noopener noreferrer" class="directions-button">
@@ -514,9 +502,6 @@ const initMap = async () => {
         // 초기화 완료
         mapInitialized = true;
         hideMapLoading();
-
-        // 즐겨찾기 카운트 초기화
-        updateFavoritesCount();
 
         console.log('🎉 지도 초기화 완료');
 
@@ -1081,11 +1066,6 @@ const applyFilters = () => {
     filteredMarkers = allMarkers.filter(marker => {
         const center = marker.centerData;
 
-        // 즐겨찾기 필터
-        if (showOnlyFavorites && favoritesManager && !favoritesManager.has(center.id)) {
-            return false;
-        }
-
         // 검색어 필터
         if (searchTerm) {
             const searchFields = [
@@ -1377,162 +1357,6 @@ async function shareCenter(centerId) {
 // 전역에 노출
 window.shareCenter = shareCenter;
 
-// ===== 즐겨찾기 토글 함수 =====
-function toggleFavorite(centerId) {
-    if (!favoritesManager) {
-        console.warn('⚠️ 즐겨찾기 매니저가 초기화되지 않았습니다.');
-        toast.error('잠시 후 다시 시도해주세요.', '오류');
-        return false;
-    }
-
-    const result = favoritesManager.toggle(centerId);
-
-    // 정보창 내 버튼 상태 업데이트
-    const favoriteBtn = document.querySelector(`.favorite-button[data-center-id="${centerId}"]`);
-    if (favoriteBtn) {
-        const isFavorite = favoritesManager.has(centerId);
-        favoriteBtn.classList.toggle('active', isFavorite);
-        favoriteBtn.setAttribute('aria-label', isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가');
-    }
-
-    // 즐겨찾기 필터가 활성화되어 있으면 필터 다시 적용
-    const favoritesFilter = document.getElementById('favorites-filter');
-    if (favoritesFilter && favoritesFilter.classList.contains('active')) {
-        applyFilters();
-    }
-
-    // 즐겨찾기 카운트 업데이트
-    updateFavoritesCount();
-
-    return result;
-}
-
-// 전역에 노출
-window.toggleFavorite = toggleFavorite;
-
-// ===== 즐겨찾기 필터 토글 =====
-let showOnlyFavorites = false;
-
-function toggleFavoritesFilter() {
-    if (!favoritesManager) {
-        console.warn('⚠️ 즐겨찾기 매니저가 초기화되지 않았습니다.');
-        toast.error('잠시 후 다시 시도해주세요.', '오류');
-        return;
-    }
-
-    showOnlyFavorites = !showOnlyFavorites;
-
-    const favoritesFilter = document.getElementById('favorites-filter');
-    if (favoritesFilter) {
-        favoritesFilter.classList.toggle('active', showOnlyFavorites);
-
-        const icon = favoritesFilter.querySelector('i');
-        const text = favoritesFilter.querySelector('span');
-        if (icon && text) {
-            icon.className = showOnlyFavorites ? 'fas fa-star' : 'far fa-star';
-            text.textContent = showOnlyFavorites ? '전체 보기' : '즐겨찾기';
-        }
-    }
-
-    applyFilters();
-
-    if (showOnlyFavorites) {
-        const count = favoritesManager.getAll().length;
-        toast.info(`즐겨찾기 ${count}개를 표시합니다.`, '즐겨찾기 필터', 3000);
-    }
-}
-
-window.toggleFavoritesFilter = toggleFavoritesFilter;
-
-// ===== 즐겨찾기 카운트 업데이트 =====
-function updateFavoritesCount() {
-    const countElement = document.getElementById('favorites-count');
-    if (countElement && favoritesManager) {
-        const count = favoritesManager.getAll().length;
-        countElement.textContent = count;
-        countElement.style.display = count > 0 ? 'inline-flex' : 'none';
-    }
-}
-
-// ===== 즐겨찾기 관리자 =====
-class FavoritesManager {
-    constructor() {
-        this.storageKey = 'training-centers-favorites';
-        this.favorites = this.load();
-    }
-
-    load() {
-        try {
-            const data = localStorage.getItem(this.storageKey);
-            return data ? JSON.parse(data) : [];
-        } catch (error) {
-            console.error('❌ 즐겨찾기 로드 실패:', error);
-            return [];
-        }
-    }
-
-    save() {
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(this.favorites));
-            return true;
-        } catch (error) {
-            console.error('❌ 즐겨찾기 저장 실패:', error);
-            return false;
-        }
-    }
-
-    add(centerId) {
-        if (!this.favorites.includes(centerId)) {
-            this.favorites.push(centerId);
-            if (this.save()) {
-                toast.success('즐겨찾기에 추가되었습니다!', '즐겨찾기', 3000);
-                console.log('⭐ 즐겨찾기 추가:', centerId);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    remove(centerId) {
-        const index = this.favorites.indexOf(centerId);
-        if (index > -1) {
-            this.favorites.splice(index, 1);
-            if (this.save()) {
-                toast.info('즐겨찾기에서 제거되었습니다.', '즐겨찾기', 3000);
-                console.log('⭐ 즐겨찾기 제거:', centerId);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    toggle(centerId) {
-        if (this.has(centerId)) {
-            return this.remove(centerId);
-        } else {
-            return this.add(centerId);
-        }
-    }
-
-    has(centerId) {
-        return this.favorites.includes(centerId);
-    }
-
-    getAll() {
-        return [...this.favorites];
-    }
-
-    clear() {
-        this.favorites = [];
-        this.save();
-        toast.info('모든 즐겨찾기가 제거되었습니다.', '즐겨찾기', 3000);
-    }
-}
-
-// 전역 즐겨찾기 매니저 초기화
-favoritesManager = new FavoritesManager();
-window.favoritesManager = favoritesManager;
-
 // ===== 디버깅을 위한 전역 함수들 =====
 window.debugInfo = {
     getCurrentInfoWindow: () => infoWindowManager?.getCurrentInfoWindow(),
@@ -1548,8 +1372,7 @@ window.debugInfo = {
     reloadCenters: () => loadCenters(),
     applyFilters: () => applyFilters(),
     resetFilters: () => resetAllFilters(),
-    showSampleData: () => generateSampleData(),
-    getFavorites: () => favoritesManager.getAll()
+    showSampleData: () => generateSampleData()
 };
 
 // ===== 전역 에러 처리 =====
