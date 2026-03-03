@@ -380,19 +380,19 @@ function renderTable(centers) {
         <thead>
           <tr>
             <th class="sortable ${state.sortField === 'name' ? 'sorted-' + state.sortOrder : ''}"
-                onclick="window.handleSort('name')">
+                onclick="window.handleSort('name')" style="width: 28%;">
               연수원명
             </th>
             <th class="sortable ${state.sortField === 'region' ? 'sorted-' + state.sortOrder : ''}"
-                onclick="window.handleSort('region')">
+                onclick="window.handleSort('region')" style="width: 12%;">
               지역
             </th>
             <th class="sortable ${state.sortField === 'capacity' ? 'sorted-' + state.sortOrder : ''}"
-                onclick="window.handleSort('capacity')">
+                onclick="window.handleSort('capacity')" style="width: 12%;">
               수용인원
             </th>
-            <th>주소</th>
-            <th>연락처</th>
+            <th style="width: 33%;">주소</th>
+            <th style="width: 15%;">연락처</th>
           </tr>
         </thead>
         <tbody>
@@ -402,10 +402,10 @@ function renderTable(centers) {
                 <span class="center-name">${center.name}</span>
                 ${center.branch ? `<span class="center-branch">${center.branch}</span>` : ''}
               </td>
-              <td>${center.region}</td>
-              <td>${center.capacity ? center.capacity.toLocaleString() + '명' : '-'}</td>
-              <td>${center.address || '-'}</td>
-              <td>${center.phone || '-'}</td>
+              <td><span class="badge badge-region">${center.region}</span></td>
+              <td><span style="color: #64748b; font-weight: 500;">${center.capacity ? center.capacity.toLocaleString() + '명' : '-'}</span></td>
+              <td><span style="color: #334155;">${center.address || '-'}</span></td>
+              <td><span style="color: #64748b;">${center.phone || '-'}</span></td>
             </tr>
           `).join('')}
         </tbody>
@@ -423,24 +423,26 @@ function renderCards(centers) {
         <div class="center-card">
           <div class="card-header">
             <div class="card-title">${center.name}</div>
-            ${center.branch ? `<div class="center-branch">${center.branch}</div>` : ''}
+            ${center.branch ? `<span class="center-branch">${center.branch}</span>` : ''}
           </div>
-          <div class="card-info">
-            <i class="fas fa-map-marker-alt"></i>
-            <span>${center.region} | ${center.address || '-'}</span>
+          <div class="card-info-list">
+            <div class="card-info">
+              <i class="fas fa-map-marker-alt"></i>
+              <span><span class="badge badge-region" style="margin-right:6px;">${center.region}</span> ${center.address || '-'}</span>
+            </div>
+            ${center.capacity ? `
+              <div class="card-info">
+                <i class="fas fa-users"></i>
+                <span>수용인원 <strong style="color:#334155;">${center.capacity.toLocaleString()}</strong>명</span>
+              </div>
+            ` : ''}
+            ${center.phone ? `
+              <div class="card-info">
+                <i class="fas fa-phone"></i>
+                <span>${center.phone}</span>
+              </div>
+            ` : ''}
           </div>
-          ${center.capacity ? `
-            <div class="card-info">
-              <i class="fas fa-users"></i>
-              <span>수용인원: ${center.capacity.toLocaleString()}명</span>
-            </div>
-          ` : ''}
-          ${center.phone ? `
-            <div class="card-info">
-              <i class="fas fa-phone"></i>
-              <span>${center.phone}</span>
-            </div>
-          ` : ''}
         </div>
       `).join('')}
     </div>
@@ -618,9 +620,10 @@ function showLoading(show) {
 }
 
 function updateViewToggleButton() {
-  const icon = state.viewMode === 'table' ? 'fa-th' : 'fa-table';
-  const text = state.viewMode === 'table' ? '카드 보기' : '테이블 보기';
-  elements.viewToggle.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+  const icon = state.viewMode === 'table' ? 'fa-th' : 'fa-list-ul';
+  const text = state.viewMode === 'table' ? '카드 보기' : '테이블 뷰';
+  const btnHTML = `<i class="fas ${icon}"></i> <span id="viewModeText">${text}</span>`;
+  elements.viewToggle.innerHTML = btnHTML;
   elements.viewMode.textContent = state.viewMode === 'table' ? '테이블 보기' : '카드 보기';
 }
 
