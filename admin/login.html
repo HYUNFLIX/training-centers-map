@@ -54,17 +54,13 @@
     </div>
 
     <script type="module">
-        // Firebase 공통 설정 import
-        import { FIREBASE_CONFIG, getFirebaseUrl } from '../firebase-config.js';
+        // Firebase 공통 설정 헬퍼 사용
+        import { initializeFirebaseApp } from '../firebase-config.js';
 
-        // Firebase SDK 동적 import
-        const { initializeApp } = await import(getFirebaseUrl('app'));
-        const { getAuth, signInWithEmailAndPassword, signOut } = await import(getFirebaseUrl('auth'));
-        const { getFirestore, doc, getDoc } = await import(getFirebaseUrl('firestore'));
-
-        const app = initializeApp(FIREBASE_CONFIG);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // 앱 초기화 및 참조 가져오기
+        const { app, db, auth, modules } = await initializeFirebaseApp();
+        const { signInWithEmailAndPassword, signOut } = modules;
+        const { doc, getDoc } = modules;
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();

@@ -227,22 +227,11 @@
 
     <!-- Firebase SDK -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { initializeFirebaseApp } from '../firebase-config.js';
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
-            authDomain: "training-centers-map.firebaseapp.com",
-            projectId: "training-centers-map",
-            storageBucket: "training-centers-map.firebasestorage.app",
-            messagingSenderId: "943690141587",
-            appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        const { db, auth, modules } = await initializeFirebaseApp();
+        const { getDoc, doc, getDocs, collection, addDoc, updateDoc, deleteDoc } = modules;
+        const { signOut, onAuthStateChanged } = modules;
 
         // ✅ 인증 + isAdmin 검증 (기능 7)
         onAuthStateChanged(auth, async (user) => {
