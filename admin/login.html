@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-100">
     <div class="min-h-screen flex items-center justify-center">
         <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
@@ -25,14 +27,14 @@
                 <div class="rounded-md shadow-sm -space-y-px">
                     <div>
                         <label for="email" class="sr-only">이메일</label>
-                        <input id="email" name="email" type="email" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                        <input id="email" name="email" type="email" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                             placeholder="이메일">
                     </div>
                     <div>
                         <label for="password" class="sr-only">비밀번호</label>
-                        <input id="password" name="password" type="password" required 
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                        <input id="password" name="password" type="password" required
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                             placeholder="비밀번호">
                     </div>
                 </div>
@@ -42,7 +44,7 @@
                 </div>
 
                 <div>
-                    <button type="submit" 
+                    <button type="submit"
                         class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         로그인
                     </button>
@@ -57,13 +59,12 @@
 
         // Firebase SDK 동적 import
         const { initializeApp } = await import(getFirebaseUrl('app'));
-        const { getAuth, signInWithEmailAndPassword } = await import(getFirebaseUrl('auth'));
+        const { getAuth, signInWithEmailAndPassword, signOut } = await import(getFirebaseUrl('auth'));
+        const { getFirestore, doc, getDoc } = await import(getFirebaseUrl('firestore'));
 
-        // 공통 설정으로 Firebase 초기화
         const app = initializeApp(FIREBASE_CONFIG);
         const auth = getAuth(app);
-
-        console.log('✅ Firebase 초기화 완료 (공통 설정 사용)');
+        const db = getFirestore(app);
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -71,18 +72,31 @@
             const password = document.getElementById('password').value;
             const errorElement = document.getElementById('loginError');
             const submitButton = e.target.querySelector('button[type="submit"]');
-            
+
             try {
                 submitButton.disabled = true;
                 submitButton.textContent = '로그인 중...';
-                
-                await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = 'add.html';
+                errorElement.style.display = 'none';
+
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const uid = userCredential.user.uid;
+
+                // ✅ Firestore에서 isAdmin 확인 (기능 7)
+                const userDoc = await getDoc(doc(db, 'users', uid));
+                if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+                    await signOut(auth);
+                    errorElement.textContent = '관리자 권한이 없습니다. 접근이 제한된 페이지입니다.';
+                    errorElement.style.display = 'block';
+                    submitButton.disabled = false;
+                    submitButton.textContent = '로그인';
+                    return;
+                }
+
+                window.location.href = '/admin/dashboard.html';
             } catch (error) {
                 console.error('Login error:', error);
                 errorElement.textContent = getErrorMessage(error.code);
                 errorElement.style.display = 'block';
-                
                 submitButton.disabled = false;
                 submitButton.textContent = '로그인';
             }
@@ -90,22 +104,17 @@
 
         function getErrorMessage(errorCode) {
             switch (errorCode) {
-                case 'auth/invalid-email':
-                    return '유효하지 않은 이메일 주소입니다.';
-                case 'auth/user-disabled':
-                    return '해당 계정이 비활성화되었습니다.';
-                case 'auth/user-not-found':
-                    return '등록되지 않은 이메일입니다.';
-                case 'auth/wrong-password':
-                    return '잘못된 비밀번호입니다.';
-                case 'auth/invalid-api-key':
-                    return '서버 설정 오류가 발생했습니다. 관리자에게 문의해주세요.';
-                case 'auth/network-request-failed':
-                    return '네트워크 연결을 확인해주세요.';
-                default:
-                    return '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.';
+                case 'auth/invalid-email': return '유효하지 않은 이메일 주소입니다.';
+                case 'auth/user-disabled': return '해당 계정이 비활성화되었습니다.';
+                case 'auth/user-not-found': return '등록되지 않은 이메일입니다.';
+                case 'auth/wrong-password': return '잘못된 비밀번호입니다.';
+                case 'auth/invalid-credential': return '이메일 또는 비밀번호가 올바르지 않습니다.';
+                case 'auth/invalid-api-key': return '서버 설정 오류가 발생했습니다.';
+                case 'auth/network-request-failed': return '네트워크 연결을 확인해주세요.';
+                default: return '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.';
             }
         }
     </script>
 </body>
+
 </html>
