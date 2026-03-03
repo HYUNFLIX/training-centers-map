@@ -403,9 +403,17 @@ function renderTable(centers) {
                 ${center.branch ? `<span class="center-branch">${center.branch}</span>` : ''}
               </td>
               <td><span class="badge badge-region">${center.region}</span></td>
-              <td><span style="color: #64748b; font-weight: 500;">${center.capacity ? center.capacity.toLocaleString() + '명' : '-'}</span></td>
-              <td><span style="color: #334155;">${center.address || '-'}</span></td>
-              <td><span style="color: #64748b;">${center.phone || '-'}</span></td>
+              <td style="text-align: center;">
+                ${center.capacity
+      ? `<span style="color: #334155; font-weight: 600; background: #f1f5f9; padding: 4px 10px; border-radius: 4px;">${center.capacity.toLocaleString()}명</span>`
+      : `<span style="color: #cbd5e1; font-size: 0.9em;">-</span>`}
+              </td>
+              <td><span style="color: #334155;">${center.address || '<span style="color: #cbd5e1; font-size: 0.9em;">주소 미등록</span>'}</span></td>
+              <td>
+                ${center.phone
+      ? `<span style="color: #475569;"><i class="fas fa-phone-alt" style="font-size: 0.85em; color: #94a3b8; margin-right: 4px;"></i>${center.phone}</span>`
+      : `<span style="color: #cbd5e1; font-size: 0.9em;">연락처 없음</span>`}
+              </td>
             </tr>
           `).join('')}
         </tbody>
@@ -435,17 +443,28 @@ function renderCards(centers) {
                 <i class="fas fa-users"></i>
                 <span>수용인원 <strong style="color:#334155;">${center.capacity.toLocaleString()}</strong>명</span>
               </div>
-            ` : ''}
+            ` : `
+              <div class="card-info" style="color: #94a3b8;">
+                <i class="fas fa-users" style="color: #cbd5e1;"></i>
+                <span>수용인원 <span style="font-style: italic;">정보 없음</span></span>
+              </div>
+            `}
             ${center.phone ? `
               <div class="card-info">
-                <i class="fas fa-phone"></i>
-                <span>${center.phone}</span>
+                <i class="fas fa-phone-alt"></i>
+                <span style="color: #475569; font-weight: 500;">${center.phone}</span>
               </div>
-            ` : ''}
+            ` : `
+              <div class="card-info" style="color: #94a3b8;">
+                <i class="fas fa-phone-alt" style="color: #cbd5e1;"></i>
+                <span style="font-style: italic;">연락처 없음</span>
+              </div>
+            `}
           </div>
         </div>
-      `).join('')}
-    </div>
+      `).join('')
+    }
+    </div >
   `;
 
   elements.centersContainer.innerHTML = html;
@@ -463,10 +482,10 @@ function renderPagination() {
 
   // 이전 버튼
   html += `
-    <button class="page-btn" ${state.currentPage === 1 ? 'disabled' : ''}
-            onclick="window.goToPage(${state.currentPage - 1})">
-      <i class="fas fa-chevron-left"></i>
-    </button>
+  < button class="page-btn" ${state.currentPage === 1 ? 'disabled' : ''}
+onclick = "window.goToPage(${state.currentPage - 1})" >
+  <i class="fas fa-chevron-left"></i>
+    </button >
   `;
 
   // 페이지 버튼
@@ -479,34 +498,34 @@ function renderPagination() {
   }
 
   if (startPage > 1) {
-    html += `<button class="page-btn" onclick="window.goToPage(1)">1</button>`;
+    html += `< button class="page-btn" onclick = "window.goToPage(1)" > 1</button > `;
     if (startPage > 2) {
-      html += `<span style="padding: 0 5px;">...</span>`;
+      html += `< span style = "padding: 0 5px;" >...</span > `;
     }
   }
 
   for (let i = startPage; i <= endPage; i++) {
     html += `
-      <button class="page-btn ${i === state.currentPage ? 'active' : ''}"
-              onclick="window.goToPage(${i})">
-        ${i}
-      </button>
-    `;
+  < button class="page-btn ${i === state.currentPage ? 'active' : ''}"
+onclick = "window.goToPage(${i})" >
+  ${i}
+      </button >
+  `;
   }
 
   if (endPage < totalPages) {
     if (endPage < totalPages - 1) {
-      html += `<span style="padding: 0 5px;">...</span>`;
+      html += `< span style = "padding: 0 5px;" >...</span > `;
     }
-    html += `<button class="page-btn" onclick="window.goToPage(${totalPages})">${totalPages}</button>`;
+    html += `< button class="page-btn" onclick = "window.goToPage(${totalPages})" > ${totalPages}</button > `;
   }
 
   // 다음 버튼
   html += `
-    <button class="page-btn" ${state.currentPage === totalPages ? 'disabled' : ''}
-            onclick="window.goToPage(${state.currentPage + 1})">
-      <i class="fas fa-chevron-right"></i>
-    </button>
+  < button class="page-btn" ${state.currentPage === totalPages ? 'disabled' : ''}
+onclick = "window.goToPage(${state.currentPage + 1})" >
+  <i class="fas fa-chevron-right"></i>
+    </button >
   `;
 
   elements.pagination.innerHTML = html;
@@ -552,7 +571,7 @@ function exportToCsv() {
 
     let csv = headers.join(',') + '\n';
     rows.forEach(row => {
-      csv += row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',') + '\n';
+      csv += row.map(field => `"${String(field).replace(/" / g, '""')}"`).join(',') + '\n';
     });
 
     // BOM 추가 (한글 깨짐 방지)
