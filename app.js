@@ -1,9 +1,9 @@
-﻿// ====== ?�전??개선??app.js ?�일 (모든 문제 ?�결) ======
+// ====== 완전히 개선된 app.js 파일 (모든 문제 해결) ======
 
-// ===== Firebase 공통 ?�정 import =====
+// ===== Firebase 공통 설정 import =====
 import { FIREBASE_CONFIG, FIREBASE_SDK_VERSION, getFirebaseUrl, COLLECTIONS } from './firebase-config.js';
 
-// ===== ?�역 변???�언 =====
+// ===== 전역 변수 선언 =====
 let map = null;
 let db = null;
 let allMarkers = [];
@@ -13,7 +13,7 @@ let infoWindowManager = null;
 let firebaseLoaded = false;
 let mapInitialized = false;
 
-// ===== ?�스???�림 관리자 =====
+// ===== 토스트 알림 관리자 =====
 class ToastManager {
     constructor() {
         this.container = document.getElementById('toast-container');
@@ -23,7 +23,7 @@ class ToastManager {
             this.container.className = 'toast-container';
             this.container.setAttribute('role', 'region');
             this.container.setAttribute('aria-live', 'polite');
-            this.container.setAttribute('aria-label', '?�림');
+            this.container.setAttribute('aria-label', '알림');
             document.body.appendChild(this.container);
         }
     }
@@ -40,10 +40,10 @@ class ToastManager {
         };
 
         const titles = {
-            success: title || '?�공',
-            error: title || '?�류',
+            success: title || '성공',
+            error: title || '오류',
             warning: title || '주의',
-            info: title || '?�림'
+            info: title || '알림'
         };
 
         toast.innerHTML = `
@@ -52,7 +52,7 @@ class ToastManager {
                 <div class="toast-title">${titles[type]}</div>
                 <div class="toast-message">${message}</div>
             </div>
-            <button class="toast-close" aria-label="?�림 ?�기">
+            <button class="toast-close" aria-label="알림 닫기">
                 <i class="fas fa-times"></i>
             </button>
         `;
@@ -62,12 +62,12 @@ class ToastManager {
 
         this.container.appendChild(toast);
 
-        // ?�동 ?�거
+        // 자동 제거
         if (duration > 0) {
             setTimeout(() => this.remove(toast), duration);
         }
 
-        console.log(`?�� ?�스???�림 [${type}]: ${message}`);
+        console.log(`📢 토스트 알림 [${type}]: ${message}`);
         return toast;
     }
 
@@ -97,59 +97,59 @@ class ToastManager {
     }
 }
 
-// ?�역 ?�스??매니?� ?�스?�스
+// 전역 토스트 매니저 인스턴스
 const toast = new ToastManager();
 
-// ===== Firebase 초기??(?�전???�러 처리) =====
+// ===== Firebase 초기화 (안전한 에러 처리) =====
 async function initializeFirebase() {
     try {
-        console.log('?�� Firebase 초기???�도... (공통 ?�정 ?�용)');
+        console.log('🔥 Firebase 초기화 시도... (공통 설정 사용)');
 
-        // 공통 ?�정?�서 가?�온 URL ?�용
+        // 공통 설정에서 가져온 URL 사용
         const { initializeApp } = await import(getFirebaseUrl('app'));
         const { getFirestore, collection, getDocs, addDoc } = await import(getFirebaseUrl('firestore'));
 
-        // 공통 ?�정 ?�용 (firebase-config.js)
+        // 공통 설정 사용 (firebase-config.js)
         const app = initializeApp(FIREBASE_CONFIG);
         db = getFirestore(app);
         firebaseLoaded = true;
 
-        // ?�역?�로 ?�출
+        // 전역으로 노출
         window.firebase = { db, collection, getDocs, addDoc };
 
-        console.log('??Firebase 초기???�공 (SDK v' + FIREBASE_SDK_VERSION + ')');
+        console.log('✅ Firebase 초기화 성공 (SDK v' + FIREBASE_SDK_VERSION + ')');
         return { db, collection, getDocs, addDoc };
 
     } catch (error) {
-        console.warn('?�️ Firebase 초기???�패, ?�플 ?�이?�로 진행:', error);
+        console.warn('⚠️ Firebase 초기화 실패, 샘플 데이터로 진행:', error);
         firebaseLoaded = false;
-        toast.warning('?�시�??�이???�결???�패?�습?�다. ?�플 ?�이?��? ?�시?�니??', 'Firebase ?�결 ?�패', 8000);
+        toast.warning('실시간 데이터 연결에 실패했습니다. 샘플 데이터를 표시합니다.', 'Firebase 연결 실패', 8000);
         return null;
     }
 }
 
-// ===== ?�보�?관리자 ?�래??=====
+// ===== 정보창 관리자 클래스 =====
 class InfoWindowManager {
     constructor() {
         this.currentInfoWindow = null;
         this.currentMarker = null;
         this.setupEventDelegation();
-        console.log('???�보�?관리자 초기???�료');
+        console.log('✅ 정보창 관리자 초기화 완료');
     }
 
     setupEventDelegation() {
-        // ?�벤???�임?�로 ?�기 버튼 처리
+        // 이벤트 위임으로 닫기 버튼 처리
         document.addEventListener('click', (event) => {
             const closeBtn = event.target.closest('.info-window-close');
             if (closeBtn) {
                 event.preventDefault();
                 event.stopPropagation();
                 this.closeCurrentInfoWindow();
-                console.log('?�� ?�보�??�힘');
+                console.log('🔽 정보창 닫힘');
             }
         });
 
-        // ESC ?�로 ?�보�??�기
+        // ESC 키로 정보창 닫기
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
                 this.closeCurrentInfoWindow();
@@ -181,7 +181,7 @@ class InfoWindowManager {
             this.currentInfoWindow = infoWindow;
             this.currentMarker = marker;
 
-            // InfoWindow가 ?�린 ???�기 버튼???�벤??바인??
+            // InfoWindow가 열린 후 닫기 버튼에 이벤트 바인딩
             setTimeout(() => {
                 const closeBtn = document.querySelector('.info-window-close');
                 if (closeBtn) {
@@ -189,16 +189,16 @@ class InfoWindowManager {
                         e.preventDefault();
                         e.stopPropagation();
                         this.closeCurrentInfoWindow();
-                        console.log('?�� ?�보�??�힘 (X 버튼)');
+                        console.log('🔽 정보창 닫힘 (X 버튼)');
                     };
                 }
             }, 100);
 
-            console.log('?�� ?�보�??�림:', marker.getTitle());
+            console.log('🔼 정보창 열림:', marker.getTitle());
             return infoWindow;
 
         } catch (error) {
-            console.error('???�보�??�기 ?�패:', error);
+            console.error('❌ 정보창 열기 실패:', error);
             return null;
         }
     }
@@ -208,7 +208,7 @@ class InfoWindowManager {
             try {
                 this.currentInfoWindow.close();
             } catch (error) {
-                console.warn('?�️ ?�보�??�기 �??�류:', error);
+                console.warn('⚠️ 정보창 닫기 중 오류:', error);
             }
             this.currentInfoWindow = null;
             this.currentMarker = null;
@@ -224,10 +224,10 @@ class InfoWindowManager {
     }
 }
 
-// ===== 마커 ?�이�?HTML ?�성 ?�수 =====
+// ===== 마커 아이콘 HTML 생성 함수 =====
 const createMarkerContent = (name) => {
     const truncatedName = name.length > 10 ? name.substring(0, 10) + '...' : name;
-
+    
     return `
         <div class="marker-container">
             <div class="marker-content">
@@ -245,28 +245,28 @@ const createMarkerContent = (name) => {
     `;
 };
 
-// ===== ?�보�??�용 HTML ?�성 ?�수 =====
+// ===== 정보창 내용 HTML 생성 함수 =====
 const createInfoWindowContent = (center) => {
-    // 주소 ?�보
-    const addressHtml = center.address ?
+    // 주소 정보
+    const addressHtml = center.address ? 
         `<div class="info-window-info">
             <i class="fas fa-map-marker-alt" style="color: #0077cc; margin-right: 6px;"></i> 
             ${center.address}
         </div>` : '';
-
-    // 기본 ?�보
+    
+    // 기본 정보
     const basicInfoHtml = center.basicInfo ?
         `<div class="info-window-info" style="margin-top: 8px;">
             ${center.basicInfo.length > 100 ? center.basicInfo.substring(0, 100) + '...' : center.basicInfo}
         </div>` : '';
-
-    // 버튼??
+    
+    // 버튼들
     let buttonsHtml = '';
 
     if (center.links?.naver) {
         buttonsHtml += `
             <a href="${center.links.naver}" target="_blank" rel="noopener noreferrer" class="directions-button">
-                <i class="fas fa-directions"></i> 길찾�?
+                <i class="fas fa-directions"></i> 길찾기
             </a>
         `;
     }
@@ -274,22 +274,22 @@ const createInfoWindowContent = (center) => {
     if (center.links?.website) {
         buttonsHtml += `
             <a href="${center.links.website}" target="_blank" rel="noopener noreferrer" class="search-button">
-                <i class="fas fa-external-link-alt"></i> ?�사?�트
+                <i class="fas fa-external-link-alt"></i> 웹사이트
             </a>
         `;
     }
 
-    // 공유 버튼 추�?
+    // 공유 버튼 추가
     buttonsHtml += `
         <button class="share-button search-button" data-center-id="${center.id}" onclick="shareCenter('${center.id}')">
             <i class="fas fa-share-alt"></i> 공유
         </button>
     `;
 
-    // 추�? ?�보 ?�그
+    // 추가 정보 태그
     let tagsHtml = '';
     if (center.capacity) {
-        tagsHtml += `<span class="info-tag"><i class="fas fa-users"></i> ${center.capacity}�?/span>`;
+        tagsHtml += `<span class="info-tag"><i class="fas fa-users"></i> ${center.capacity}명</span>`;
     }
     if (center.region) {
         tagsHtml += `<span class="info-tag"><i class="fas fa-map"></i> ${center.region}</span>`;
@@ -302,7 +302,7 @@ const createInfoWindowContent = (center) => {
                     <h3 class="info-window-title">${center.name}</h3>
                     ${center.branch ? `<div class="info-window-branch">${center.branch}</div>` : ''}
                 </div>
-                <button class="info-window-close" aria-label="?�보�??�기">
+                <button class="info-window-close" aria-label="정보창 닫기">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -317,119 +317,119 @@ const createInfoWindowContent = (center) => {
     `;
 };
 
-// ===== ?�플 ?�이???�성 =====
+// ===== 샘플 데이터 생성 =====
 const generateSampleData = () => {
-    console.log('?�� ?�플 ?�이???�성');
-
+    console.log('📋 샘플 데이터 생성');
+    
     return [
         {
             id: 'sample1',
-            name: '?�울교육?�수??,
-            branch: '강남지??,
-            basicInfo: '최신 ?�설??갖춘 교육?�문 ?�수?�입?�다. ?�양??교육 ?�로그램�??�의?�설???�공?�며, 지?�철 2?�선 강남??��???�보 5�?거리???�치???�습?�다.',
-            region: '?�울',
+            name: '서울교육연수원',
+            branch: '강남지점',
+            basicInfo: '최신 시설을 갖춘 교육전문 연수원입니다. 다양한 교육 프로그램과 편의시설을 제공하며, 지하철 2호선 강남역에서 도보 5분 거리에 위치해 있습니다.',
+            region: '서울',
             capacity: 150,
-            address: '?�울?�별??강남�??�헤?��?123',
+            address: '서울특별시 강남구 테헤란로 123',
             location: { lat: 37.4979, lng: 127.0276 },
-            links: {
+            links: { 
                 website: 'https://example.com',
                 naver: 'https://map.naver.com'
             }
         },
         {
             id: 'sample2',
-            name: '경기?�수??,
-            branch: '?�원지??,
-            basicInfo: '?�연 친화???�경???�규모 ?�수?�설?�니?? ?�박?�설�?체육?�설???�비?�어 ?�으�? ?�체 ?�수??최적?�된 ?�설??보유?�고 ?�습?�다.',
+            name: '경기연수원',
+            branch: '수원지점',
+            basicInfo: '자연 친화적 환경의 대규모 연수시설입니다. 숙박시설과 체육시설이 완비되어 있으며, 단체 연수에 최적화된 시설을 보유하고 있습니다.',
             region: '경기',
             capacity: 300,
-            address: '경기???�원???�통�??�드컵로 456',
+            address: '경기도 수원시 영통구 월드컵로 456',
             location: { lat: 37.2636, lng: 127.0286 },
-            links: {
+            links: { 
                 website: 'https://example.com',
                 naver: 'https://map.naver.com'
             }
         },
         {
             id: 'sample3',
-            name: '부?�연?�원',
-            branch: '?�운?�지??,
-            basicInfo: '바다가 보이???�름?�운 ?�수?�입?�다. ?�양?�포츠�? ?�계???�별 ?�로그램???�영?�며, ?�양�?교육???�께 ?????�는 최고???�경???�공?�니??',
-            region: '부??,
+            name: '부산연수원',
+            branch: '해운대지점',
+            basicInfo: '바다가 보이는 아름다운 연수원입니다. 해양스포츠와 연계한 특별 프로그램을 운영하며, 휴양과 교육을 함께 할 수 있는 최고의 환경을 제공합니다.',
+            region: '부산',
             capacity: 200,
-            address: '부?�광??�� ?�운?��??�운?�?��?�?789',
+            address: '부산광역시 해운대구 해운대해변로 789',
             location: { lat: 35.1595, lng: 129.1615 },
-            links: {
+            links: { 
                 website: 'https://example.com',
                 naver: 'https://map.naver.com'
             }
         },
         {
             id: 'sample4',
-            name: '?�?�교?�센??,
-            branch: '?�성지??,
-            basicInfo: '과학?�시 ?�?�의 첨단 교육?�설?�니?? IT 교육???�화???�비?� ?�설??보유?�고 ?�으�? ?�구개발 관??교육 ?�로그램???�공?�니??',
-            region: '?�??,
+            name: '대전교육센터',
+            branch: '유성지점',
+            basicInfo: '과학도시 대전의 첨단 교육시설입니다. IT 교육에 특화된 장비와 시설을 보유하고 있으며, 연구개발 관련 교육 프로그램을 제공합니다.',
+            region: '대전',
             capacity: 120,
-            address: '?�?�광??�� ?�성�??�?�로 321',
+            address: '대전광역시 유성구 대학로 321',
             location: { lat: 36.3504, lng: 127.3845 },
-            links: {
+            links: { 
                 website: 'https://example.com',
                 naver: 'https://map.naver.com'
             }
         },
         {
             id: 'sample5',
-            name: '?�주?�수??,
-            branch: '?�주?��???,
-            basicInfo: '?�름?�운 ?�주?�의 ?�연 ?�에??진행?�는 ?�별???�수 경험???�공?�니?? ?�주??�?�� ?�연?�경�??�께?�는 ?�링 ?�수 ?�로그램???�징?�니??',
-            region: '?�주',
+            name: '제주연수원',
+            branch: '제주시지점',
+            basicInfo: '아름다운 제주도의 자연 속에서 진행되는 특별한 연수 경험을 제공합니다. 제주의 청정 자연환경과 함께하는 힐링 연수 프로그램이 특징입니다.',
+            region: '제주',
             capacity: 80,
-            address: '?�주?�별?�치???�주??첨단�?654',
+            address: '제주특별자치도 제주시 첨단로 654',
             location: { lat: 33.4996, lng: 126.5312 },
-            links: {
+            links: { 
                 website: 'https://example.com',
                 naver: 'https://map.naver.com'
             }
         },
         {
             id: 'sample6',
-            name: '강원?�수??,
-            branch: '춘천지??,
-            basicInfo: '�?�� 강원?�의 ?�연 ?�에???�영?�는 ?�수?�입?�다. ?�과 ?�수가 ?�우?�진 ?�경?�서 ?�신???�충?�할 ???�습?�다.',
+            name: '강원연수원',
+            branch: '춘천지점',
+            basicInfo: '청정 강원도의 자연 속에서 운영되는 연수원입니다. 산과 호수가 어우러진 환경에서 심신을 재충전할 수 있습니다.',
             region: '강원',
             capacity: 180,
-            address: '강원??춘천???�암?��?789',
+            address: '강원도 춘천시 의암대로 789',
             location: { lat: 37.8813, lng: 127.7298 },
-            links: {
+            links: { 
                 website: 'https://example.com',
                 naver: 'https://map.naver.com'
             }
         },
         {
             id: 'sample7',
-            name: '?�남?�수??,
-            branch: '?�천지??,
-            basicInfo: '?�도???�취�??�낄 ???�는 ?�통�??��?가 조화???�수?�입?�다. ?�천�?�???�원�??�접???�습?�다.',
-            region: '?�라',
+            name: '전남연수원',
+            branch: '순천지점',
+            basicInfo: '남도의 정취를 느낄 수 있는 전통과 현대가 조화된 연수원입니다. 순천만 국가정원과 인접해 있습니다.',
+            region: '전라',
             capacity: 160,
-            address: '?�라?�도 ?�천???�천만길 123',
+            address: '전라남도 순천시 순천만길 123',
             location: { lat: 34.9506, lng: 127.4872 },
-            links: {
+            links: { 
                 website: 'https://example.com',
                 naver: 'https://map.naver.com'
             }
         },
         {
             id: 'sample8',
-            name: '경북?�수??,
-            branch: '경주지??,
-            basicInfo: '천년 고도 경주????��??배경 ?�에???�영?�는 ?�수?�입?�다. 문화?�적지 견학�??�계???�별 ?�로그램???�공?�니??',
+            name: '경북연수원',
+            branch: '경주지점',
+            basicInfo: '천년 고도 경주의 역사적 배경 속에서 운영되는 연수원입니다. 문화유적지 견학과 연계한 특별 프로그램을 제공합니다.',
             region: '경상',
             capacity: 140,
-            address: '경상북도 경주??첨성�?456',
+            address: '경상북도 경주시 첨성로 456',
             location: { lat: 35.8562, lng: 129.2247 },
-            links: {
+            links: { 
                 website: 'https://example.com',
                 naver: 'https://map.naver.com'
             }
@@ -437,18 +437,18 @@ const generateSampleData = () => {
     ];
 };
 
-// ===== 지??초기???�수 =====
+// ===== 지도 초기화 함수 =====
 const initMap = async () => {
     try {
-        console.log('?���?지??초기???�작');
-        showLoadingMessage('지?��? 초기?�하??�?..');
-
-        // ?�이�?지??API 로드 ?�인
+        console.log('🗺️ 지도 초기화 시작');
+        showLoadingMessage('지도를 초기화하는 중...');
+        
+        // 네이버 지도 API 로드 확인
         if (typeof naver === 'undefined' || !naver.maps) {
-            throw new Error('?�이�?지??API가 로드?��? ?�았?�니??);
+            throw new Error('네이버 지도 API가 로드되지 않았습니다');
         }
 
-        // 지???�성 (부?�러???�니메이???�정)
+        // 지도 생성 (부드러운 애니메이션 설정)
         map = new naver.maps.Map('map', {
             center: new naver.maps.LatLng(36.2253017, 127.6460516),
             zoom: 7,
@@ -461,7 +461,7 @@ const initMap = async () => {
             scaleControl: true,
             logoControl: true,
             mapDataControl: true,
-            // 부?�러???�니메이???�정
+            // 부드러운 애니메이션 설정
             tileTransition: true,
             tileDuration: 200,
             zoomOrigin: null,
@@ -471,124 +471,124 @@ const initMap = async () => {
             draggable: true,
             disableKineticPan: false,
             tileSpare: 2,
-            // ?�능 최적??
+            // 성능 최적화
             useStyleMap: true,
             blankTileImage: null,
-            // 부?�러???��?/축소�??�한 ?�정
+            // 부드러운 확대/축소를 위한 설정
             zoomControlOptions: {
                 position: naver.maps.Position.TOP_RIGHT,
                 style: naver.maps.ZoomControlStyle.SMALL
             }
         });
 
-        console.log('??지???�성 ?�료');
+        console.log('✅ 지도 생성 완료');
 
-        // ?�보�?관리자 초기??
+        // 정보창 관리자 초기화
         infoWindowManager = new InfoWindowManager();
 
-        // ?�벤??리스???�정
+        // 이벤트 리스너 설정
         setupMapControlEvents();
         setupFilterEvents();
         setupSearchEvents();
         setupLogoClickEvent();
 
-        // ?�수???�이??로드
-        showLoadingMessage('?�수???�이?��? 불러?�는 �?..');
+        // 연수원 데이터 로드
+        showLoadingMessage('연수원 데이터를 불러오는 중...');
         await loadCenters();
 
-        // URL ?�라미터 처리
+        // URL 파라미터 처리
         handleUrlParams();
 
-        // 초기???�료
+        // 초기화 완료
         mapInitialized = true;
         hideMapLoading();
 
-        console.log('?�� 지??초기???�료');
+        console.log('🎉 지도 초기화 완료');
 
     } catch (error) {
-        console.error('??지??초기???�패:', error);
-        showError(`지??초기?�에 ?�패?�습?�다: ${error.message}`);
+        console.error('❌ 지도 초기화 실패:', error);
+        showError(`지도 초기화에 실패했습니다: ${error.message}`);
         hideMapLoading();
     }
 };
 
-// ===== ?�수???�이??로드 =====
+// ===== 연수원 데이터 로드 =====
 const loadCenters = async () => {
     try {
-        console.log('?�� ?�수???�이??로드 ?�작');
-
+        console.log('📊 연수원 데이터 로드 시작');
+        
         let centersData = [];
-
-        // Firebase 초기???�도
+        
+        // Firebase 초기화 시도
         const firebaseModules = await initializeFirebase();
-
+        
         if (firebaseModules && firebaseLoaded) {
             try {
-                showLoadingMessage('Firebase?�서 ?�이?��? 가?�오??�?..');
-
+                showLoadingMessage('Firebase에서 데이터를 가져오는 중...');
+                
                 const { collection, getDocs } = firebaseModules;
                 const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-
+                
                 querySnapshot.forEach((doc) => {
                     const center = doc.data();
                     center.id = doc.id;
                     centersData.push(center);
                 });
-
-                console.log(`??Firebase?�서 ${centersData.length}�??�수??로드 ?�료`);
-                toast.success(`${centersData.length}개의 ?�수???�보�?불러?�습?�다.`, '?�이??로드 ?�료', 4000);
+                
+                console.log(`✅ Firebase에서 ${centersData.length}개 연수원 로드 완료`);
+                toast.success(`${centersData.length}개의 연수원 정보를 불러왔습니다.`, '데이터 로드 완료', 4000);
 
             } catch (firebaseError) {
-                console.warn('?�️ Firebase ?�이??로드 ?�패, ?�플 ?�이???�용:', firebaseError);
+                console.warn('⚠️ Firebase 데이터 로드 실패, 샘플 데이터 사용:', firebaseError);
                 centersData = generateSampleData();
-                toast.warning('?�이??로드 ?�패. ?�플 ?�이?��? ?�시?�니??', 'Firebase ?�류', 6000);
+                toast.warning('데이터 로드 실패. 샘플 데이터를 표시합니다.', 'Firebase 오류', 6000);
             }
         } else {
-            console.log('?�� Firebase ?�결 ?�패, ?�플 ?�이???�용');
+            console.log('📋 Firebase 연결 실패, 샘플 데이터 사용');
             centersData = generateSampleData();
         }
 
-        // ?�이??검�?
+        // 데이터 검증
         if (!Array.isArray(centersData) || centersData.length === 0) {
-            throw new Error('?�수???�이?��? ?�습?�다');
+            throw new Error('연수원 데이터가 없습니다');
         }
 
-        // 마커 ?�성
-        showLoadingMessage('지?�에 ?�수?�을 ?�시?�는 �?..');
+        // 마커 생성
+        showLoadingMessage('지도에 연수원을 표시하는 중...');
         await createMarkersFromData(centersData);
-
-        // 결과 카운???�데?�트
+        
+        // 결과 카운트 업데이트
         updateResultsCount(centersData.length);
-
-        console.log(`?�� �?${centersData.length}�??�수??마커 ?�성 ?�료`);
+        
+        console.log(`🎯 총 ${centersData.length}개 연수원 마커 생성 완료`);
 
     } catch (error) {
-        console.error('???�이??로드 ?�패:', error);
-
-        // 최후??방법: ?�플 ?�이?�로 복구
+        console.error('❌ 데이터 로드 실패:', error);
+        
+        // 최후의 방법: 샘플 데이터로 복구
         try {
             const sampleData = generateSampleData();
             await createMarkersFromData(sampleData);
             updateResultsCount(sampleData.length);
-            console.log('?�� ?�플 ?�이?�로 복구 ?�료');
+            console.log('📋 샘플 데이터로 복구 완료');
         } catch (sampleError) {
-            console.error('???�플 ?�이??복구???�패:', sampleError);
-            showError('?�수???�이?��? 불러?????�습?�다. ?�이지�??�로고침?�주?�요.');
+            console.error('❌ 샘플 데이터 복구도 실패:', sampleError);
+            showError('연수원 데이터를 불러올 수 없습니다. 페이지를 새로고침해주세요.');
         }
     }
 };
 
-// ===== 마커 ?�성 =====
+// ===== 마커 생성 =====
 const createMarkersFromData = async (centersData) => {
     try {
         allMarkers = [];
-
-        // 마커 ?�성
+        
+        // 마커 생성
         centersData.forEach((center, index) => {
             if (center.location && center.location.lat && center.location.lng) {
                 const marker = new naver.maps.Marker({
                     position: new naver.maps.LatLng(center.location.lat, center.location.lng),
-                    map: null, // ?�러?�터?��? 관�?
+                    map: null, // 클러스터러가 관리
                     title: center.name,
                     icon: {
                         content: createMarkerContent(center.name),
@@ -596,46 +596,46 @@ const createMarkersFromData = async (centersData) => {
                     }
                 });
 
-                // 마커???�이???�??
+                // 마커에 데이터 저장
                 marker.centerData = center;
 
-                // 마커 ?�릭 ?�벤??
-                naver.maps.Event.addListener(marker, 'click', function () {
+                // 마커 클릭 이벤트
+                naver.maps.Event.addListener(marker, 'click', function() {
                     const content = createInfoWindowContent(center);
                     infoWindowManager.openInfoWindow(map, marker, content);
                 });
 
                 allMarkers.push(marker);
             } else {
-                console.warn('?�️ ?�효?��? ?��? ?�치 ?�이??', center);
+                console.warn('⚠️ 유효하지 않은 위치 데이터:', center);
             }
         });
 
-        console.log(`?�� ${allMarkers.length}�?마커 ?�성 ?�료`);
+        console.log(`📍 ${allMarkers.length}개 마커 생성 완료`);
 
-        // 마커 ?�러?�터�??�용
+        // 마커 클러스터링 적용
         await applyMarkerClustering();
 
         filteredMarkers = [...allMarkers];
-
+        
     } catch (error) {
-        console.error('??마커 ?�성 ?�패:', error);
+        console.error('❌ 마커 생성 실패:', error);
         throw error;
     }
 };
 
-// ===== 마커 ?�러?�터�??�용 =====
+// ===== 마커 클러스터링 적용 =====
 const applyMarkerClustering = async () => {
     try {
         if (typeof MarkerClustering !== 'undefined' && allMarkers.length > 0) {
-            console.log('?�� 마커 ?�러?�터�??�용 �?..');
+            console.log('🔗 마커 클러스터링 적용 중...');
 
             clusterer = new MarkerClustering({
                 minClusterSize: 2,
                 maxZoom: 13,
                 map: map,
                 markers: allMarkers,
-                disableClickZoom: true, // 기본 �??�작 비활?�화 (커스?� ?�들???�용)
+                disableClickZoom: true, // 기본 줌 동작 비활성화 (커스텀 핸들러 사용)
                 gridSize: 120,
                 icons: [
                     {
@@ -645,14 +645,14 @@ const applyMarkerClustering = async () => {
                     }
                 ],
                 indexGenerator: [10, 100, 200, 500, 1000],
-                stylingFunction: function (clusterMarker, count) {
-                    // 0�??�는 1개일 ?�는 ?�러?�터 마커 ?�전???��?
+                stylingFunction: function(clusterMarker, count) {
+                    // 0개 또는 1개일 때는 클러스터 마커 완전히 숨김
                     if (count <= 1) {
-                        // Naver Maps API�?마커 ?��?
+                        // Naver Maps API로 마커 숨김
                         if (typeof clusterMarker.setVisible === 'function') {
                             clusterMarker.setVisible(false);
                         }
-                        // DOM ?�소???��? 처리
+                        // DOM 요소도 숨김 처리
                         const element = clusterMarker.getElement();
                         if (element) {
                             element.style.display = 'none';
@@ -663,7 +663,7 @@ const applyMarkerClustering = async () => {
                         return;
                     }
 
-                    // ?�러?�터 ?�기�??�래??�??�이�?결정
+                    // 클러스터 크기별 클래스 및 사이즈 결정
                     let className = 'cluster-marker-1';
                     let size = 40;
 
@@ -681,12 +681,12 @@ const applyMarkerClustering = async () => {
                         size = 50;
                     }
 
-                    // ?�러?�터 마커 보이�?
+                    // 클러스터 마커 보이기
                     if (typeof clusterMarker.setVisible === 'function') {
                         clusterMarker.setVisible(true);
                     }
 
-                    // DOM 직접 ?�데?�트�??�제 count ?�시
+                    // DOM 직접 업데이트로 실제 count 표시
                     const element = clusterMarker.getElement();
                     if (element) {
                         element.style.display = 'block';
@@ -698,10 +698,10 @@ const applyMarkerClustering = async () => {
                         element.style.height = size + 'px';
                         element.style.cursor = 'pointer';
 
-                        // DOM ?�소??직접 ?�릭 ?�벤??추�? (??번만)
+                        // DOM 요소에 직접 클릭 이벤트 추가 (한 번만)
                         if (!element._clusterClickBound) {
                             element._clusterClickBound = true;
-                            element.addEventListener('click', function (e) {
+                            element.addEventListener('click', function(e) {
                                 e.stopPropagation();
                                 const position = clusterMarker.getPosition();
                                 if (position) {
@@ -713,7 +713,7 @@ const applyMarkerClustering = async () => {
                                         easing: 'easeOutCubic'
                                     });
 
-                                    console.log(`?�� ?�러?�터 ?�릭: ${count}�?마커, �?${currentZoom} ??${newZoom}`);
+                                    console.log(`📍 클러스터 클릭: ${count}개 마커, 줌 ${currentZoom} → ${newZoom}`);
                                 }
                             });
                         }
@@ -721,54 +721,54 @@ const applyMarkerClustering = async () => {
                 }
             });
 
-            console.log('??마커 ?�러?�터�??�용 ?�료');
+            console.log('✅ 마커 클러스터링 적용 완료');
 
         } else {
-            console.warn('?�️ MarkerClustering ?�이브러�??�음, 개별 마커 ?�시');
+            console.warn('⚠️ MarkerClustering 라이브러리 없음, 개별 마커 표시');
 
-            // ?�러?�터�??�이 개별 마커 ?�시
+            // 클러스터링 없이 개별 마커 표시
             allMarkers.forEach(marker => {
                 marker.setMap(map);
             });
         }
-
+        
     } catch (error) {
-        console.error('???�러?�터�??�용 ?�패:', error);
-
-        // ?�백: 개별 마커 ?�시
+        console.error('❌ 클러스터링 적용 실패:', error);
+        
+        // 폴백: 개별 마커 표시
         allMarkers.forEach(marker => {
             try {
                 marker.setMap(map);
             } catch (markerError) {
-                console.warn('?�️ 마커 ?�시 ?�패:', markerError);
+                console.warn('⚠️ 마커 표시 실패:', markerError);
             }
         });
     }
 };
 
-// ===== 지??컨트�??�벤???�정 =====
+// ===== 지도 컨트롤 이벤트 설정 =====
 const setupMapControlEvents = () => {
-    // ?�재 ?�치 버튼
+    // 현재 위치 버튼
     const currentLocationBtn = document.getElementById('current-location');
     if (currentLocationBtn) {
         currentLocationBtn.addEventListener('click', () => {
             if (navigator.geolocation) {
                 currentLocationBtn.disabled = true;
                 currentLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
+                
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
                         const currentPos = new naver.maps.LatLng(lat, lng);
-
-                        // 부?�러???�니메이?�으�??�동
+                        
+                        // 부드러운 애니메이션으로 이동
                         map.morph(currentPos, 15, {
                             duration: 1000,
                             easing: 'easeInOutCubic'
                         });
-
-                        // ?�니메이???�료 ??마커 ?�시
+                        
+                        // 애니메이션 완료 후 마커 표시
                         setTimeout(() => {
                             new naver.maps.Marker({
                                 position: currentPos,
@@ -779,16 +779,16 @@ const setupMapControlEvents = () => {
                                 }
                             });
                         }, 1000);
-
-                        console.log('?�� ?�재 ?�치�??�동');
-
+                        
+                        console.log('📍 현재 위치로 이동');
+                        
                         currentLocationBtn.disabled = false;
                         currentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i>';
                     },
                     (error) => {
-                        console.warn('?�️ ?�치 ?�보 가?�오�??�패:', error);
-                        alert('?�치 ?�보�?가?�올 ???�습?�다. ?�치 권한???�인?�주?�요.');
-
+                        console.warn('⚠️ 위치 정보 가져오기 실패:', error);
+                        alert('위치 정보를 가져올 수 없습니다. 위치 권한을 확인해주세요.');
+                        
                         currentLocationBtn.disabled = false;
                         currentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i>';
                     },
@@ -798,19 +798,19 @@ const setupMapControlEvents = () => {
                     }
                 );
             } else {
-                alert('??브라?��????�치 ?�비?��? 지?�하지 ?�습?�다.');
+                alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
             }
         });
     }
 
-    // ?��? 버튼
+    // 확대 버튼
     const zoomInBtn = document.getElementById('zoom-in');
     if (zoomInBtn) {
         zoomInBtn.addEventListener('click', () => {
             const currentZoom = map.getZoom();
-            const newZoom = Math.min(currentZoom + 1, 21); // 최�? �??�벨 ?�한
-
-            // 부?�러???�니메이?�으�??��?
+            const newZoom = Math.min(currentZoom + 1, 21); // 최대 줌 레벨 제한
+            
+            // 부드러운 애니메이션으로 확대
             map.morph(map.getCenter(), newZoom, {
                 duration: 300,
                 easing: 'easeOutCubic'
@@ -823,9 +823,9 @@ const setupMapControlEvents = () => {
     if (zoomOutBtn) {
         zoomOutBtn.addEventListener('click', () => {
             const currentZoom = map.getZoom();
-            const newZoom = Math.max(currentZoom - 1, 1); // 최소 �??�벨 ?�한
-
-            // 부?�러???�니메이?�으�?축소
+            const newZoom = Math.max(currentZoom - 1, 1); // 최소 줌 레벨 제한
+            
+            // 부드러운 애니메이션으로 축소
             map.morph(map.getCenter(), newZoom, {
                 duration: 300,
                 easing: 'easeOutCubic'
@@ -833,24 +833,24 @@ const setupMapControlEvents = () => {
         });
     }
 
-    // ?�체보기 버튼
+    // 전체보기 버튼
     const resetMapBtn = document.getElementById('reset-map');
     if (resetMapBtn) {
         resetMapBtn.addEventListener('click', () => {
-            // 부?�러???�니메이?�으�?초기 ?�치 복�?
+            // 부드러운 애니메이션으로 초기 위치 복귀
             map.morph(new naver.maps.LatLng(36.2253017, 127.6460516), 7, {
                 duration: 800,
                 easing: 'easeInOutCubic'
             });
-
+            
             infoWindowManager.closeCurrentInfoWindow();
             resetAllFilters();
-            console.log('?�� 지??초기 ?�치�?복�?');
+            console.log('🏠 지도 초기 위치로 복귀');
         });
     }
 };
 
-// ===== ?�터 ?�벤???�정 =====
+// ===== 필터 이벤트 설정 =====
 const setupFilterEvents = () => {
     const regionFilter = document.getElementById('region-filter');
     const capacityFilter = document.getElementById('capacity-filter');
@@ -858,26 +858,26 @@ const setupFilterEvents = () => {
     if (regionFilter) {
         regionFilter.addEventListener('change', applyFilters);
     }
-
+    
     if (capacityFilter) {
         capacityFilter.addEventListener('change', applyFilters);
     }
 
-    // ?�터 ?��? 버튼
+    // 필터 토글 버튼
     const filterToggle = document.querySelector('.filter-toggle');
     const filterOptions = document.querySelector('.filter-options');
-
+    
     if (filterToggle && filterOptions) {
-        filterToggle.addEventListener('click', function () {
+        filterToggle.addEventListener('click', function() {
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
-
+            
             this.setAttribute('aria-expanded', !isExpanded);
             filterOptions.classList.toggle('show');
             this.classList.toggle('active');
         });
 
-        // ?�터 ?��? ?�릭 ???�기
-        document.addEventListener('click', function (e) {
+        // 필터 외부 클릭 시 닫기
+        document.addEventListener('click', function(e) {
             if (!filterToggle.contains(e.target) && !filterOptions.contains(e.target)) {
                 filterOptions.classList.remove('show');
                 filterToggle.classList.remove('active');
@@ -887,159 +887,88 @@ const setupFilterEvents = () => {
     }
 };
 
-// ===== 검???�벤???�정 =====
-// ===== 최근 검?�어 관�?(localStorage) =====
-const RECENT_SEARCHES_KEY = 'tcmap_recent_searches';
-const MAX_RECENT = 5;
-
-const getRecentSearches = () => {
-    try { return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]'); }
-    catch { return []; }
-};
-
-const saveRecentSearch = (query) => {
-    if (!query || query.trim().length < 1) return;
-    const q = query.trim();
-    let list = getRecentSearches().filter(s => s !== q);
-    list.unshift(q);
-    list = list.slice(0, MAX_RECENT);
-    localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(list));
-};
-
-const clearRecentSearches = () => localStorage.removeItem(RECENT_SEARCHES_KEY);
-
+// ===== 검색 이벤트 설정 =====
 const setupSearchEvents = () => {
     const searchInput = document.getElementById('search-input');
     const clearIcon = document.querySelector('.clear-icon');
     const searchResults = document.querySelector('.search-results');
 
-    // 최근 검?�어 ?�널 ?�시
-    const showRecentSearches = () => {
-        if (!searchResults) return;
-        const list = getRecentSearches();
-        if (list.length === 0) { hideSearchResults(); return; }
-        const html = `
-            <div style="padding:8px 12px;font-size:12px;color:#999;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f0f0f0;">
-                <span>최근 검?�어</span>
-                <button id="clear-recent-btn" style="background:none;border:none;color:#0077cc;font-size:12px;cursor:pointer;min-height:auto;min-width:auto;padding:0;">?�체 ??��</button>
-            </div>
-            ${list.map(s => `
-                <div class="search-result-item recent-search-item" data-query="${s}" style="display:flex;align-items:center;gap:8px;">
-                    <i class="fas fa-history" style="color:#bbb;font-size:13px;"></i>
-                    <span class="search-result-name">${s}</span>
-                </div>
-            `).join('')}
-        `;
-        searchResults.innerHTML = html;
-        searchResults.style.display = 'block';
-
-        // ?�체 ??�� 버튼
-        document.getElementById('clear-recent-btn')?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            clearRecentSearches();
-            hideSearchResults();
-        });
-
-        // 최근 검?�어 ?�릭
-        searchResults.querySelectorAll('.recent-search-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const q = item.dataset.query;
-                if (searchInput) {
-                    searchInput.value = q;
-                    if (clearIcon) clearIcon.style.display = 'block';
-                }
-                saveRecentSearch(q);
-                applyFilters();
-                hideSearchResults();
-            });
-        });
-    };
-
     if (searchInput) {
         let searchTimeout;
-
-        // 검?�창 ?�커????최근 검?�어 ?�시
-        searchInput.addEventListener('focus', function () {
-            if (this.value.trim().length === 0) {
-                showRecentSearches();
-            }
-        });
-
-        // 검???�력 ?�벤??
-        searchInput.addEventListener('input', function () {
+        
+        // 검색 입력 이벤트
+        searchInput.addEventListener('input', function() {
             const query = this.value.trim();
-
-            // ?�리??버튼 ?�시/?��?
+            
+            // 클리어 버튼 표시/숨김
             if (clearIcon) {
                 clearIcon.style.display = query.length > 0 ? 'block' : 'none';
             }
-
-            // ?�바?�싱
+            
+            // 디바운싱
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 if (query.length > 0) {
                     showSearchResults(query);
                 } else {
-                    showRecentSearches();
+                    hideSearchResults();
                     applyFilters();
                 }
             }, 300);
         });
 
-        // ?�터 ??처리
-        searchInput.addEventListener('keydown', function (e) {
+        // 엔터 키 처리
+        searchInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                const q = this.value.trim();
-                if (q) saveRecentSearch(q);
                 applyFilters();
                 hideSearchResults();
             }
         });
     }
 
-    // ?�리??버튼 ?�벤??
+    // 클리어 버튼 이벤트
     if (clearIcon) {
-        clearIcon.addEventListener('click', function () {
+        clearIcon.addEventListener('click', function() {
             if (searchInput) {
                 searchInput.value = '';
                 searchInput.focus();
                 this.style.display = 'none';
-                showRecentSearches();
+                hideSearchResults();
                 applyFilters();
             }
         });
     }
 
-    // 관?�성 ?�수 계산 ?�수
+    // 관련성 점수 계산 함수
     function calculateRelevance(center, query) {
         const lowerQuery = query.toLowerCase();
         let score = 0;
 
-        // ?�름???�확???�치 (가???��? ?�수)
+        // 이름에 정확히 일치 (가장 높은 점수)
         if (center.name && center.name.toLowerCase() === lowerQuery) {
             score += 100;
         }
-        // ?�름???�작 (?��? ?�수)
+        // 이름에 시작 (높은 점수)
         else if (center.name && center.name.toLowerCase().startsWith(lowerQuery)) {
             score += 50;
         }
-        // ?�름???�함 (중간 ?�수)
+        // 이름에 포함 (중간 점수)
         else if (center.name && center.name.toLowerCase().includes(lowerQuery)) {
             score += 30;
         }
 
-        // 지?�명???�치
+        // 지점명에 일치
         if (center.branch && center.branch.toLowerCase().includes(lowerQuery)) {
             score += 20;
         }
 
-        // 지??�� ?�치
+        // 지역에 일치
         if (center.region && center.region.toLowerCase().includes(lowerQuery)) {
             score += 15;
         }
 
-        // 기본 ?�보???�치
+        // 기본 정보에 일치
         if (center.basicInfo && center.basicInfo.toLowerCase().includes(lowerQuery)) {
             score += 5;
         }
@@ -1047,7 +976,7 @@ const setupSearchEvents = () => {
         return score;
     }
 
-    // ?�스???�이?�이???�수
+    // 텍스트 하이라이트 함수
     function highlightText(text, query) {
         if (!text || !query) return text;
 
@@ -1055,19 +984,19 @@ const setupSearchEvents = () => {
         return text.replace(regex, '<mark style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500;">$1</mark>');
     }
 
-    // 검??결과 ?�시 ?�수
+    // 검색 결과 표시 함수
     function showSearchResults(query) {
         if (!searchResults || !allMarkers.length) return;
 
-        // 관?�성 ?�수 계산 �??�터�?
+        // 관련성 점수 계산 및 필터링
         const matches = allMarkers
             .map(marker => ({
                 marker,
                 score: calculateRelevance(marker.centerData, query)
             }))
             .filter(item => item.score > 0)
-            .sort((a, b) => b.score - a.score) // ?�수 ?�림차순 ?�렬
-            .slice(0, 5) // 최�? 5개만 ?�시
+            .sort((a, b) => b.score - a.score) // 점수 내림차순 정렬
+            .slice(0, 5) // 최대 5개만 표시
             .map(item => item.marker);
 
         if (matches.length > 0) {
@@ -1080,7 +1009,7 @@ const setupSearchEvents = () => {
                 return `
                     <div class="search-result-item" data-center-id="${center.id}">
                         <div class="search-result-name">${highlightedName}</div>
-                        <div class="search-result-info">${highlightedBranch}${highlightedBranch && highlightedRegion ? ' ??' : ''}${highlightedRegion}</div>
+                        <div class="search-result-info">${highlightedBranch}${highlightedBranch && highlightedRegion ? ' • ' : ''}${highlightedRegion}</div>
                     </div>
                 `;
             }).join('');
@@ -1088,37 +1017,37 @@ const setupSearchEvents = () => {
             searchResults.innerHTML = resultsHtml;
             searchResults.style.display = 'block';
 
-            // 검??결과 ?�릭 ?�벤??
+            // 검색 결과 클릭 이벤트
             searchResults.querySelectorAll('.search-result-item').forEach(item => {
-                item.addEventListener('click', function () {
+                item.addEventListener('click', function() {
                     const centerId = this.dataset.centerId;
                     const targetMarker = allMarkers.find(marker => marker.centerData.id === centerId);
-
+                    
                     if (targetMarker) {
-                        // 부?�러???�니메이?�으�??�동
+                        // 부드러운 애니메이션으로 이동
                         map.morph(targetMarker.getPosition(), 15, {
                             duration: 800,
                             easing: 'easeInOutCubic'
                         });
-
-                        // ?�니메이???�료 ???�보�??�기
+                        
+                        // 애니메이션 완료 후 정보창 열기
                         setTimeout(() => {
                             const content = createInfoWindowContent(targetMarker.centerData);
                             infoWindowManager.openInfoWindow(map, targetMarker, content);
                         }, 800);
-
+                        
                         hideSearchResults();
                         if (searchInput) searchInput.blur();
                     }
                 });
             });
         } else {
-            searchResults.innerHTML = '<div class="search-result-item">검??결과가 ?�습?�다</div>';
+            searchResults.innerHTML = '<div class="search-result-item">검색 결과가 없습니다</div>';
             searchResults.style.display = 'block';
         }
     }
 
-    // 검??결과 ?��? ?�수
+    // 검색 결과 숨김 함수
     function hideSearchResults() {
         if (searchResults) {
             searchResults.style.display = 'none';
@@ -1126,22 +1055,10 @@ const setupSearchEvents = () => {
     }
 };
 
-// ===== URL ?�라미터 ?�데?�트 (?�터 ?�태 공유) =====
-const updateUrlParams = (searchTerm, regionFilter, capacityFilter) => {
-    const params = new URLSearchParams();
-    if (searchTerm) params.set('search', searchTerm);
-    if (regionFilter) params.set('region', regionFilter);
-    if (capacityFilter) params.set('capacity', capacityFilter);
-    const newUrl = params.toString()
-        ? `${window.location.pathname}?${params.toString()}`
-        : window.location.pathname;
-    history.replaceState(null, '', newUrl);
-};
-
-// ===== ?�터 ?�용 =====
+// ===== 필터 적용 =====
 const applyFilters = () => {
     if (!allMarkers.length) return;
-
+    
     const searchTerm = document.getElementById('search-input')?.value.toLowerCase().trim() || '';
     const regionFilter = document.getElementById('region-filter')?.value || '';
     const capacityFilter = document.getElementById('capacity-filter')?.value || '';
@@ -1149,7 +1066,7 @@ const applyFilters = () => {
     filteredMarkers = allMarkers.filter(marker => {
         const center = marker.centerData;
 
-        // 검?�어 ?�터
+        // 검색어 필터
         if (searchTerm) {
             const searchFields = [
                 center.name || '',
@@ -1157,145 +1074,136 @@ const applyFilters = () => {
                 center.basicInfo || '',
                 center.region || ''
             ].join(' ').toLowerCase();
-
-            if (!searchFields.includes(searchTerm)) return false;
+            
+            if (!searchFields.includes(searchTerm)) {
+                return false;
+            }
         }
 
-        // 지???�터
-        if (regionFilter && center.region !== regionFilter) return false;
+        // 지역 필터
+        if (regionFilter && center.region !== regionFilter) {
+            return false;
+        }
 
-        // ?�용?�원 ?�터
+        // 수용인원 필터
         if (capacityFilter) {
             const capacity = parseInt(center.capacity) || 0;
             switch (capacityFilter) {
-                case '0-50': if (capacity > 50) return false; break;
-                case '51-100': if (capacity < 51 || capacity > 100) return false; break;
-                case '101-200': if (capacity < 101 || capacity > 200) return false; break;
-                case '201+': if (capacity < 201) return false; break;
+                case '0-50':
+                    if (capacity > 50) return false;
+                    break;
+                case '51-100':
+                    if (capacity < 51 || capacity > 100) return false;
+                    break;
+                case '101-200':
+                    if (capacity < 101 || capacity > 200) return false;
+                    break;
+                case '201+':
+                    if (capacity < 201) return false;
+                    break;
             }
         }
 
         return true;
     });
 
-    // ?�러?�터???�데?�트
+    // 클러스터러 업데이트
     if (clusterer) {
         clusterer.clearMarkers();
-        if (filteredMarkers.length > 0) clusterer.setMarkers(filteredMarkers);
+        if (filteredMarkers.length > 0) {
+            clusterer.setMarkers(filteredMarkers);
+        }
     }
 
-    // URL ?�태 ?�데?�트 (기능 5)
-    updateUrlParams(searchTerm, regionFilter, capacityFilter);
-
-    // 결과 카운???�데?�트
+    // 결과 카운트 업데이트
     updateResultsCount(filteredMarkers.length);
-    console.log(`?�� ?�터 ?�용: ${filteredMarkers.length}�?결과`);
+    
+    console.log(`🔎 필터 적용: ${filteredMarkers.length}개 결과`);
 };
 
-// ===== 모든 ?�터 초기??=====
+// ===== 모든 필터 초기화 =====
 const resetAllFilters = () => {
-    // ?�터 초기??
+    // 필터 초기화
     const regionFilter = document.getElementById('region-filter');
     const capacityFilter = document.getElementById('capacity-filter');
     const searchInput = document.getElementById('search-input');
     const clearIcon = document.querySelector('.clear-icon');
     const searchResults = document.querySelector('.search-results');
-
+    
     if (regionFilter) regionFilter.value = '';
     if (capacityFilter) capacityFilter.value = '';
     if (searchInput) searchInput.value = '';
     if (clearIcon) clearIcon.style.display = 'none';
     if (searchResults) searchResults.style.display = 'none';
-
-    // 모든 마커 ?�시 ?�시
+    
+    // 모든 마커 다시 표시
     if (clusterer && allMarkers.length > 0) {
         clusterer.clearMarkers();
         clusterer.setMarkers(allMarkers);
     }
-
+    
     filteredMarkers = [...allMarkers];
     updateResultsCount(allMarkers.length);
-
-    console.log('?�� 모든 ?�터 초기??);
+    
+    console.log('🔄 모든 필터 초기화');
 };
 
-// ===== 로고 ?�릭 ?�벤???�정 =====
+// ===== 로고 클릭 이벤트 설정 =====
 const setupLogoClickEvent = () => {
     const logoLink = document.querySelector('.logo a');
-
+    
     if (logoLink) {
         logoLink.addEventListener('click', (e) => {
-            if (window.location.pathname.endsWith('index.html') ||
+            if (window.location.pathname.endsWith('index.html') || 
                 window.location.pathname.endsWith('/')) {
                 e.preventDefault();
-
-                // 지??초기 ?�태�?복�? (부?�러???�니메이??
+                
+                // 지도 초기 상태로 복귀 (부드러운 애니메이션)
                 map.morph(new naver.maps.LatLng(36.2253017, 127.6460516), 7, {
                     duration: 800,
                     easing: 'easeInOutCubic'
                 });
-
-                // ?�보�??�기
+                
+                // 정보창 닫기
                 infoWindowManager.closeCurrentInfoWindow();
-
-                // 모든 ?�터 초기??
+                
+                // 모든 필터 초기화
                 resetAllFilters();
-
-                console.log('?�� 로고 ?�릭 - 초기 ?�태�?복�?');
+                
+                console.log('🏠 로고 클릭 - 초기 상태로 복귀');
             }
         });
     }
 };
 
-// ===== URL ?�라미터 처리 (기능 5: ?�터 ?�태 복원 + center ?�동) =====
+// ===== URL 파라미터 처리 =====
 const handleUrlParams = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const centerId = urlParams.get('center');
-    const searchParam = urlParams.get('search');
-    const regionParam = urlParams.get('region');
-    const capacityParam = urlParams.get('capacity');
-
-    // ?�터 ?�태 복원
-    let filtersApplied = false;
-    if (searchParam) {
-        const searchInput = document.getElementById('search-input');
-        const clearIcon = document.querySelector('.clear-icon');
-        if (searchInput) { searchInput.value = searchParam; }
-        if (clearIcon) clearIcon.style.display = 'block';
-        filtersApplied = true;
-    }
-    if (regionParam) {
-        const regionFilter = document.getElementById('region-filter');
-        if (regionFilter) regionFilter.value = regionParam;
-        filtersApplied = true;
-    }
-    if (capacityParam) {
-        const capacityFilter = document.getElementById('capacity-filter');
-        if (capacityFilter) capacityFilter.value = capacityParam;
-        filtersApplied = true;
-    }
-    if (filtersApplied) {
-        applyFilters();
-        console.log('?�� URL ?�라미터�??�터 복원:', { searchParam, regionParam, capacityParam });
-    }
-
-    // ?�정 ?�수???�커??
+    
     if (centerId && allMarkers.length > 0) {
         setTimeout(() => {
             const targetMarker = allMarkers.find(marker => marker.centerData.id === centerId);
             if (targetMarker) {
-                map.morph(targetMarker.getPosition(), 15, { duration: 1200, easing: 'easeInOutCubic' });
+                // 부드러운 애니메이션으로 이동
+                map.morph(targetMarker.getPosition(), 15, {
+                    duration: 1200,
+                    easing: 'easeInOutCubic'
+                });
+                
+                // 애니메이션 완료 후 정보창 열기
                 setTimeout(() => {
                     const content = createInfoWindowContent(targetMarker.centerData);
                     infoWindowManager.openInfoWindow(map, targetMarker, content);
                 }, 1200);
-                console.log('?�� URL ?�라미터�??�정 ?�수???�시:', targetMarker.getTitle());
+                
+                console.log('🎯 URL 파라미터로 특정 연수원 표시:', targetMarker.getTitle());
             }
         }, 1000);
     }
 };
 
-// ===== 로딩 메시지 ?�시 =====
+// ===== 로딩 메시지 표시 =====
 const showLoadingMessage = (message) => {
     const mapLoading = document.getElementById('map-loading');
     if (mapLoading) {
@@ -1307,43 +1215,43 @@ const showLoadingMessage = (message) => {
     }
 };
 
-// ===== 로딩 ?��? =====
+// ===== 로딩 숨김 =====
 const hideMapLoading = () => {
     const mapLoading = document.getElementById('map-loading');
     if (mapLoading) {
         mapLoading.style.display = 'none';
     }
-
-    // index.html?�서 ?�의???�수 ?�출
+    
+    // index.html에서 정의된 함수 호출
     if (typeof window.hideMapLoading === 'function') {
         window.hideMapLoading();
     }
-
-    console.log('??지??로딩 ?�료');
+    
+    console.log('✅ 지도 로딩 완료');
 };
 
-// ===== 결과 카운???�데?�트 =====
+// ===== 결과 카운트 업데이트 =====
 const updateResultsCount = (count) => {
-    // index.html?�서 ?�의???�수 ?�출
+    // index.html에서 정의된 함수 호출
     if (typeof window.updateResultsCount === 'function') {
         window.updateResultsCount(count);
     }
-
-    // ?�시 중인 카운???�데?�트
+    
+    // 표시 중인 카운트 업데이트
     const visibleCountElements = document.querySelectorAll('#visible-count, #current-count');
     visibleCountElements.forEach(element => {
         if (element) {
             element.textContent = count.toLocaleString();
         }
     });
-
-    console.log(`?�� ?�시 중인 ?�수?? ${count}�?);
+    
+    console.log(`📊 표시 중인 연수원: ${count}개`);
 };
 
-// ===== ?�러 ?�시 =====
+// ===== 에러 표시 =====
 const showError = (message) => {
-    console.error('???�러:', message);
-
+    console.error('❌ 에러:', message);
+    
     const mapElement = document.getElementById('map');
     if (mapElement) {
         mapElement.innerHTML = `
@@ -1360,7 +1268,7 @@ const showError = (message) => {
                 font-family: 'Noto Sans KR', sans-serif;
             ">
                 <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; color: #ffc107;"></i>
-                <h3 style="margin: 0 0 10px 0; color: #333;">?�류가 발생?�습?�다</h3>
+                <h3 style="margin: 0 0 10px 0; color: #333;">오류가 발생했습니다</h3>
                 <p style="margin: 0 0 20px 0; line-height: 1.5;">${message}</p>
                 <button onclick="location.reload()" style="
                     padding: 12px 24px;
@@ -1373,31 +1281,31 @@ const showError = (message) => {
                     font-weight: 500;
                     transition: background-color 0.3s;
                 " onmouseover="this.style.background='#0066b3'" onmouseout="this.style.background='#0077cc'">
-                    <i class="fas fa-redo" style="margin-right: 6px;"></i>?�로고침
+                    <i class="fas fa-redo" style="margin-right: 6px;"></i>새로고침
                 </button>
             </div>
         `;
     }
 };
 
-// ===== ?�이지 로드 ??초기??=====
+// ===== 페이지 로드 후 초기화 =====
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('?�� DOM 로드 ?�료 - 지??초기??준�?);
-
-    // ?�이�?지??API 로드 ?��?
+    console.log('📄 DOM 로드 완료 - 지도 초기화 준비');
+    
+    // 네이버 지도 API 로드 대기
     const checkNaverMaps = (attempts = 0) => {
         if (typeof naver !== 'undefined' && naver.maps) {
-            console.log('???�이�?지??API 로드 ?�료');
+            console.log('✅ 네이버 지도 API 로드 완료');
             initMap();
-        } else if (attempts < 50) { // 5초간 ?��?
+        } else if (attempts < 50) { // 5초간 대기
             setTimeout(() => checkNaverMaps(attempts + 1), 100);
         } else {
-            console.error('???�이�?지??API 로드 ?�?�아??);
-            showError('지??API 로드???�패?�습?�다. ?�트?�크 ?�결???�인?�고 ?�로고침?�주?�요.');
+            console.error('❌ 네이버 지도 API 로드 타임아웃');
+            showError('지도 API 로드에 실패했습니다. 네트워크 연결을 확인하고 새로고침해주세요.');
             hideMapLoading();
         }
     };
-
+    
     checkNaverMaps();
 });
 
@@ -1406,50 +1314,50 @@ async function shareCenter(centerId) {
     try {
         const marker = allMarkers.find(m => m.centerData.id === centerId);
         if (!marker) {
-            toast.error('?�수???�보�?찾을 ???�습?�다.', '공유 ?�패');
+            toast.error('연수원 정보를 찾을 수 없습니다.', '공유 실패');
             return;
         }
 
         const center = marker.centerData;
         const shareUrl = `${window.location.origin}${window.location.pathname}?center=${centerId}`;
         const shareData = {
-            title: `${center.name} - ?�수???�기?�때`,
-            text: `${center.name}${center.branch ? ' (' + center.branch + ')' : ''} - ${center.address || '?�치 ?�보'}`,
+            title: `${center.name} - 연수원 여기어때`,
+            text: `${center.name}${center.branch ? ' (' + center.branch + ')' : ''} - ${center.address || '위치 정보'}`,
             url: shareUrl
         };
 
-        // Web Share API 지???��? ?�인
+        // Web Share API 지원 여부 확인
         if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
             await navigator.share(shareData);
-            toast.success('공유가 ?�료?�었?�니??', '공유 ?�공', 3000);
-            console.log('??공유 ?�공:', shareData);
+            toast.success('공유가 완료되었습니다!', '공유 성공', 3000);
+            console.log('✅ 공유 성공:', shareData);
         } else {
-            // ?�백: ?�립보드??복사
+            // 폴백: 클립보드에 복사
             await navigator.clipboard.writeText(shareUrl);
-            toast.success('링크가 ?�립보드??복사?�었?�니??', '링크 복사', 4000);
-            console.log('?�� ?�립보드 복사:', shareUrl);
+            toast.success('링크가 클립보드에 복사되었습니다!', '링크 복사', 4000);
+            console.log('📋 클립보드 복사:', shareUrl);
         }
     } catch (error) {
-        console.error('??공유 ?�패:', error);
+        console.error('❌ 공유 실패:', error);
 
-        // 공유 ?�패 ???�립보드 복사 ?�도
+        // 공유 실패 시 클립보드 복사 시도
         try {
             const marker = allMarkers.find(m => m.centerData.id === centerId);
             if (marker) {
                 const shareUrl = `${window.location.origin}${window.location.pathname}?center=${centerId}`;
                 await navigator.clipboard.writeText(shareUrl);
-                toast.info('링크가 ?�립보드??복사?�었?�니??', '링크 복사', 4000);
+                toast.info('링크가 클립보드에 복사되었습니다.', '링크 복사', 4000);
             }
         } catch (clipboardError) {
-            toast.error('공유???�패?�습?�다. ?�시 ?�도?�주?�요.', '공유 ?�패');
+            toast.error('공유에 실패했습니다. 다시 시도해주세요.', '공유 실패');
         }
     }
 }
 
-// ?�역???�출
+// 전역에 노출
 window.shareCenter = shareCenter;
 
-// ===== ?�버깅을 ?�한 ?�역 ?�수??=====
+// ===== 디버깅을 위한 전역 함수들 =====
 window.debugInfo = {
     getCurrentInfoWindow: () => infoWindowManager?.getCurrentInfoWindow(),
     getCurrentMarker: () => infoWindowManager?.getCurrentMarker(),
@@ -1467,24 +1375,24 @@ window.debugInfo = {
     showSampleData: () => generateSampleData()
 };
 
-// ===== ?�역 ?�러 처리 =====
+// ===== 전역 에러 처리 =====
 window.addEventListener('error', (event) => {
-    console.error('???�역 ?�러:', event.error);
-
+    console.error('❌ 전역 에러:', event.error);
+    
     if (!mapInitialized) {
-        showError(`?�크립트 ?�류가 발생?�습?�다: ${event.error?.message || '?????�는 ?�류'}`);
+        showError(`스크립트 오류가 발생했습니다: ${event.error?.message || '알 수 없는 오류'}`);
     }
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-    console.error('??Promise ?�러:', event.reason);
-
+    console.error('❌ Promise 에러:', event.reason);
+    
     if (!mapInitialized) {
-        showError(`비동�?처리 �??�류가 발생?�습?�다: ${event.reason?.message || '?????�는 ?�류'}`);
+        showError(`비동기 처리 중 오류가 발생했습니다: ${event.reason?.message || '알 수 없는 오류'}`);
     }
 });
 
-// ===== 브라?��? ?�환??체크 =====
+// ===== 브라우저 호환성 체크 =====
 (() => {
     const requiredFeatures = [
         'Promise',
@@ -1493,16 +1401,199 @@ window.addEventListener('unhandledrejection', (event) => {
         'Set',
         'addEventListener'
     ];
-
+    
     const missingFeatures = requiredFeatures.filter(feature => typeof window[feature] === 'undefined');
-
+    
     if (missingFeatures.length > 0) {
-        console.error('??브라?��? ?�환??문제:', missingFeatures);
-        showError(`??브라?��????��? 기능??지?�하지 ?�습?�다. 최신 브라?��?�??�용?�주?�요.\n?�락??기능: ${missingFeatures.join(', ')}`);
+        console.error('❌ 브라우저 호환성 문제:', missingFeatures);
+        showError(`이 브라우저는 일부 기능을 지원하지 않습니다. 최신 브라우저를 사용해주세요.\n누락된 기능: ${missingFeatures.join(', ')}`);
     }
 })();
 
-console.log('???�전??개선??app.js 로드 ?�료 - 모든 문제 ?�결??);
+console.log('✅ 완전히 개선된 app.js 로드 완료 - 모든 문제 해결됨');
+// ==================== 연수원 추가 기능 ====================
+let addCenterModal = null;
+let addCenterForm = null;
 
+// 모달 초기화
+function initAddCenterModal() {
+    addCenterModal = document.getElementById('add-center-modal');
+    addCenterForm = document.getElementById('add-center-form');
+    const addCenterBtn = document.getElementById('add-center-btn');
+    const modalClose = addCenterModal?.querySelector('.modal-close');
+    const cancelBtn = document.getElementById('cancel-btn');
 
+    if (!addCenterModal || !addCenterForm) {
+        console.warn('⚠️ 연수원 추가 모달이 없습니다');
+        return;
+    }
 
+    // 모달 열기
+    addCenterBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openAddCenterModal();
+    });
+
+    // 모달 닫기 (X 버튼)
+    modalClose?.addEventListener('click', closeAddCenterModal);
+
+    // 모달 닫기 (취소 버튼)
+    cancelBtn?.addEventListener('click', closeAddCenterModal);
+
+    // 모달 닫기 (배경 클릭)
+    addCenterModal.addEventListener('click', (e) => {
+        if (e.target === addCenterModal) {
+            closeAddCenterModal();
+        }
+    });
+
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && addCenterModal.classList.contains('active')) {
+            closeAddCenterModal();
+        }
+    });
+
+    // 주소 자동완성 초기화
+    initAddressAutocomplete();
+
+    // 폼 제출
+    addCenterForm.addEventListener('submit', handleAddCenterSubmit);
+
+    console.log('✅ 연수원 추가 모달 초기화 완료');
+}
+
+// 모달 열기
+function openAddCenterModal() {
+    addCenterModal.classList.add('active');
+    addCenterModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden'; // 스크롤 방지
+    console.log('📝 연수원 추가 모달 열림');
+}
+
+// 모달 닫기
+function closeAddCenterModal() {
+    addCenterModal.classList.remove('active');
+    addCenterModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = ''; // 스크롤 복원
+    addCenterForm.reset(); // 폼 리셋
+    console.log('✖️ 연수원 추가 모달 닫힘');
+}
+
+// 주소 → 좌표 변환 (네이버 Geocoding)
+async function geocodeAddress(address) {
+    return new Promise((resolve, reject) => {
+        if (!window.naver || !window.naver.maps || !window.naver.maps.Service) {
+            reject(new Error('네이버 지도 API가 로드되지 않았습니다'));
+            return;
+        }
+
+        naver.maps.Service.geocode({
+            query: address
+        }, function(status, response) {
+            if (status !== naver.maps.Service.Status.OK) {
+                reject(new Error('주소를 찾을 수 없습니다'));
+                return;
+            }
+
+            if (response.v2.addresses.length === 0) {
+                reject(new Error('주소 결과가 없습니다'));
+                return;
+            }
+
+            const result = response.v2.addresses[0];
+            const lat = parseFloat(result.y);
+            const lng = parseFloat(result.x);
+
+            resolve({ lat, lng });
+        });
+    });
+}
+
+// 지역 추출 함수
+function extractRegion(address) {
+    // 주소에서 지역 추출 (서울, 경기, 부산 등)
+    const regionMap = {
+        '서울': '서울',
+        '경기': '경기',
+        '인천': '인천',
+        '부산': '부산',
+        '대구': '대구',
+        '대전': '대전',
+        '광주': '광주',
+        '울산': '울산',
+        '세종': '세종',
+        '강원': '강원',
+        '충북': '충북',
+        '충남': '충남',
+        '전북': '전북',
+        '전남': '전남',
+        '경북': '경북',
+        '경남': '경남',
+        '제주': '제주'
+    };
+
+    for (const [key, value] of Object.entries(regionMap)) {
+        if (address.includes(key)) {
+            return value;
+        }
+    }
+
+    return '기타';
+}
+
+// 폼 제출 처리
+async function handleAddCenterSubmit(e) {
+    e.preventDefault();
+
+    const submitBtn = addCenterForm.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
+
+    try {
+        // 버튼 비활성화 및 로딩 표시
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 추가 중...';
+
+        // 폼 데이터 수집
+        const formData = new FormData(addCenterForm);
+        const name = formData.get('name');
+        const address = formData.get('address');
+        const phone = formData.get('phone');
+        const capacity = formData.get('capacity');
+        const naverUrl = formData.get('naverUrl');
+        const website = formData.get('website');
+        const basicInfo = formData.get('basicInfo');
+
+        console.log('📝 연수원 추가 시작:', name);
+
+        // 주소 → 좌표 변환
+        toast.show('주소를 좌표로 변환하는 중...', 'info', '위치 검색');
+        const location = await geocodeAddress(address);
+        console.log('📍 좌표 변환 완료:', location);
+
+        // 지역 추출
+        const region = extractRegion(address);
+
+        // Firebase에 저장할 데이터
+        const centerData = {
+            name: name,
+            address: address,
+            location: location,
+            region: region,
+            phone: phone || null,
+            capacity: capacity ? parseInt(capacity) : null,
+            basicInfo: basicInfo || null,
+            links: {
+                naver: naverUrl || null,
+                website: website || null
+            },
+            createdAt: new Date().toISOString(),
+            createdBy: 'user' // 추후 인증 시스템 추가 시 변경 가능
+        };
+
+        // Firebase에 저장
+        toast.show('Firebase에 저장하는 중...', 'info', '데이터 저장');
+        const docRef = await saveToFirebase(centerData);
+        console.log('💾 Firebase 저장 완료:', docRef.id);
+
+        
