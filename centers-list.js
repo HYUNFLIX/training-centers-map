@@ -393,7 +393,6 @@ function renderTable(centers) {
             </th>
             <th>주소</th>
             <th>연락처</th>
-            <th>작업</th>
           </tr>
         </thead>
         <tbody>
@@ -407,13 +406,6 @@ function renderTable(centers) {
               <td>${center.capacity ? center.capacity.toLocaleString() + '명' : '-'}</td>
               <td>${center.address || '-'}</td>
               <td>${center.phone || '-'}</td>
-              <td>
-                <div class="center-actions">
-                  <button class="btn btn-primary btn-sm" onclick="window.shareCenter('${center.id}')">
-                    <i class="fas fa-share-alt"></i>
-                  </button>
-                </div>
-              </td>
             </tr>
           `).join('')}
         </tbody>
@@ -449,11 +441,6 @@ function renderCards(centers) {
               <span>${center.phone}</span>
             </div>
           ` : ''}
-          <div class="card-actions">
-            <button class="btn btn-primary btn-sm" onclick="window.shareCenter('${center.id}')">
-              <i class="fas fa-share-alt"></i> 공유
-            </button>
-          </div>
         </div>
       `).join('')}
     </div>
@@ -625,25 +612,6 @@ function exportToExcel() {
   }
 }
 
-// ==================== 공유 ====================
-function shareCenter(centerId) {
-  const center = state.allCenters.find(c => c.id === centerId);
-  if (!center) return;
-
-  const text = `${center.name}${center.branch ? ' (' + center.branch + ')' : ''} - ${center.address}`;
-  const url = `${window.location.origin}${window.location.pathname}?center=${centerId}`;
-
-  if (navigator.share) {
-    navigator.share({ title: center.name, text, url })
-      .then(() => showToast('공유 완료!', 'success'))
-      .catch(() => {});
-  } else {
-    navigator.clipboard.writeText(url)
-      .then(() => showToast('링크가 복사되었습니다', 'success'))
-      .catch(() => showToast('복사 실패', 'error'));
-  }
-}
-
 // ==================== UI 헬퍼 ====================
 function showLoading(show) {
   elements.loading.style.display = show ? 'block' : 'none';
@@ -674,7 +642,6 @@ function showToast(message, type = 'info') {
 // ==================== 전역 함수 노출 ====================
 window.handleSort = handleSort;
 window.goToPage = goToPage;
-window.shareCenter = shareCenter;
 
 // ==================== 시작 ====================
 if (document.readyState === 'loading') {
