@@ -9,8 +9,7 @@
       "*_backup.css",
       "*.backup.css",
       "*_backup.js",
-      "**/*.log",
-      "admin/**"
+      "**/*.log"
     ],
     "headers": [
       {
@@ -30,12 +29,6 @@
             "value": "no-cache"
           }
         ]
-      }
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
       }
     ]
   },
