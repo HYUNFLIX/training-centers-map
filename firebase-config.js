@@ -22,7 +22,7 @@ export const getFirebaseUrl = (module) => {
 export async function loadFirebaseModules() {
     const [
         { initializeApp },
-        { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc },
+        { getFirestore, collection, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc },
         { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut }
     ] = await Promise.all([
         import(getFirebaseUrl('app')),
@@ -35,6 +35,7 @@ export async function loadFirebaseModules() {
         getFirestore,
         collection,
         getDocs,
+        getDoc,
         addDoc,
         doc,
         updateDoc,
