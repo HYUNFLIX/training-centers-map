@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연수원 관리 대시보드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* 지역별 분포 CSS 바 차트 */
+        .bar-chart-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .bar-chart-label {
+            width: 50px;
+            font-size: 12px;
+            color: #555;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .bar-chart-bar-wrap {
+            flex: 1;
+            background: #f0f0f0;
+            border-radius: 4px;
+            height: 20px;
+            overflow: hidden;
+        }
+
+        .bar-chart-bar {
+            background: #3b82f6;
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s ease;
+            min-width: 2px;
+        }
+
+        .bar-chart-count {
+            width: 30px;
+            font-size: 12px;
+            color: #333;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- 네비게이션 바 -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-4">
+                    <span class="text-xl font-semibold">연수원 관리</span>
+                    <span id="adminEmail" class="text-sm text-gray-500"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="../index.html" class="text-sm text-blue-600 hover:underline">← 지도로 돌아가기</a>
+                    <button id="logoutBtn"
+                        class="text-gray-600 hover:text-gray-900 text-sm px-3 py-1 border rounded">로그아웃</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ===== 통계 카드 섹션 (기능 11) ===== -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-lg shadow p-5 text-center">
+                <div class="text-3xl font-bold text-blue-600" id="stat-total">-</div>
+                <div class="text-sm text-gray-500 mt-1">총 연수원 수</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-5 text-center">
+                <div class="text-3xl font-bold text-green-600" id="stat-regions">-</div>
+                <div class="text-sm text-gray-500 mt-1">등록된 지역 수</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-5 text-center">
+                <div class="text-3xl font-bold text-purple-600" id="stat-avg">-</div>
+                <div class="text-sm text-gray-500 mt-1">평균 수용인원 (명)</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-5 text-center">
+                <div class="text-xl font-bold text-orange-500" id="stat-latest">-</div>
+                <div class="text-sm text-gray-500 mt-1">최근 등록일</div>
+            </div>
+        </div>
+
+        <!-- 지역별 분포 + 최근 등록 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- 지역별 분포 (CSS 바 차트) -->
+            <div class="bg-white rounded-lg shadow p-5">
+                <h3 class="font-semibold text-gray-700 mb-4">📊 지역별 연수원 분포</h3>
+                <div id="region-chart">
+                    <div class="text-sm text-gray-400">로딩 중...</div>
+                </div>
+            </div>
+            <!-- 최근 등록 5개 -->
+            <div class="bg-white rounded-lg shadow p-5">
+                <h3 class="font-semibold text-gray-700 mb-4">🕐 최근 등록된 연수원</h3>
+                <div id="recent-list">
+                    <div class="text-sm text-gray-400">로딩 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 버튼 그룹 -->
+        <div class="mb-4 flex justify-between items-center">
+            <h3 class="font-semibold text-gray-700">전체 연수원 목록</h3>
+            <div class="flex gap-2">
+                <button id="addCenterBtn"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
+                    + 새 연수원 추가
+                </button>
+                <button id="excelDownBtn"
+                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm">
+                    엑셀 다운로드
+                </button>
+            </div>
+        </div>
+
+        <!-- 연수원 목록 테이블 -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">번호
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연수원명
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">지역
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">수용인원
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">기본정보
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="centersList" class="bg-white divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">로딩 중...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 연수원 추가 iframe 모달 -->
+    <div id="addModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="relative top-10 mx-auto p-5 w-3/4 h-5/6">
+            <div class="bg-white rounded-lg shadow-xl h-full">
+                <div class="flex justify-between items-center p-4 border-b">
+                    <h3 class="text-lg font-medium">연수원 추가</h3>
+                    <button id="closeAddModal" class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <iframe id="addFrame" src="" class="w-full h-[calc(100%-4rem)]" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- 연수원 수정 모달 -->
+    <div id="centerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-40">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modalTitle">연수원 수정</h3>
+            <form id="centerForm">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">연수원명</label>
+                    <input type="text" id="centerName"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">지점/위치</label>
+                    <input type="text" id="centerBranch"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">기본정보</label>
+                    <textarea id="centerBasicInfo"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" rows="3"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">네이버 지도 링크</label>
+                    <input type="url" id="centerNaverLink"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                        placeholder="https://map.naver.com/...">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700">웹사이트 링크</label>
+                    <input type="url" id="centerWebsite"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                        placeholder="https://...">
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">위도</label>
+                        <input type="number" id="centerLat" step="any"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">경도</label>
+                        <input type="number" id="centerLng" step="any"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" id="cancelBtn"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">취소</button>
+                    <button type="submit"
+                        class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, orderBy, query, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDSPO1KqZgk1g7Oj7r128FDzrZi0VGcsxw",
+            authDomain: "training-centers-map.firebaseapp.com",
+            projectId: "training-centers-map",
+            storageBucket: "training-centers-map.firebasestorage.app",
+            messagingSenderId: "943690141587",
+            appId: "1:943690141587:web:1a0bdd995ef6efbf662266"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ✅ 인증 + isAdmin 검증 (기능 7)
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = './login.html';
+                return;
+            }
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+                await signOut(auth);
+                window.location.href = './login.html';
+                return;
+            }
+            document.getElementById('adminEmail').textContent = user.email;
+        });
+
+        // ===== 통계 계산 및 렌더링 (기능 11) =====
+        async function renderStats(centers) {
+            const total = centers.length;
+            const regionMap = {};
+            let capacitySum = 0, capacityCount = 0;
+            let latestDate = null;
+
+            centers.forEach(c => {
+                // 지역별 카운트
+                const r = c.region || '기타';
+                regionMap[r] = (regionMap[r] || 0) + 1;
+
+                // 수용인원 합계
+                if (c.capacity) { capacitySum += parseInt(c.capacity); capacityCount++; }
+
+                // 최근 등록일
+                const created = c.createdAt?.toDate?.() || (c.createdAt ? new Date(c.createdAt) : null);
+                if (created && (!latestDate || created > latestDate)) latestDate = created;
+            });
+
+            // 요약 카드
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-regions').textContent = Object.keys(regionMap).length;
+            document.getElementById('stat-avg').textContent = capacityCount > 0 ? Math.round(capacitySum / capacityCount) : '-';
+            document.getElementById('stat-latest').textContent = latestDate
+                ? latestDate.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+                : '-';
+
+            // 지역별 바 차트
+            const maxVal = Math.max(...Object.values(regionMap), 1);
+            const sorted = Object.entries(regionMap).sort((a, b) => b[1] - a[1]);
+            document.getElementById('region-chart').innerHTML = sorted.map(([region, count]) => `
+                <div class="bar-chart-row">
+                    <span class="bar-chart-label">${region}</span>
+                    <div class="bar-chart-bar-wrap">
+                        <div class="bar-chart-bar" style="width:${Math.round(count / maxVal * 100)}%"></div>
+                    </div>
+                    <span class="bar-chart-count">${count}</span>
+                </div>
+            `).join('');
+
+            // 최근 등록 5개 (createdAt 기준 정렬)
+            const recent = [...centers]
+                .filter(c => c.createdAt)
+                .sort((a, b) => {
+                    const da = a.createdAt?.toDate?.() || new Date(a.createdAt);
+                    const db2 = b.createdAt?.toDate?.() || new Date(b.createdAt);
+                    return db2 - da;
+                })
+                .slice(0, 5);
+
+            document.getElementById('recent-list').innerHTML = recent.length > 0 ? recent.map(c => {
+                const d = c.createdAt?.toDate?.() || new Date(c.createdAt);
+                return `
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                        <div>
+                            <span class="font-medium text-sm text-gray-800">${c.name}</span>
+                            ${c.region ? `<span class="ml-2 text-xs text-gray-400">${c.region}</span>` : ''}
+                        </div>
+                        <span class="text-xs text-gray-400">${d.toLocaleDateString('ko-KR')}</span>
+                    </div>
+                `;
+            }).join('') : '<p class="text-sm text-gray-400">등록 날짜 정보 없음</p>';
+        }
+
+        // ===== 연수원 목록 로드 =====
+        async function loadCenters() {
+            const centersList = document.getElementById('centersList');
+            centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">로딩 중...</td></tr>';
+
+            const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+            const centers = [];
+            querySnapshot.forEach((d) => {
+                centers.push({ id: d.id, ...d.data() });
+            });
+
+            // 통계 렌더링
+            await renderStats(centers);
+
+            // 테이블 렌더링
+            if (centers.length === 0) {
+                centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">등록된 연수원이 없습니다</td></tr>';
+                return;
+            }
+
+            centersList.innerHTML = centers.map((center, i) => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm text-gray-500">${i + 1}</td>
+                    <td class="px-4 py-3">
+                        <div class="text-sm font-medium text-gray-900">${center.name || '-'}</div>
+                        <div class="text-xs text-gray-400">${center.branch || ''}</div>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${center.region || '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${center.capacity ? center.capacity + '명' : '-'}</td>
+                    <td class="px-4 py-3">
+                        <div class="text-xs text-gray-500 max-w-xs truncate">${center.basicInfo || '-'}</div>
+                    </td>
+                    <td class="px-4 py-3 text-sm font-medium whitespace-nowrap">
+                        <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editCenter('${center.id}')">수정</button>
+                        <button class="text-red-600 hover:text-red-900" onclick="deleteCenter('${center.id}')">삭제</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ===== 모달 관련 =====
+        const centerModal = document.getElementById('centerModal');
+        const centerForm = document.getElementById('centerForm');
+        let currentCenterId = null;
+
+        window.editCenter = async (centerId) => {
+            currentCenterId = centerId;
+            const docSnap = await getDoc(doc(db, "trainingCenters", centerId));
+            const center = docSnap.data();
+
+            document.getElementById('centerName').value = center.name || '';
+            document.getElementById('centerBranch').value = center.branch || '';
+            document.getElementById('centerBasicInfo').value = center.basicInfo || '';
+            document.getElementById('centerNaverLink').value = center.links?.naver || '';
+            document.getElementById('centerWebsite').value = center.links?.website || '';
+            document.getElementById('centerLat').value = center.location?.lat || '';
+            document.getElementById('centerLng').value = center.location?.lng || '';
+
+            document.getElementById('modalTitle').textContent = '연수원 수정';
+            centerModal.classList.remove('hidden');
+        };
+
+        window.deleteCenter = async (centerId) => {
+            if (confirm('정말 삭제하시겠습니까?')) {
+                await deleteDoc(doc(db, "trainingCenters", centerId));
+                loadCenters();
+            }
+        };
+
+        document.getElementById('addCenterBtn').addEventListener('click', () => {
+            const addModal = document.getElementById('addModal');
+            document.getElementById('addFrame').src = 'add.html';
+            addModal.classList.remove('hidden');
+        });
+
+        document.getElementById('closeAddModal').addEventListener('click', () => {
+            document.getElementById('addModal').classList.add('hidden');
+            loadCenters();
+        });
+
+        document.getElementById('excelDownBtn').addEventListener('click', async () => {
+            const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+            const data = [];
+            let i = 1;
+            querySnapshot.forEach((d) => {
+                const c = d.data();
+                data.push({
+                    '번호': i++, '연수원명': c.name, '지점': c.branch || '',
+                    '지역': c.region || '', '수용인원': c.capacity || '',
+                    '기본정보': c.basicInfo || '',
+                    '위도': c.location?.lat || '', '경도': c.location?.lng || '',
+                    '네이버 지도': c.links?.naver || '', '웹사이트': c.links?.website || ''
+                });
+            });
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "연수원목록");
+            XLSX.writeFile(wb, "연수원목록.xlsx");
+        });
+
+        document.getElementById('cancelBtn').addEventListener('click', () => centerModal.classList.add('hidden'));
+
+        centerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const centerData = {
+                name: document.getElementById('centerName').value,
+                branch: document.getElementById('centerBranch').value,
+                basicInfo: document.getElementById('centerBasicInfo').value,
+                links: {
+                    naver: document.getElementById('centerNaverLink').value,
+                    website: document.getElementById('centerWebsite').value
+                },
+                location: {
+                    lat: parseFloat(document.getElementById('centerLat').value),
+                    lng: parseFloat(document.getElementById('centerLng').value)
+                },
+                updatedAt: new Date()
+            };
+            try {
+                if (currentCenterId) {
+                    await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
+                } else {
+                    centerData.createdAt = new Date();
+                    await addDoc(collection(db, "trainingCenters"), centerData);
+                }
+                centerModal.classList.add('hidden');
+                currentCenterId = null;
+                loadCenters();
+            } catch (error) {
+                console.error('Error saving center:', error);
+                alert('저장 중 오류가 발생했습니다.');
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => window.location.href = './login.html');
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === centerModal) centerModal.classList.add('hidden');
+            if (event.target === document.getElementById('addModal')) {
+                document.getElementById('addModal').classList.add('hidden');
+                loadCenters();
+            }
+        });
+
+        window.addEventListener('message', (event) => {
+            if (event.data === 'centerSaved') {
+                document.getElementById('addModal').classList.add('hidden');
+                loadCenters();
+            }
+        });
+
+        loadCenters();
+    </script>
+</body>
+
+</html>
