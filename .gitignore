@@ -6,6 +6,10 @@ node_modules/
 .env.local
 .env.*.local
 
+# 🔑 Firebase 서비스 계정 키 (절대 커밋 금지!)
+scripts/serviceAccountKey.json
+serviceAccountKey.json
+
 # 빌드 아웃풋
 dist/
 build/

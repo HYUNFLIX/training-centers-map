@@ -1,0 +1,13 @@
+{
+    "name": "training-centers-collector",
+    "version": "1.0.0",
+    "description": "네이버 검색 API로 연수원 데이터 수집 후 Firestore 저장",
+    "main": "collect-centers.js",
+    "type": "module",
+    "scripts": {
+        "collect": "node collect-centers.js"
+    },
+    "dependencies": {
+        "firebase-admin": "^12.0.0"
+    }
+}

@@ -7,6 +7,8 @@
     <title>연수원 관리 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script type="text/javascript"
+        src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=geocoder"></script>
     <style>
         /* 지역별 분포 CSS 바 차트 */
         .bar-chart-row {
@@ -110,16 +112,26 @@
             </div>
         </div>
 
-        <!-- 버튼 그룹 -->
-        <div class="mb-4 flex justify-between items-center">
-            <h3 class="font-semibold text-gray-700">전체 연수원 목록</h3>
-            <div class="flex gap-2">
+        <!-- 제어 영역 (검색 & 버튼) -->
+        <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h3 class="font-semibold text-gray-700 w-full sm:w-auto">전체 연수원 목록</h3>
+            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <div class="relative w-full sm:w-64">
+                    <input type="text" id="searchInput" placeholder="연수원명 또는 지역 등 검색..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                </div>
                 <button id="addCenterBtn"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm whitespace-nowrap">
                     + 새 연수원 추가
                 </button>
                 <button id="excelDownBtn"
-                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm">
+                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm whitespace-nowrap">
                     엑셀 다운로드
                 </button>
             </div>
@@ -153,73 +165,99 @@
         </div>
     </div>
 
-    <!-- 연수원 추가 iframe 모달 -->
-    <div id="addModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-        <div class="relative top-10 mx-auto p-5 w-3/4 h-5/6">
-            <div class="bg-white rounded-lg shadow-xl h-full">
-                <div class="flex justify-between items-center p-4 border-b">
-                    <h3 class="text-lg font-medium">연수원 추가</h3>
-                    <button id="closeAddModal" class="text-gray-400 hover:text-gray-500">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+    <!-- 통합 연수원 추가/수정 모달 -->
+    <div id="centerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto w-full h-full">
+        <div class="relative top-10 mx-auto p-5 border w-3/4 max-w-4xl shadow-lg rounded-md bg-white mb-20">
+            <h3 class="text-xl font-bold leading-6 text-gray-900 mb-6 border-b pb-4" id="modalTitle">연수원 폼</h3>
+            <form id="centerForm" class="space-y-6">
+                <!-- 1. 기본 정보 그룹 -->
+                <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                    <h4 class="font-semibold text-gray-700">📌 기본 정보</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">연수원명 *</label>
+                            <input type="text" id="centerName" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">지점/위치 *</label>
+                            <input type="text" id="centerBranch" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">지역(도/시)</label>
+                            <input type="text" id="centerRegion" placeholder="예: 경기도, 서울특별시"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">수용인원</label>
+                            <input type="number" id="centerCapacity" placeholder="예: 300"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">연락처</label>
+                            <input type="text" id="centerContact" placeholder="예: 02-1234-5678"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">기본정보 설명 *</label>
+                            <textarea id="centerBasicInfo" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500 h-24"
+                                placeholder="연수원의 주요 시설 및 특징을 입력해주세요."></textarea>
+                        </div>
+                    </div>
                 </div>
-                <iframe id="addFrame" src="" class="w-full h-[calc(100%-4rem)]" frameborder="0"></iframe>
-            </div>
-        </div>
-    </div>
 
-    <!-- 연수원 수정 모달 -->
-    <div id="centerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-40">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modalTitle">연수원 수정</h3>
-            <form id="centerForm">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">연수원명</label>
-                    <input type="text" id="centerName"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" required>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">지점/위치</label>
-                    <input type="text" id="centerBranch"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">기본정보</label>
-                    <textarea id="centerBasicInfo"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" rows="3"></textarea>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">네이버 지도 링크</label>
-                    <input type="url" id="centerNaverLink"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                        placeholder="https://map.naver.com/...">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">웹사이트 링크</label>
-                    <input type="url" id="centerWebsite"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                        placeholder="https://...">
-                </div>
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">위도</label>
-                        <input type="number" id="centerLat" step="any"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">경도</label>
-                        <input type="number" id="centerLng" step="any"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                <!-- 2. 온라인 링크 그룹 -->
+                <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                    <h4 class="font-semibold text-gray-700">🔗 관련 링크</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">네이버 지도 링크 *</label>
+                            <input type="url" id="centerNaverLink" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="https://map.naver.com/...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">웹사이트 링크 *</label>
+                            <input type="url" id="centerWebsite" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="https://...">
+                        </div>
                     </div>
                 </div>
-                <div class="flex justify-end gap-2">
+
+                <!-- 3. 위치 설정 그룹 (지도 연동) -->
+                <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                    <h4 class="font-semibold text-gray-700">📍 위치 설정</h4>
+                    <div class="flex gap-2">
+                        <input type="text" id="searchAddress" placeholder="지번, 도로명 주소 검색..."
+                            class="block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
+                        <button type="button" id="mapSearchBtn"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-nowrap font-medium transition-colors">주소
+                            찾기</button>
+                    </div>
+                    <!-- 네이버 지도가 렌더링될 영역 -->
+                    <div id="map" class="h-64 w-full rounded-lg border border-gray-300 shadow-inner"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500">위도 (직접 수정 가능)</label>
+                            <input type="number" id="centerLat" step="any"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border bg-white focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500">경도 (직접 수정 가능)</label>
+                            <input type="number" id="centerLng" step="any"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border bg-white focus:ring-blue-500 focus:border-blue-500 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
                     <button type="button" id="cancelBtn"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">취소</button>
+                        class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">취소</button>
                     <button type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md">저장</button>
+                        class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">저장하기</button>
                 </div>
             </form>
         </div>
@@ -314,22 +352,38 @@
         }
 
         // ===== 연수원 목록 로드 =====
+        // 전역 상태 관리
+        let allCenters = [];
+
         async function loadCenters() {
             const centersList = document.getElementById('centersList');
-            centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">로딩 중...</td></tr>';
+            centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">데이터를 불러오는 중...</td></tr>';
 
             const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-            const centers = [];
+            allCenters = [];
             querySnapshot.forEach((d) => {
-                centers.push({ id: d.id, ...d.data() });
+                allCenters.push({ id: d.id, ...d.data() });
+            });
+
+            // 생성일 최신순으로 정렬
+            allCenters.sort((a, b) => {
+                const dateA = a.createdAt?.seconds || 0;
+                const dateB = b.createdAt?.seconds || 0;
+                return dateB - dateA;
             });
 
             // 통계 렌더링
-            await renderStats(centers);
+            await renderStats(allCenters);
 
-            // 테이블 렌더링
+            // 초기 전체 데이터 그리기
+            renderTable(allCenters);
+        }
+
+        // 테이블 렌더링 함수
+        function renderTable(centers) {
+            const centersList = document.getElementById('centersList');
             if (centers.length === 0) {
-                centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">등록된 연수원이 없습니다</td></tr>';
+                centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">등록된 연수원이 없거나 검색 결과가 없습니다</td></tr>';
                 return;
             }
 
@@ -341,7 +395,7 @@
                         <div class="text-xs text-gray-400">${center.branch || ''}</div>
                     </td>
                     <td class="px-4 py-3 text-sm text-gray-600">${center.region || '-'}</td>
-                    <td class="px-4 py-3 text-sm text-gray-600">${center.capacity ? center.capacity + '명' : '-'}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${center.capacity ? center.capacity.toLocaleString() + '명' : '-'}</td>
                     <td class="px-4 py-3">
                         <div class="text-xs text-gray-500 max-w-xs truncate">${center.basicInfo || '-'}</div>
                     </td>
@@ -353,11 +407,115 @@
             `).join('');
         }
 
-        // ===== 모달 관련 =====
+        // 검색 이벤트
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const keyword = e.target.value.toLowerCase().trim();
+            if (!keyword) {
+                renderTable(allCenters);
+                return;
+            }
+            const filtered = allCenters.filter(c =>
+                (c.name && c.name.toLowerCase().includes(keyword)) ||
+                (c.branch && c.branch.toLowerCase().includes(keyword)) ||
+                (c.region && c.region.toLowerCase().includes(keyword)) ||
+                (c.basicInfo && c.basicInfo.toLowerCase().includes(keyword))
+            );
+            renderTable(filtered);
+        });
+
+        // ===== 모달 및 지도 관련 =====
         const centerModal = document.getElementById('centerModal');
         const centerForm = document.getElementById('centerForm');
         let currentCenterId = null;
+        let map = null;
+        let marker = null;
 
+        // 지도 초기화 및 마커 세팅 함수
+        function initOrUpdateMap(lat, lng) {
+            const coord = new naver.maps.LatLng(lat, lng);
+            if (!map) {
+                map = new naver.maps.Map('map', {
+                    center: coord,
+                    zoom: 14
+                });
+                naver.maps.Event.addListener(map, 'click', function (e) {
+                    updateMarker(e.coord);
+                    document.getElementById('centerLat').value = e.coord.lat();
+                    document.getElementById('centerLng').value = e.coord.lng();
+                });
+            } else {
+                map.setCenter(coord);
+            }
+            updateMarker(coord);
+        }
+
+        function updateMarker(coord) {
+            if (!marker) {
+                marker = new naver.maps.Marker({
+                    position: coord,
+                    map: map,
+                    draggable: true
+                });
+                naver.maps.Event.addListener(marker, 'dragend', function (e) {
+                    document.getElementById('centerLat').value = e.coord.lat();
+                    document.getElementById('centerLng').value = e.coord.lng();
+                });
+            } else {
+                marker.setPosition(coord);
+                if (!marker.getMap()) marker.setMap(map);
+            }
+        }
+
+        // 주소 검색 버튼 이벤트
+        document.getElementById('mapSearchBtn').addEventListener('click', () => {
+            const address = document.getElementById('searchAddress').value.trim();
+            if (!address) {
+                alert('검색할 주소를 입력해주세요!');
+                return;
+            }
+            naver.maps.Service.geocode({ query: address }, function (status, response) {
+                if (status !== naver.maps.Service.Status.OK || response.v2.addresses.length === 0) {
+                    alert('주소 검색 결과가 없습니다.');
+                    return;
+                }
+                const result = response.v2.addresses[0];
+                const lat = parseFloat(result.y);
+                const lng = parseFloat(result.x);
+                document.getElementById('centerLat').value = lat;
+                document.getElementById('centerLng').value = lng;
+                initOrUpdateMap(lat, lng);
+            });
+        });
+
+        // 엔터키 주소 검색 방지 및 실행
+        document.getElementById('searchAddress').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('mapSearchBtn').click();
+            }
+        });
+
+        // 폼 초기화 유틸
+        function resetForm() {
+            centerForm.reset();
+            currentCenterId = null;
+            document.getElementById('modalTitle').textContent = '새 연수원 추가';
+            if (marker) marker.setMap(null);
+        }
+
+        // 연수원 추가 버튼
+        document.getElementById('addCenterBtn').addEventListener('click', () => {
+            resetForm();
+            centerModal.classList.remove('hidden');
+            // 모달이 열린 직후 지도 사이즈 버그를 방지하기 위해 setTimeout 사용
+            setTimeout(() => {
+                // 기본 위치 (서울 중심 등)
+                initOrUpdateMap(37.5666805, 126.9784147);
+                if (map) map.autoResize();
+            }, 100);
+        });
+
+        // 연수원 수정 버튼
         window.editCenter = async (centerId) => {
             currentCenterId = centerId;
             const docSnap = await getDoc(doc(db, "trainingCenters", centerId));
@@ -365,34 +523,35 @@
 
             document.getElementById('centerName').value = center.name || '';
             document.getElementById('centerBranch').value = center.branch || '';
+            document.getElementById('centerRegion').value = center.region || '';
+            document.getElementById('centerCapacity').value = center.capacity || '';
+            document.getElementById('centerContact').value = center.contact || '';
             document.getElementById('centerBasicInfo').value = center.basicInfo || '';
             document.getElementById('centerNaverLink').value = center.links?.naver || '';
             document.getElementById('centerWebsite').value = center.links?.website || '';
+
+            const lat = center.location?.lat || 37.5666805;
+            const lng = center.location?.lng || 126.9784147;
             document.getElementById('centerLat').value = center.location?.lat || '';
             document.getElementById('centerLng').value = center.location?.lng || '';
 
             document.getElementById('modalTitle').textContent = '연수원 수정';
             centerModal.classList.remove('hidden');
+
+            setTimeout(() => {
+                initOrUpdateMap(lat, lng);
+                if (map) map.autoResize();
+            }, 100);
         };
 
         window.deleteCenter = async (centerId) => {
-            if (confirm('정말 삭제하시겠습니까?')) {
+            if (confirm('정말 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.')) {
                 await deleteDoc(doc(db, "trainingCenters", centerId));
                 loadCenters();
             }
         };
 
-        document.getElementById('addCenterBtn').addEventListener('click', () => {
-            const addModal = document.getElementById('addModal');
-            document.getElementById('addFrame').src = 'add.html';
-            addModal.classList.remove('hidden');
-        });
-
-        document.getElementById('closeAddModal').addEventListener('click', () => {
-            document.getElementById('addModal').classList.add('hidden');
-            loadCenters();
-        });
-
+        // 엑셀 다운로드 (새 필드 포함)
         document.getElementById('excelDownBtn').addEventListener('click', async () => {
             const querySnapshot = await getDocs(collection(db, "trainingCenters"));
             const data = [];
@@ -402,7 +561,7 @@
                 data.push({
                     '번호': i++, '연수원명': c.name, '지점': c.branch || '',
                     '지역': c.region || '', '수용인원': c.capacity || '',
-                    '기본정보': c.basicInfo || '',
+                    '연락처': c.contact || '', '기본정보': c.basicInfo || '',
                     '위도': c.location?.lat || '', '경도': c.location?.lng || '',
                     '네이버 지도': c.links?.naver || '', '웹사이트': c.links?.website || ''
                 });
@@ -413,24 +572,46 @@
             XLSX.writeFile(wb, "연수원목록.xlsx");
         });
 
-        document.getElementById('cancelBtn').addEventListener('click', () => centerModal.classList.add('hidden'));
+        // 폼 닫기
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            centerModal.classList.add('hidden');
+        });
 
+        window.addEventListener('click', (event) => {
+            if (event.target === centerModal) {
+                centerModal.classList.add('hidden');
+            }
+        });
+
+        // 폼 저장 로직
         centerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            const latVal = document.getElementById('centerLat').value;
+            const lngVal = document.getElementById('centerLng').value;
+            if (!latVal || !lngVal) {
+                alert('주소를 검색하거나 지도에서 위치를 클릭해서 위도/경도를 입력해주세요!');
+                return;
+            }
+
             const centerData = {
-                name: document.getElementById('centerName').value,
-                branch: document.getElementById('centerBranch').value,
-                basicInfo: document.getElementById('centerBasicInfo').value,
+                name: document.getElementById('centerName').value.trim(),
+                branch: document.getElementById('centerBranch').value.trim(),
+                region: document.getElementById('centerRegion').value.trim(),
+                capacity: parseInt(document.getElementById('centerCapacity').value) || 0,
+                contact: document.getElementById('centerContact').value.trim(),
+                basicInfo: document.getElementById('centerBasicInfo').value.trim(),
                 links: {
-                    naver: document.getElementById('centerNaverLink').value,
-                    website: document.getElementById('centerWebsite').value
+                    naver: document.getElementById('centerNaverLink').value.trim(),
+                    website: document.getElementById('centerWebsite').value.trim()
                 },
                 location: {
-                    lat: parseFloat(document.getElementById('centerLat').value),
-                    lng: parseFloat(document.getElementById('centerLng').value)
+                    lat: parseFloat(latVal),
+                    lng: parseFloat(lngVal)
                 },
                 updatedAt: new Date()
             };
+
             try {
                 if (currentCenterId) {
                     await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
@@ -440,6 +621,7 @@
                 }
                 centerModal.classList.add('hidden');
                 currentCenterId = null;
+                alert('성공적으로 저장되었습니다!');
                 loadCenters();
             } catch (error) {
                 console.error('Error saving center:', error);
@@ -447,23 +629,9 @@
             }
         });
 
+        // 로그아웃
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth).then(() => window.location.href = './login.html');
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === centerModal) centerModal.classList.add('hidden');
-            if (event.target === document.getElementById('addModal')) {
-                document.getElementById('addModal').classList.add('hidden');
-                loadCenters();
-            }
-        });
-
-        window.addEventListener('message', (event) => {
-            if (event.data === 'centerSaved') {
-                document.getElementById('addModal').classList.add('hidden');
-                loadCenters();
-            }
         });
 
         loadCenters();
