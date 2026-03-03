@@ -1596,4 +1596,242 @@ async function handleAddCenterSubmit(e) {
         const docRef = await saveToFirebase(centerData);
         console.log('💾 Firebase 저장 완료:', docRef.id);
 
-        
+        // 지도에 마커 추가
+        centerData.id = docRef.id;
+        addMarkerToMap(centerData);
+
+        // 성공 메시지
+        toast.show(`"${name}" 연수원이 성공적으로 추가되었습니다!`, 'success', '추가 완료');
+
+        // 모달 닫기
+        setTimeout(() => {
+            closeAddCenterModal();
+        }, 1000);
+
+    } catch (error) {
+        console.error('❌ 연수원 추가 실패:', error);
+        toast.show(
+            error.message || '연수원 추가 중 오류가 발생했습니다',
+            'error',
+            '추가 실패'
+        );
+    } finally {
+        // 버튼 복원
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+    }
+}
+
+// Firebase에 저장 (공통 설정 사용)
+async function saveToFirebase(centerData) {
+    // 이미 초기화된 Firebase 인스턴스 사용
+    if (window.firebase && window.firebase.db && window.firebase.addDoc) {
+        const { db, collection, addDoc } = window.firebase;
+        const docRef = await addDoc(collection(db, COLLECTIONS.TRAINING_CENTERS), centerData);
+        return docRef;
+    }
+
+    // Firebase가 초기화되지 않은 경우 초기화
+    const { initializeApp } = await import(getFirebaseUrl('app'));
+    const { getFirestore, collection, addDoc } = await import(getFirebaseUrl('firestore'));
+
+    // 공통 설정 사용 (firebase-config.js)
+    const app = initializeApp(FIREBASE_CONFIG);
+    const firebaseDb = getFirestore(app);
+    const docRef = await addDoc(collection(firebaseDb, COLLECTIONS.TRAINING_CENTERS), centerData);
+
+    return docRef;
+}
+
+// 지도에 마커 추가
+function addMarkerToMap(centerData) {
+    const marker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(centerData.location.lat, centerData.location.lng),
+        map: map,
+        title: centerData.name,
+        icon: {
+            content: `<div class="custom-marker"><i class="fas fa-map-marker-alt"></i></div>`,
+            anchor: new naver.maps.Point(15, 40)
+        }
+    });
+
+    // 마커 클릭 이벤트
+    naver.maps.Event.addListener(marker, 'click', function() {
+        const content = generateInfoWindowContent(centerData);
+        infoWindowManager.openInfoWindow(map, marker, content);
+    });
+
+    // 전역 마커 배열에 추가
+    allMarkers.push(marker);
+    filteredMarkers.push(marker);
+
+    // 클러스터 재적용
+    if (clusterer) {
+        clusterer.clearMarkers();
+        clusterer.setMarkers(allMarkers);
+    }
+
+    // 해당 위치로 지도 이동
+    map.setCenter(new naver.maps.LatLng(centerData.location.lat, centerData.location.lng));
+    map.setZoom(15);
+
+    console.log('📍 지도에 마커 추가 완료:', centerData.name);
+}
+
+// DOMContentLoaded 이벤트에 모달 초기화 추가
+document.addEventListener('DOMContentLoaded', () => {
+    // 기존 초기화 후 모달 초기화
+    setTimeout(() => {
+        initAddCenterModal();
+    }, 100);
+});
+
+console.log('✅ 연수원 추가 기능 로드 완료');
+
+// 주소 자동완성 초기화
+let addressSearchTimeout = null;
+let selectedAddressSuggestion = -1;
+
+function initAddressAutocomplete() {
+    const addressInput = document.getElementById('center-address');
+    const suggestionsDiv = document.getElementById('address-suggestions');
+
+    if (!addressInput || !suggestionsDiv) {
+        console.warn('⚠️ 주소 입력 필드를 찾을 수 없습니다');
+        return;
+    }
+
+    // 입력 이벤트 (디바운스)
+    addressInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
+
+        // 타임아웃 클리어
+        clearTimeout(addressSearchTimeout);
+
+        if (query.length < 2) {
+            hideSuggestions();
+            return;
+        }
+
+        // 300ms 디바운스
+        addressSearchTimeout = setTimeout(() => {
+            searchAddress(query, suggestionsDiv);
+        }, 300);
+    });
+
+    // 키보드 네비게이션
+    addressInput.addEventListener('keydown', function(e) {
+        const items = suggestionsDiv.querySelectorAll('.address-suggestion-item');
+
+        if (items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedAddressSuggestion = Math.min(selectedAddressSuggestion + 1, items.length - 1);
+            updateSuggestionSelection(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedAddressSuggestion = Math.max(selectedAddressSuggestion - 1, 0);
+            updateSuggestionSelection(items);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedAddressSuggestion >= 0 && items[selectedAddressSuggestion]) {
+                items[selectedAddressSuggestion].click();
+            }
+        } else if (e.key === 'Escape') {
+            hideSuggestions();
+        }
+    });
+
+    // 외부 클릭 시 닫기
+    document.addEventListener('click', function(e) {
+        if (!addressInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+
+    function hideSuggestions() {
+        suggestionsDiv.classList.remove('active');
+        suggestionsDiv.innerHTML = '';
+        selectedAddressSuggestion = -1;
+    }
+
+    function updateSuggestionSelection(items) {
+        items.forEach((item, index) => {
+            if (index === selectedAddressSuggestion) {
+                item.classList.add('selected');
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+
+    console.log('✅ 주소 자동완성 초기화 완료');
+}
+
+// 주소 검색 (네이버 Geocoding API)
+async function searchAddress(query, suggestionsDiv) {
+    if (!window.naver || !window.naver.maps || !window.naver.maps.Service) {
+        console.warn('⚠️ 네이버 지도 API가 로드되지 않았습니다');
+        return;
+    }
+
+    // 로딩 표시
+    suggestionsDiv.innerHTML = '<div class="address-suggestion-loading"><i class="fas fa-spinner fa-spin"></i> 검색 중...</div>';
+    suggestionsDiv.classList.add('active');
+
+    naver.maps.Service.geocode({
+        query: query
+    }, function(status, response) {
+        if (status !== naver.maps.Service.Status.OK) {
+            suggestionsDiv.innerHTML = '<div class="address-suggestion-empty">주소를 찾을 수 없습니다</div>';
+            return;
+        }
+
+        if (!response.v2 || !response.v2.addresses || response.v2.addresses.length === 0) {
+            suggestionsDiv.innerHTML = '<div class="address-suggestion-empty">검색 결과가 없습니다</div>';
+            return;
+        }
+
+        // 결과 표시
+        const addresses = response.v2.addresses;
+        let html = '';
+
+        addresses.forEach((addr, index) => {
+            const roadAddress = addr.roadAddress || addr.jibunAddress;
+            const jibunAddress = addr.jibunAddress;
+
+            html += `
+                <div class="address-suggestion-item" data-index="${index}" data-address="${roadAddress}" data-lat="${addr.y}" data-lng="${addr.x}">
+                    <div class="address-suggestion-main">${roadAddress}</div>
+                    ${jibunAddress && jibunAddress !== roadAddress ? `<div class="address-suggestion-sub">(지번) ${jibunAddress}</div>` : ''}
+                </div>
+            `;
+        });
+
+        suggestionsDiv.innerHTML = html;
+
+        // 클릭 이벤트 추가
+        const items = suggestionsDiv.querySelectorAll('.address-suggestion-item');
+        items.forEach(item => {
+            item.addEventListener('click', function() {
+                const address = this.getAttribute('data-address');
+                const addressInput = document.getElementById('center-address');
+
+                if (addressInput) {
+                    addressInput.value = address;
+                }
+
+                suggestionsDiv.classList.remove('active');
+                suggestionsDiv.innerHTML = '';
+                selectedAddressSuggestion = -1;
+
+                console.log('📍 주소 선택:', address);
+                toast.show('주소가 선택되었습니다', 'success', '선택 완료');
+            });
+        });
+    });
+}
+
+console.log('✅ 네이버 주소 검색 기능 로드 완료');
