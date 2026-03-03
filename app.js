@@ -247,87 +247,71 @@ const createMarkerContent = (name) => {
 
 // ===== 정보창 내용 HTML 생성 함수 =====
 const createInfoWindowContent = (center) => {
-    // 주소 정보
-    const addressHtml = center.address ?
-        `<div class="info-window-info">
-            <i class="fas fa-map-marker-alt" style="color: #0077cc; margin-right: 6px;"></i> 
-            ${center.address}
-        </div>` : '';
+    // 2. 지역 및 짧은 주소 (예: 경기 남양주시)
+    const shortAddress = center.address ? center.address.split(' ').slice(0, 2).join(' ') : (center.region || '');
 
-    // 기본 정보
-    const basicInfoHtml = center.basicInfo ?
-        `<div class="info-window-info" style="margin-top: 8px;">
-            ${center.basicInfo.length > 100 ? center.basicInfo.substring(0, 100) + '...' : center.basicInfo}
-        </div>` : '';
+    // 3. 유용한 네이버 부가 정보 (전화번호, 수용인원, 공간 설명)
+    let infoHtml = '';
+    if (center.phone) {
+        infoHtml += `<div style="font-size: 13px; color: #555; margin-top: 6px;"><i class="fas fa-phone-alt" style="color: #999; width: 16px; text-align: center; margin-right: 4px;"></i> ${center.phone}</div>`;
+    }
+    if (center.capacity) {
+        infoHtml += `<div style="font-size: 13px; color: #555; margin-top: 6px;"><i class="fas fa-users" style="color: #999; width: 16px; text-align: center; margin-right: 4px;"></i> 수용인원: ${center.capacity.toLocaleString()}명</div>`;
+    }
+    if (center.basicInfo) {
+        const infoText = center.basicInfo.length > 55 ? center.basicInfo.substring(0, 55) + '...' : center.basicInfo;
+        infoHtml += `<div style="font-size: 13px; color: #555; margin-top: 6px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: #999; width: 16px; text-align: center; margin-right: 4px;"></i> ${infoText}</div>`;
+    }
 
-    // 버튼들
-    let buttonsHtml = '<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;">';
-
-    // 1. 길찾기 (좌표 기반 네이버 지도 도착지 설정)
-    const directionsUrl = `https://map.naver.com/v5/directions/-/1,${center.location.lng},${center.location.lat},${encodeURIComponent(center.name)},POI/-/transit?c=15,0,0,0,dh`;
-    buttonsHtml += `
-        <a href="${directionsUrl}" target="_blank" rel="noopener noreferrer" class="directions-button" style="flex: 1; min-width: 80px; text-align: center; padding: 8px 0; display: inline-block;">
-            <i class="fas fa-directions"></i> 길찾기
-        </a>
-    `;
-
-    // 2. 홈페이지 (공식 웹사이트)
+    // 4. 버튼 (길찾기 삭제됨, 홈페이지와 네이버 나란히 배치)
     let websiteUrl = center.links?.website;
-    // 자동 수집된 데이터 중 links.naver에 실제 웹사이트 URL이 들어간 경우 (naver.com이 아닌 경우)
     if (!websiteUrl && center.links?.naver && !center.links.naver.includes('naver.com') && !center.links.naver.includes('naver.me')) {
         websiteUrl = center.links.naver;
     }
 
-    if (websiteUrl) {
-        buttonsHtml += `
-            <a href="${websiteUrl}" target="_blank" rel="noopener noreferrer" class="search-button" style="flex: 1; min-width: 80px; text-align: center; padding: 8px 0; display: inline-block;">
-                <i class="fas fa-home"></i> 홈페이지
-            </a>
-        `;
-    }
-
-    // 3. 네이버로 이동 (네이버 장소 검색 또는 기존 네이버 제공 링크)
     let naverMapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(center.name)}`;
-    // 만약 기존 데이터에 의도된 네이버 지도 링크가 있다면 우선 사용
     if (center.links?.naver && (center.links.naver.includes('naver.com') || center.links.naver.includes('naver.me'))) {
         naverMapUrl = center.links.naver;
     }
 
+    // 나란히 배치를 위한 flex 박스 설계 (gap: 8px)
+    let buttonsHtml = '<div style="display: flex; gap: 8px; margin-top: 16px; width: 100%;">';
+
+    // 홈페이지 버튼 (존재할 경우에만 표시, 회색 톤)
+    if (websiteUrl) {
+        buttonsHtml += `
+            <a href="${websiteUrl}" target="_blank" rel="noopener noreferrer" style="flex: 1; display: flex; align-items: center; justify-content: center; background-color: #f1f3f5; color: #333; height: 38px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.2s;">
+                <i class="fas fa-home" style="margin-right: 6px; color: #666;"></i> 홈페이지
+            </a>
+        `;
+    }
+
+    // 네이버로 이동 버튼 (항상 표시, 메인 액션인 초록색)
     buttonsHtml += `
-        <a href="${naverMapUrl}" target="_blank" rel="noopener noreferrer" class="search-button" style="flex: 1; min-width: 100%; text-align: center; padding: 8px 0; display: inline-block; background-color: #03c75a; color: white; border-color: #03c75a; margin-top: 4px;">
-            <i class="fas fa-search"></i> 네이버로 이동
+        <a href="${naverMapUrl}" target="_blank" rel="noopener noreferrer" style="flex: 1; display: flex; align-items: center; justify-content: center; background-color: #03c75a; color: white; height: 38px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.2s;">
+            <i class="fas fa-search" style="margin-right: 6px;"></i> 네이버로 이동
         </a>
     `;
-
     buttonsHtml += '</div>';
 
-    // 추가 정보 태그
-    let tagsHtml = '';
-    if (center.capacity) {
-        tagsHtml += `<span class="info-tag"><i class="fas fa-users"></i> ${center.capacity}명</span>`;
-    }
-    if (center.region) {
-        tagsHtml += `<span class="info-tag"><i class="fas fa-map"></i> ${center.region}</span>`;
-    }
-
     return `
-        <div class="info-window">
-            <div class="info-window-header">
-                <div>
-                    <h3 class="info-window-title">${center.name}</h3>
-                    ${center.branch ? `<div class="info-window-branch">${center.branch}</div>` : ''}
-                </div>
-                <button class="info-window-close" aria-label="정보창 닫기">
-                    <i class="fas fa-times"></i>
-                </button>
+        <div class="info-window-container" style="padding: 16px 18px 18px; min-width: 280px; max-width: 320px; font-family: 'Pretendard', 'Noto Sans KR', sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #111; line-height: 1.3;">
+                    ${center.name}
+                    ${center.branch ? `<span style="font-size: 14px; color: #666; font-weight: 400; margin-left: 4px;">${center.branch}</span>` : ''}
+                </h3>
             </div>
             
-            ${addressHtml}
-            ${basicInfoHtml}
+            <div style="font-size: 14px; color: #0077cc; margin-bottom: 12px; font-weight: 500;">
+                ${shortAddress}
+            </div>
             
-            ${tagsHtml ? `<div class="info-window-tags">${tagsHtml}</div>` : ''}
+            <div style="border-top: 1px solid #eee; padding-top: 10px;">
+                ${infoHtml}
+            </div>
             
-            ${buttonsHtml ? `<div class="info-window-buttons">${buttonsHtml}</div>` : ''}
+            ${buttonsHtml}
         </div>
     `;
 };
