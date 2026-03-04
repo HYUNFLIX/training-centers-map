@@ -15,8 +15,7 @@ const state = {
   sortField: 'name',
   sortOrder: 'asc',
   searchTerm: '',
-  regionFilter: 'all',
-  capacityFilter: 'all'
+  regionFilter: 'all'
 };
 
 // ==================== DOM 요소 ====================
@@ -35,8 +34,7 @@ const elements = {
   resultsCount: null,
   viewMode: null,
   statTotal: null,
-  statRegions: null,
-  statAvg: null
+  statRegions: null
 };
 
 // ==================== 초기화 ====================
@@ -59,7 +57,6 @@ async function init() {
   elements.viewMode = document.getElementById('viewMode');
   elements.statTotal = document.getElementById('stat-total');
   elements.statRegions = document.getElementById('stat-regions');
-  elements.statAvg = document.getElementById('stat-avg');
 
   // 이벤트 리스너 설정
   setupEventListeners();
@@ -93,12 +90,6 @@ function setupEventListeners() {
   // 필터
   elements.regionFilter.addEventListener('change', (e) => {
     state.regionFilter = e.target.value;
-    state.currentPage = 1;
-    applyFiltersAndRender();
-  });
-
-  elements.capacityFilter.addEventListener('change', (e) => {
-    state.capacityFilter = e.target.value;
     state.currentPage = 1;
     applyFiltersAndRender();
   });
@@ -477,12 +468,7 @@ function renderPagination() {
   let html = '';
 
   // 이전 버튼
-  html += `
-  < button class="page-btn" ${state.currentPage === 1 ? 'disabled' : ''}
-onclick = "window.goToPage(${state.currentPage - 1})" >
-  <i class="fas fa-chevron-left"></i>
-    </button >
-  `;
+  html += `<button class="page-btn" ${state.currentPage === 1 ? 'disabled' : ''} onclick="window.goToPage(${state.currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
 
   // 페이지 버튼
   const maxButtons = 5;
@@ -494,35 +480,25 @@ onclick = "window.goToPage(${state.currentPage - 1})" >
   }
 
   if (startPage > 1) {
-    html += `< button class="page-btn" onclick = "window.goToPage(1)" > 1</button > `;
+    html += `<button class="page-btn" onclick="window.goToPage(1)">1</button>`;
     if (startPage > 2) {
-      html += `< span style = "padding: 0 5px;" >...</span > `;
+      html += `<span style="padding: 0 5px;">...</span>`;
     }
   }
 
   for (let i = startPage; i <= endPage; i++) {
-    html += `
-  < button class="page-btn ${i === state.currentPage ? 'active' : ''}"
-onclick = "window.goToPage(${i})" >
-  ${i}
-      </button >
-  `;
+    html += `<button class="page-btn ${i === state.currentPage ? 'active' : ''}" onclick="window.goToPage(${i})">${i}</button>`;
   }
 
   if (endPage < totalPages) {
     if (endPage < totalPages - 1) {
-      html += `< span style = "padding: 0 5px;" >...</span > `;
+      html += `<span style="padding: 0 5px;">...</span>`;
     }
-    html += `< button class="page-btn" onclick = "window.goToPage(${totalPages})" > ${totalPages}</button > `;
+    html += `<button class="page-btn" onclick="window.goToPage(${totalPages})">${totalPages}</button>`;
   }
 
   // 다음 버튼
-  html += `
-  < button class="page-btn" ${state.currentPage === totalPages ? 'disabled' : ''}
-onclick = "window.goToPage(${state.currentPage + 1})" >
-  <i class="fas fa-chevron-right"></i>
-    </button >
-  `;
+  html += `<button class="page-btn" ${state.currentPage === totalPages ? 'disabled' : ''} onclick="window.goToPage(${state.currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
 
   elements.pagination.innerHTML = html;
 }
@@ -545,11 +521,6 @@ function updateStats() {
   // 지역 수
   const regions = new Set(state.allCenters.map(c => c.region).filter(r => r));
   elements.statRegions.textContent = regions.size;
-
-  // 평균 수용인원
-  const total = state.allCenters.reduce((sum, c) => sum + (parseInt(c.capacity) || 0), 0);
-  const avg = state.allCenters.length > 0 ? Math.round(total / state.allCenters.length) : 0;
-  elements.statAvg.textContent = avg.toLocaleString();
 }
 
 // ==================== CSV 내보내기 ====================
