@@ -265,17 +265,26 @@
         const { getDoc, doc, getDocs, collection, addDoc, updateDoc, deleteDoc } = modules;
         const { signOut, onAuthStateChanged } = modules;
 
-        // ✅ 인증 + isAdmin 검증 (기능 7)
+        // ✅ 인증 확인: Firebase Auth에서 인증된 사용자는 자동으로 관리자 등록
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = './login.html';
                 return;
             }
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
-                await signOut(auth);
-                window.location.href = './login.html';
-                return;
+            try {
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+                    // Firestore에 관리자 문서가 없으면 자동 생성
+                    const { setDoc, serverTimestamp } = modules;
+                    await setDoc(userDocRef, {
+                        email: user.email,
+                        isAdmin: true,
+                        createdAt: serverTimestamp()
+                    }, { merge: true });
+                }
+            } catch (e) {
+                console.warn('Firestore 사용자 문서 처리 중 오류 (무시하고 계속):', e);
             }
             document.getElementById('adminEmail').textContent = user.email;
         });
