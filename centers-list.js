@@ -374,12 +374,8 @@ function renderTable(centers) {
                 onclick="window.handleSort('region')" style="width: 12%;">
               지역
             </th>
-            <th class="sortable ${state.sortField === 'capacity' ? 'sorted-' + state.sortOrder : ''}"
-                onclick="window.handleSort('capacity')" style="width: 12%;">
-              수용인원
-            </th>
-            <th style="width: 33%;">주소</th>
-            <th style="width: 15%;">연락처</th>
+            <th style="width: 38%;">주소</th>
+            <th style="width: 18%;">연락처</th>
           </tr>
         </thead>
         <tbody>
@@ -390,15 +386,10 @@ function renderTable(centers) {
                 ${center.branch ? `<span class="center-branch">${center.branch}</span>` : ''}
               </td>
               <td><span class="badge badge-region">${center.region}</span></td>
-              <td style="text-align: center;">
-                ${center.capacity
-      ? `<span style="color: #334155; font-weight: 600; background: #f1f5f9; padding: 4px 10px; border-radius: 4px;">${center.capacity.toLocaleString()}명</span>`
-      : `<span style="color: #cbd5e1; font-size: 0.9em;">-</span>`}
-              </td>
               <td><span style="color: #334155;">${center.address || '<span style="color: #cbd5e1; font-size: 0.9em;">주소 미등록</span>'}</span></td>
               <td>
-                ${center.phone
-      ? `<span style="color: #475569;"><i class="fas fa-phone-alt" style="font-size: 0.85em; color: #94a3b8; margin-right: 4px;"></i>${center.phone}</span>`
+                ${(center.phone || center.contact)
+      ? `<span style="color: #475569;"><i class="fas fa-phone-alt" style="font-size: 0.85em; color: #94a3b8; margin-right: 4px;"></i>${center.phone || center.contact}</span>`
       : `<span style="color: #cbd5e1; font-size: 0.9em;">연락처 없음</span>`}
               </td>
             </tr>
@@ -425,21 +416,10 @@ function renderCards(centers) {
               <i class="fas fa-map-marker-alt"></i>
               <span><span class="badge badge-region" style="margin-right:6px;">${center.region}</span> ${center.address || '-'}</span>
             </div>
-            ${center.capacity ? `
-              <div class="card-info">
-                <i class="fas fa-users"></i>
-                <span>수용인원 <strong style="color:#334155;">${center.capacity.toLocaleString()}</strong>명</span>
-              </div>
-            ` : `
-              <div class="card-info" style="color: #94a3b8;">
-                <i class="fas fa-users" style="color: #cbd5e1;"></i>
-                <span>수용인원 <span style="font-style: italic;">정보 없음</span></span>
-              </div>
-            `}
-            ${center.phone ? `
+            ${(center.phone || center.contact) ? `
               <div class="card-info">
                 <i class="fas fa-phone-alt"></i>
-                <span style="color: #475569; font-weight: 500;">${center.phone}</span>
+                <span style="color: #475569; font-weight: 500;">${center.phone || center.contact}</span>
               </div>
             ` : `
               <div class="card-info" style="color: #94a3b8;">
