@@ -55,25 +55,81 @@
 
 <body class="bg-gray-100">
 
-    <!-- 네비게이션 바 -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center gap-4">
-                    <span class="text-xl font-semibold">연수원 관리</span>
-                    <span id="adminEmail" class="text-sm text-gray-500"></span>
-                </div>
-                <div class="flex items-center gap-3">
-                    <a href="../index.html" class="text-sm text-blue-600 hover:underline">← 지도로 돌아가기</a>
-                    <button id="fixLinksBtn"
-                        class="text-sm text-indigo-600 hover:text-white hover:bg-indigo-600 px-3 py-1 border border-indigo-400 rounded transition-colors">🔗
-                        링크 스왑</button>
-                    <button id="logoutBtn"
-                        class="text-gray-600 hover:text-gray-900 text-sm px-3 py-1 border rounded">로그아웃</button>
-                </div>
+    <style>
+        /* 메인 홈페이지와 유사한 헤더 스타일 정의 (Tailwind 기반 보조) */
+        .main-header {
+            background-color: #0077cc;
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .main-header a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .main-header nav ul {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-header nav a {
+            opacity: 0.8;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding-bottom: 4px;
+            transition: opacity 0.2s;
+        }
+
+        .main-header nav a:hover,
+        .main-header nav a.active {
+            opacity: 1;
+        }
+
+        .main-header nav a.active {
+            border-bottom: 2px solid white;
+        }
+    </style>
+
+    <!-- 메인 홈페이지 테마의 상단 네비게이션 -->
+    <header class="main-header">
+        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-10">
+            <div class="flex items-center gap-3">
+                <a href="../index.html"
+                    class="text-xl font-bold flex items-center gap-2 hover:opacity-90 transition-opacity">
+                    <span>📍</span> 연수원 여기어때 <span
+                        class="text-sm font-normal bg-blue-800 px-2 py-0.5 rounded-full ml-1">Admin</span>
+                </a>
+            </div>
+
+            <nav class="hidden sm:flex items-center">
+                <ul>
+                    <li><a href="index.html" class="active">대시보드</a></li>
+                    <li><a href="list.html">연수원 관리 (목록)</a></li>
+                </ul>
+            </nav>
+
+            <div class="flex items-center gap-4">
+                <span id="adminEmail" class="text-sm opacity-80 hidden sm:inline-block"></span>
+                <button id="logoutBtn"
+                    class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1.5 rounded text-sm transition-colors">
+                    로그아웃
+                </button>
             </div>
         </div>
-    </nav>
+        <!-- 모바일 탭 메뉴 추가 (선택사항) -->
+        <div class="sm:hidden flex justify-center mt-3 border-t border-blue-500 pt-3 gap-6">
+            <a href="index.html" class="active text-sm opacity-100 border-b-2 border-white pb-1">대시보드</a>
+            <a href="list.html" class="text-sm opacity-80 hover:opacity-100 pb-1">연수원 관리</a>
+        </div>
+    </header>
 
     <!-- 메인 컨텐츠 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -108,236 +164,71 @@
             </div>
         </div>
 
-        <!-- 제어 영역 (검색 & 버튼) -->
-        <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h3 class="font-semibold text-gray-700 w-full sm:w-auto">전체 연수원 목록</h3>
-            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <div class="relative w-full sm:w-64">
-                    <input type="text" id="searchInput" placeholder="연수원명 또는 지역 등 검색..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <button id="addCenterBtn"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm whitespace-nowrap">
-                    + 새 연수원 추가
-                </button>
-                <button id="excelDownBtn"
-                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm whitespace-nowrap">
-                    엑셀 다운로드
-                </button>
-            </div>
-        </div>
-
-        <!-- 연수원 목록 테이블 -->
-        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">번호
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연수원명
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">지역
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연락처
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">기본정보
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="centersList" class="bg-white divide-y divide-gray-200">
-                    <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">로딩 중...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <!-- 페이지네이션 -->
-        <div id="adminPagination"
-            style="display:flex; justify-content:center; align-items:center; gap:6px; padding:16px 0; flex-wrap:wrap;">
-        </div>
-    </div>
-
-    <!-- 통합 연수원 추가/수정 모달 -->
-    <div id="centerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto w-full h-full">
-        <div class="relative top-10 mx-auto p-5 border w-3/4 max-w-4xl shadow-lg rounded-md bg-white mb-20">
-            <h3 class="text-xl font-bold leading-6 text-gray-900 mb-6 border-b pb-4" id="modalTitle">연수원 폼</h3>
-            <form id="centerForm" class="space-y-6">
-
-                <!-- ===== 0. 네이버 검색 섹션 (추가 모드에서만 표시) ===== -->
-                <div id="naverSearchSection" class="bg-blue-50 border border-blue-200 p-4 rounded-lg space-y-3">
-                    <h4 class="font-semibold text-blue-700">🔍 네이버에서 연수원 검색</h4>
-                    <p class="text-xs text-blue-500">연수원명을 검색하면 주소·좌표·전화번호가 자동으로 입력됩니다.</p>
-                    <div class="flex gap-2">
-                        <input type="text" id="naverSearchInput" placeholder="예: KB증권 연수원, 삼성 인재개발원"
-                            class="block w-full rounded-md border-blue-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500 text-sm">
-                        <button type="button" id="naverSearchBtn"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-nowrap font-medium transition-colors text-sm">
-                            검색
-                        </button>
-                    </div>
-                    <!-- 검색 결과 표시 -->
-                    <div id="naverSearchResults"
-                        class="hidden space-y-1 max-h-56 overflow-y-auto border border-blue-100 rounded-md bg-white">
-                        <!-- 결과 항목이 동적으로 삽입됩니다 -->
-                    </div>
-                    <div id="naverSearchStatus" class="text-xs text-gray-400 hidden"></div>
-                </div>
-
-                <!-- 1. 기본 정보 그룹 -->
-                <div class="bg-gray-50 p-4 rounded-lg space-y-4">
-                    <h4 class="font-semibold text-gray-700">📌 기본 정보</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">연수원명 *</label>
-                            <input type="text" id="centerName" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">지역(도/시)</label>
-                            <input type="text" id="centerRegion" placeholder="예: 경기도, 서울특별시"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">연락처</label>
-                            <input type="text" id="centerContact" placeholder="예: 02-1234-5678"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">기본정보 설명 *</label>
-                            <textarea id="centerBasicInfo" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500 h-24"
-                                placeholder="연수원의 주요 시설 및 특징을 입력해주세요."></textarea>
-                        </div>
-                    </div>
-                </div>
 
 
-                <!-- 2. 온라인 링크 그룹 -->
-                <div class="bg-gray-50 p-4 rounded-lg space-y-4">
-                    <h4 class="font-semibold text-gray-700">🔗 관련 링크</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">네이버 지도 링크 *</label>
-                            <input type="url" id="centerNaverLink" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="https://map.naver.com/...">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">웹사이트 링크 *</label>
-                            <input type="url" id="centerWebsite" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="https://...">
-                        </div>
-                    </div>
-                </div>
+        <!-- Firebase SDK -->
+        <script type="module">
+            import { initializeFirebaseApp } from '../firebase-config.js';
 
-                <!-- 3. 위치 설정 그룹 (지도 연동) -->
-                <div class="bg-gray-50 p-4 rounded-lg space-y-4">
-                    <h4 class="font-semibold text-gray-700">📍 위치 설정</h4>
-                    <div class="flex gap-2">
-                        <input type="text" id="searchAddress" placeholder="지번, 도로명 주소 검색..."
-                            class="block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                        <button type="button" id="mapSearchBtn"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-nowrap font-medium transition-colors">주소
-                            찾기</button>
-                    </div>
-                    <!-- 네이버 지도가 렌더링될 영역 -->
-                    <div id="map" class="h-64 w-full rounded-lg border border-gray-300 shadow-inner"></div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500">위도 (직접 수정 가능)</label>
-                            <input type="number" id="centerLat" step="any"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border bg-white focus:ring-blue-500 focus:border-blue-500 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-500">경도 (직접 수정 가능)</label>
-                            <input type="number" id="centerLng" step="any"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border bg-white focus:ring-blue-500 focus:border-blue-500 text-sm">
-                        </div>
-                    </div>
-                </div>
+            const { db, auth, modules } = await initializeFirebaseApp();
+            const { getDoc, doc, getDocs, collection, addDoc, updateDoc, deleteDoc } = modules;
+            const { signOut, onAuthStateChanged } = modules;
 
-                <div class="flex justify-end gap-3 pt-4 border-t">
-                    <button type="button" id="cancelBtn"
-                        class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">취소</button>
-                    <button type="submit"
-                        class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">저장하기</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeFirebaseApp } from '../firebase-config.js';
-
-        const { db, auth, modules } = await initializeFirebaseApp();
-        const { getDoc, doc, getDocs, collection, addDoc, updateDoc, deleteDoc } = modules;
-        const { signOut, onAuthStateChanged } = modules;
-
-        // ✅ 인증 확인 및 관리자 권한 검증
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = './login.html';
-                return;
-            }
-            try {
-                const userDocRef = doc(db, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
-                if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
-                    // 권한 없음: 로그아웃 및 접근 차단
-                    alert('관리자 권한이 없습니다. 접근이 차단되었습니다.');
+            // ✅ 인증 확인 및 관리자 권한 검증
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    window.location.href = './login.html';
+                    return;
+                }
+                try {
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+                    if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+                        // 권한 없음: 로그아웃 및 접근 차단
+                        alert('관리자 권한이 없습니다. 접근이 차단되었습니다.');
+                        await signOut(auth);
+                        window.location.href = './login.html';
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Firestore 관리자 권한 확인 중 오류:', e);
+                    alert('권한 확인 중 오류가 발생했습니다.');
                     await signOut(auth);
                     window.location.href = './login.html';
                     return;
                 }
-            } catch (e) {
-                console.error('Firestore 관리자 권한 확인 중 오류:', e);
-                alert('권한 확인 중 오류가 발생했습니다.');
-                await signOut(auth);
-                window.location.href = './login.html';
-                return;
-            }
-            // 검증이 완료된 최고 관리자만 아래 코드 실행
-            document.getElementById('adminEmail').textContent = user.email;
-        });
-
-        // ===== 통계 계산 및 렌더링 (기능 11) =====
-        async function renderStats(centers) {
-            const total = centers.length;
-            const regionMap = {};
-            let capacitySum = 0, capacityCount = 0;
-            let latestDate = null;
-
-            centers.forEach(c => {
-                // 지역별 카운트
-                const r = c.region || '기타';
-                regionMap[r] = (regionMap[r] || 0) + 1;
-
-                // 수용인원 합계
-                if (c.capacity) { capacitySum += parseInt(c.capacity); capacityCount++; }
-
-                // 최근 등록일
-                const created = c.createdAt?.toDate?.() || (c.createdAt ? new Date(c.createdAt) : null);
-                if (created && (!latestDate || created > latestDate)) latestDate = created;
+                // 검증이 완료된 최고 관리자만 아래 코드 실행
+                document.getElementById('adminEmail').textContent = user.email;
             });
 
-            // 요약 카드
-            document.getElementById('stat-total').textContent = total;
-            document.getElementById('stat-regions').textContent = Object.keys(regionMap).length;
+            // ===== 통계 계산 및 렌더링 (기능 11) =====
+            async function renderStats(centers) {
+                const total = centers.length;
+                const regionMap = {};
+                let capacitySum = 0, capacityCount = 0;
+                let latestDate = null;
 
-            // 지역별 바 차트
-            const maxVal = Math.max(...Object.values(regionMap), 1);
-            const sorted = Object.entries(regionMap).sort((a, b) => b[1] - a[1]);
-            document.getElementById('region-chart').innerHTML = sorted.map(([region, count]) => `
+                centers.forEach(c => {
+                    // 지역별 카운트
+                    const r = c.region || '기타';
+                    regionMap[r] = (regionMap[r] || 0) + 1;
+
+                    // 수용인원 합계
+                    if (c.capacity) { capacitySum += parseInt(c.capacity); capacityCount++; }
+
+                    // 최근 등록일
+                    const created = c.createdAt?.toDate?.() || (c.createdAt ? new Date(c.createdAt) : null);
+                    if (created && (!latestDate || created > latestDate)) latestDate = created;
+                });
+
+                // 요약 카드
+                document.getElementById('stat-total').textContent = total;
+                document.getElementById('stat-regions').textContent = Object.keys(regionMap).length;
+
+                // 지역별 바 차트
+                const maxVal = Math.max(...Object.values(regionMap), 1);
+                const sorted = Object.entries(regionMap).sort((a, b) => b[1] - a[1]);
+                document.getElementById('region-chart').innerHTML = sorted.map(([region, count]) => `
                 <div class="bar-chart-row">
                     <span class="bar-chart-label">${region}</span>
                     <div class="bar-chart-bar-wrap">
@@ -347,14 +238,14 @@
                 </div>
             `).join('');
 
-            // 많이 조회된 연수원 TOP 5 (clickCount 기준 내림차순 정렬)
-            const popular = [...centers]
-                .filter(c => c.clickCount && c.clickCount > 0)
-                .sort((a, b) => b.clickCount - a.clickCount)
-                .slice(0, 5);
+                // 많이 조회된 연수원 TOP 5 (clickCount 기준 내림차순 정렬)
+                const popular = [...centers]
+                    .filter(c => c.clickCount && c.clickCount > 0)
+                    .sort((a, b) => b.clickCount - a.clickCount)
+                    .slice(0, 5);
 
-            document.getElementById('popular-list').innerHTML = popular.length > 0 ? popular.map(c => {
-                return `
+                document.getElementById('popular-list').innerHTML = popular.length > 0 ? popular.map(c => {
+                    return `
                     <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
                         <div>
                             <span class="font-medium text-sm text-gray-800">${c.name}</span>
@@ -363,477 +254,29 @@
                         <span class="text-xs font-semibold text-orange-500">${c.clickCount.toLocaleString()}회 조회</span>
                     </div>
                 `;
-            }).join('') : '<p class="text-sm text-gray-400">아직 조회된 데이터가 없습니다.</p>';
-        }
-
-        // ===== 연수원 목록 로드 =====
-        // 전역 상태 관리
-        let allCenters = [];
-        let filteredCenters = [];
-        let currentPage = 1;
-        const PAGE_SIZE = 50;
-
-        // 데이터 일괄 스왑 기능
-        document.getElementById('fixLinksBtn').addEventListener('click', async () => {
-            if (!confirm('모든 연수원의 네이버 링크와 웹사이트 링크를 서로 맞바꿉니다. 진행하시겠습니까? (이 작업 후 새로고침하세요)')) return;
-            try {
-                const qs = await getDocs(collection(db, "trainingCenters"));
-                let count = 0;
-                for (const docSnap of qs.docs) {
-                    const data = docSnap.data();
-                    if (data.links && data.links.naver && data.links.website) {
-                        await updateDoc(doc(db, "trainingCenters", docSnap.id), {
-                            links: { naver: data.links.website, website: data.links.naver }
-                        });
-                        count++;
-                    }
-                }
-                alert(`총 ${count}개의 연수원 정보가 스왑되었습니다!`);
-                loadCenters();
-            } catch (e) { alert("에러: " + e.message); }
-        });
-
-        async function loadCenters() {
-            const centersList = document.getElementById('centersList');
-            centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">데이터를 불러오는 중...</td></tr>';
-
-            const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-            allCenters = [];
-            querySnapshot.forEach((d) => {
-                allCenters.push({ id: d.id, ...d.data() });
-            });
-
-            // 생성일 최신순으로 정렬
-            allCenters.sort((a, b) => {
-                const dateA = a.createdAt?.seconds || 0;
-                const dateB = b.createdAt?.seconds || 0;
-                return dateB - dateA;
-            });
-
-            // 통계 렌더링
-            await renderStats(allCenters);
-
-            // 초기 전체 데이터 그리기
-            filteredCenters = allCenters;
-            currentPage = 1;
-            renderTable();
-        }
-
-        // 테이블 렌더링 함수 (페이지네이션 지원)
-        function renderTable() {
-            const centersList = document.getElementById('centersList');
-            if (filteredCenters.length === 0) {
-                centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">등록된 연수원이 없거나 검색 결과가 없습니다</td></tr>';
-                document.getElementById('adminPagination').innerHTML = '';
-                return;
+                }).join('') : '<p class="text-sm text-gray-400">아직 조회된 데이터가 없습니다.</p>';
             }
-            const totalPages = Math.ceil(filteredCenters.length / PAGE_SIZE);
-            if (currentPage > totalPages) currentPage = totalPages;
-            const start = (currentPage - 1) * PAGE_SIZE;
-            const pageItems = filteredCenters.slice(start, start + PAGE_SIZE);
 
-            centersList.innerHTML = pageItems.map((center, i) => `
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3 text-sm text-gray-500">${start + i + 1}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                        ${center.name || '-'}
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${center.region || '-'}
-                    </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${center.contact || '-'}
-                    </td>
-                    <td class="px-4 py-3">
-                        <div class="text-xs text-gray-500 max-w-xs truncate">${center.basicInfo || '-'}</div>
-                    </td>
-                    <td class="px-4 py-3 text-sm font-medium whitespace-nowrap">
-                        <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editCenter('${center.id}')">수정</button>
-                        <button class="text-red-600 hover:text-red-900" onclick="deleteCenter('${center.id}')">삭제</button>
-                    </td>
-                </tr>
-            `).join('');
-
-            renderPagination(totalPages);
-        }
-
-        // 페이지네이션 렌더링
-        function renderPagination(totalPages) {
-            const el = document.getElementById('adminPagination');
-            if (totalPages <= 1) { el.innerHTML = ''; return; }
-
-            const btnStyle = (active) => `style="padding:6px 12px;border-radius:6px;font-size:0.85em;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:${active ? '#3b82f6' : '#fff'};color:${active ? '#fff' : '#374151'};"`;
-            const disabledStyle = `style="padding:6px 12px;border-radius:6px;font-size:0.85em;border:1px solid #e2e8f0;background:#f9fafb;color:#d1d5db;cursor:default;"`;
-
-            let html = `<button ${currentPage === 1 ? disabledStyle : btnStyle(false)} onclick="adminGoToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>&#8249;</button>`;
-
-            const maxBtns = 7;
-            let start = Math.max(1, currentPage - Math.floor(maxBtns / 2));
-            let end = Math.min(totalPages, start + maxBtns - 1);
-            if (end - start < maxBtns - 1) start = Math.max(1, end - maxBtns + 1);
-
-            if (start > 1) html += `<button ${btnStyle(false)} onclick="adminGoToPage(1)">1</button>${start > 2 ? '<span style="padding:0 4px;color:#9ca3af;">...</span>' : ''}`;
-            for (let p = start; p <= end; p++) {
-                html += `<button ${btnStyle(p === currentPage)} onclick="adminGoToPage(${p})">${p}</button>`;
-            }
-            if (end < totalPages) html += `${end < totalPages - 1 ? '<span style="padding:0 4px;color:#9ca3af;">...</span>' : ''}<button ${btnStyle(false)} onclick="adminGoToPage(${totalPages})">${totalPages}</button>`;
-
-            html += `<button ${currentPage === totalPages ? disabledStyle : btnStyle(false)} onclick="adminGoToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>&#8250;</button>`;
-            html += `<span style="font-size:0.82em;color:#6b7280;margin-left:8px;">${filteredCenters.length}개 켜 / 페이지 ${currentPage}/${totalPages}</span>`;
-            el.innerHTML = html;
-        }
-
-        window.adminGoToPage = function (page) {
-            const totalPages = Math.ceil(filteredCenters.length / PAGE_SIZE);
-            if (page < 1 || page > totalPages) return;
-            currentPage = page;
-            renderTable();
-            document.getElementById('centersTable')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        };
-
-        // 검색 이벤트
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const keyword = e.target.value.toLowerCase().trim();
-            filteredCenters = keyword
-                ? allCenters.filter(c =>
-                    (c.name && c.name.toLowerCase().includes(keyword)) ||
-                    (c.branch && c.branch.toLowerCase().includes(keyword)) ||
-                    (c.region && c.region.toLowerCase().includes(keyword)) ||
-                    (c.basicInfo && c.basicInfo.toLowerCase().includes(keyword))
-                )
-                : allCenters;
-            currentPage = 1;
-            renderTable();
-        });
-
-        // ===== 모달 및 지도 관련 =====
-        const centerModal = document.getElementById('centerModal');
-        const centerForm = document.getElementById('centerForm');
-        let currentCenterId = null;
-        let map = null;
-        let marker = null;
-
-        // 지도 초기화 및 마커 세팅 함수
-        function initOrUpdateMap(lat, lng) {
-            const coord = new naver.maps.LatLng(lat, lng);
-            if (!map) {
-                map = new naver.maps.Map('map', {
-                    center: coord,
-                    zoom: 14
-                });
-                naver.maps.Event.addListener(map, 'click', function (e) {
-                    updateMarker(e.coord);
-                    document.getElementById('centerLat').value = e.coord.lat();
-                    document.getElementById('centerLng').value = e.coord.lng();
-                });
-            } else {
-                map.setCenter(coord);
-            }
-            updateMarker(coord);
-        }
-
-        function updateMarker(coord) {
-            if (!marker) {
-                marker = new naver.maps.Marker({
-                    position: coord,
-                    map: map,
-                    draggable: true
-                });
-                naver.maps.Event.addListener(marker, 'dragend', function (e) {
-                    document.getElementById('centerLat').value = e.coord.lat();
-                    document.getElementById('centerLng').value = e.coord.lng();
-                });
-            } else {
-                marker.setPosition(coord);
-                if (!marker.getMap()) marker.setMap(map);
-            }
-        }
-
-        // 주소 검색 버튼 이벤트
-        document.getElementById('mapSearchBtn').addEventListener('click', () => {
-            const address = document.getElementById('searchAddress').value.trim();
-            if (!address) {
-                alert('검색할 주소를 입력해주세요!');
-                return;
-            }
-            naver.maps.Service.geocode({ query: address }, function (status, response) {
-                if (status !== naver.maps.Service.Status.OK || response.v2.addresses.length === 0) {
-                    alert('주소 검색 결과가 없습니다.');
-                    return;
-                }
-                const result = response.v2.addresses[0];
-                const lat = parseFloat(result.y);
-                const lng = parseFloat(result.x);
-                document.getElementById('centerLat').value = lat;
-                document.getElementById('centerLng').value = lng;
-                initOrUpdateMap(lat, lng);
-            });
-        });
-
-        // 엔터키 주소 검색 방지 및 실행
-        document.getElementById('searchAddress').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('mapSearchBtn').click();
-            }
-        });
-
-        // 폼 초기화 유틸
-        function resetForm() {
-            centerForm.reset();
-            currentCenterId = null;
-            document.getElementById('modalTitle').textContent = '새 연수원 추가';
-            if (marker) marker.setMap(null);
-            // 네이버 검색 초기화
-            document.getElementById('naverSearchInput').value = '';
-            document.getElementById('naverSearchResults').innerHTML = '';
-            document.getElementById('naverSearchResults').classList.add('hidden');
-            document.getElementById('naverSearchStatus').classList.add('hidden');
-        }
-
-        // ===== 네이버 지역 검색 API (REST) =====
-        const NAVER_CLIENT_ID = 'nQzRhczvTq8q3mu8MzlA';
-        const NAVER_CLIENT_SECRET = 'Ryo3nBB0Hv';
-
-        async function searchNaverLocal(query) {
-            const statusEl = document.getElementById('naverSearchStatus');
-            const resultsEl = document.getElementById('naverSearchResults');
-            statusEl.textContent = '검색 중...';
-            statusEl.classList.remove('hidden');
-            resultsEl.classList.add('hidden');
-            resultsEl.innerHTML = '';
-
-            try {
-                // corsproxy.io를 통해 CORS 우회 → 네이버 Local Search REST API 호출
-                const naverUrl = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(query)}&display=8&sort=comment`;
-                const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(naverUrl)}`, {
-                    headers: {
-                        'X-Naver-Client-Id': NAVER_CLIENT_ID,
-                        'X-Naver-Client-Secret': NAVER_CLIENT_SECRET,
-                    }
-                });
-
-                if (!res.ok) throw new Error(`API 오류 ${res.status}`);
-                const data = await res.json();
-                const items = data.items || [];
-
-                if (!items.length) {
-                    statusEl.textContent = '검색 결과가 없습니다. 다른 검색어로 시도하세요.';
-                    return;
-                }
-
-                statusEl.classList.add('hidden');
-                resultsEl.classList.remove('hidden');
-                resultsEl.innerHTML = items.map((item) => {
-                    // 네이버 REST API 좌표: mapx/mapy (1/10,000,000도)
-                    const lat = parseInt(item.mapy) / 10000000;
-                    const lng = parseInt(item.mapx) / 10000000;
-                    const name = item.title.replace(/<[^>]+>/g, ''); // HTML 태그 제거
-                    const addr = item.roadAddress || item.address || '';
-                    const phone = item.telephone || '';
-                    const category = item.category || '';
-                    const link = item.link || '';
-                    return `
-                        <div class="naver-result-item flex items-start gap-3 p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
-                             data-lat="${lat}" data-lng="${lng}"
-                             data-name="${name}" data-address="${addr}"
-                             data-phone="${phone}" data-category="${category}" data-link="${link}">
-                            <div class="flex-1 min-w-0">
-                                <div class="font-medium text-sm text-gray-800">${name}</div>
-                                ${category ? `<div class="text-xs text-blue-500 mt-0.5">${category}</div>` : ''}
-                                <div class="text-xs text-gray-500 mt-0.5 truncate">${addr}</div>
-                                ${phone ? `<div class="text-xs text-gray-400 mt-0.5">📞 ${phone}</div>` : ''}
-                                <div class="text-xs text-blue-400 mt-0.5">📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
-                            </div>
-                            <span class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full whitespace-nowrap mt-1 shrink-0">선택</span>
-                        </div>
-                    `;
-                }).join('');
-
-                // 선택 이벤트
-                resultsEl.querySelectorAll('.naver-result-item').forEach(el => {
-                    el.addEventListener('click', () => {
-                        const lat = parseFloat(el.dataset.lat);
-                        const lng = parseFloat(el.dataset.lng);
-                        const name = el.dataset.name;
-                        const address = el.dataset.address;
-                        const phone = el.dataset.phone;
-                        const category = el.dataset.category;
-                        const link = el.dataset.link;
-
-                        document.getElementById('centerName').value = name;
-                        document.getElementById('centerLat').value = lat;
-                        document.getElementById('centerLng').value = lng;
-                        document.getElementById('searchAddress').value = address;
-                        if (phone) document.getElementById('centerContact').value = phone;
-
-                        // 링크 자동 입력
-                        document.getElementById('centerNaverLink').value = `https://map.naver.com/v5/search/${encodeURIComponent(name)}`;
-                        if (link) document.getElementById('centerWebsite').value = link;
-
-                        // 지역 자동 추출
-                        const regionMatch = address.match(/^(서울|경기|인천|강원|충북|충남|대전|세종|전북|전남|광주|경북|경남|부산|대구|울산|제주)/);
-                        if (regionMatch) document.getElementById('centerRegion').value = regionMatch[1];
-
-                        // 기본정보 자동 입력
-                        document.getElementById('centerBasicInfo').value =
-                            `${name}. ${address}${phone ? '. 전화: ' + phone : ''}${category ? '. 분류: ' + category : ''}`;
-
-                        // 지도 업데이트
-                        initOrUpdateMap(lat, lng);
-
-                        resultsEl.classList.add('hidden');
-                        statusEl.textContent = `✅ "${name}" 선택 완료. 아래 정보를 확인하고 저장하세요.`;
-                        statusEl.classList.remove('hidden');
+            // ===== 대시보드 데이터 로드 =====
+            async function loadCenters() {
+                try {
+                    const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+                    const allCenters = [];
+                    querySnapshot.forEach((d) => {
+                        allCenters.push({ id: d.id, ...d.data() });
                     });
-                });
 
-            } catch (e) {
-                statusEl.textContent = `검색 오류: ${e.message}`;
-            }
-        }
-
-        // 네이버 검색 버튼 이벤트
-        document.getElementById('naverSearchBtn').addEventListener('click', () => {
-            const query = document.getElementById('naverSearchInput').value.trim();
-            if (!query) { alert('검색어를 입력하세요.'); return; }
-            searchNaverLocal(query);
-        });
-        document.getElementById('naverSearchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('naverSearchBtn').click(); }
-        });
-
-        // 연수원 추가 버튼
-        document.getElementById('addCenterBtn').addEventListener('click', () => {
-            resetForm();
-            document.getElementById('naverSearchSection').classList.remove('hidden'); // 추가 모드: 검색창 표시
-            centerModal.classList.remove('hidden');
-            // 모달이 열린 직후 지도 사이즈 버그를 방지하기 위해 setTimeout 사용
-            setTimeout(() => {
-                // 기본 위치 (서울 중심 등)
-                initOrUpdateMap(37.5666805, 126.9784147);
-                if (map) map.autoResize();
-            }, 100);
-        });
-
-        // 연수원 수정 버튼
-        window.editCenter = async (centerId) => {
-            currentCenterId = centerId;
-            const docSnap = await getDoc(doc(db, "trainingCenters", centerId));
-            const center = docSnap.data();
-
-            document.getElementById('centerName').value = center.name || '';
-            document.getElementById('centerRegion').value = center.region || '';
-            document.getElementById('centerContact').value = center.contact || '';
-            document.getElementById('centerBasicInfo').value = center.basicInfo || '';
-            document.getElementById('centerNaverLink').value = center.links?.naver || '';
-            document.getElementById('centerWebsite').value = center.links?.website || '';
-
-            const lat = center.location?.lat || 37.5666805;
-            const lng = center.location?.lng || 126.9784147;
-            document.getElementById('centerLat').value = center.location?.lat || '';
-            document.getElementById('centerLng').value = center.location?.lng || '';
-
-            document.getElementById('modalTitle').textContent = '연수원 수정';
-            document.getElementById('naverSearchSection').classList.add('hidden'); // 수정 모드: 검색창 숨김
-            centerModal.classList.remove('hidden');
-
-            setTimeout(() => {
-                initOrUpdateMap(lat, lng);
-                if (map) map.autoResize();
-            }, 100);
-        };
-
-        window.deleteCenter = async (centerId) => {
-            if (confirm('정말 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.')) {
-                await deleteDoc(doc(db, "trainingCenters", centerId));
-                loadCenters();
-            }
-        };
-
-        // 엑셀 다운로드 (새 필드 포함)
-        document.getElementById('excelDownBtn').addEventListener('click', async () => {
-            const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-            const data = [];
-            let i = 1;
-            querySnapshot.forEach((d) => {
-                const c = d.data();
-                data.push({
-                    '번호': i++, '연수원명': c.name,
-                    '지역': c.region || '',
-                    '연락처': c.contact || '', '기본정보': c.basicInfo || '',
-                    '위도': c.location?.lat || '', '경도': c.location?.lng || '',
-                    '네이버 주소': c.links?.naver || '', '웹사이트': c.links?.website || ''
-                });
-            });
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "연수원목록");
-            XLSX.writeFile(wb, "연수원목록.xlsx");
-        });
-
-        // 폼 닫기
-        document.getElementById('cancelBtn').addEventListener('click', () => {
-            centerModal.classList.add('hidden');
-        });
-
-        window.addEventListener('click', (event) => {
-            if (event.target === centerModal) {
-                centerModal.classList.add('hidden');
-            }
-        });
-
-        // 폼 저장 로직
-        centerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const latVal = document.getElementById('centerLat').value;
-            const lngVal = document.getElementById('centerLng').value;
-            if (!latVal || !lngVal) {
-                alert('주소를 검색하거나 지도에서 위치를 클릭해서 위도/경도를 입력해주세요!');
-                return;
-            }
-
-            const centerData = {
-                name: document.getElementById('centerName').value.trim(),
-                region: document.getElementById('centerRegion').value.trim(),
-                contact: document.getElementById('centerContact').value.trim(),
-                basicInfo: document.getElementById('centerBasicInfo').value.trim(),
-                links: {
-                    naver: document.getElementById('centerNaverLink').value.trim(),
-                    website: document.getElementById('centerWebsite').value.trim()
-                },
-                location: {
-                    lat: parseFloat(latVal),
-                    lng: parseFloat(lngVal)
-                },
-                updatedAt: new Date()
-            };
-
-            try {
-                if (currentCenterId) {
-                    await updateDoc(doc(db, "trainingCenters", currentCenterId), centerData);
-                } else {
-                    centerData.createdAt = new Date();
-                    await addDoc(collection(db, "trainingCenters"), centerData);
+                    // 통계 렌더링만 수행 (테이블 로직 제거됨)
+                    await renderStats(allCenters);
                 }
-                centerModal.classList.add('hidden');
-                currentCenterId = null;
-                alert('성공적으로 저장되었습니다!');
+
+            // 로그아웃
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                    signOut(auth).then(() => window.location.href = './login.html');
+                });
+
                 loadCenters();
-            } catch (error) {
-                console.error('Error saving center:', error);
-                alert('저장 중 오류가 발생했습니다.');
-            }
-        });
-
-        // 로그아웃
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            signOut(auth).then(() => window.location.href = './login.html');
-        });
-
-        loadCenters();
-    </script>
+        </script>
 </body>
 
 </html>
