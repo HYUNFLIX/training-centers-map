@@ -26,7 +26,6 @@ const elements = {
   viewToggle: null,
   exportCsv: null,
   exportExcel: null,
-  printBtn: null,
   centersContainer: null,
   pagination: null,
   loading: null,
@@ -48,7 +47,6 @@ async function init() {
   elements.viewToggle = document.getElementById('viewToggle');
   elements.exportCsv = document.getElementById('exportCsv');
   elements.exportExcel = document.getElementById('exportExcel');
-  elements.printBtn = document.getElementById('printBtn');
   elements.centersContainer = document.getElementById('centersContainer');
   elements.pagination = document.getElementById('pagination');
   elements.loading = document.getElementById('loading');
@@ -518,12 +516,14 @@ function updateStats() {
 
 // ==================== CSV 내보내기 ====================
 function exportToCsv() {
-  alert("데이터 무단 유출 방지를 위해 다운로드 기능이 제한되었습니다.\n필요하신 경우 관리자에게 이메일(help@ai.kr)로 별도 문의 부탁드립니다.");
+  const modal = document.getElementById('custom-alert-modal');
+  if (modal) modal.style.display = 'flex';
 }
 
 // ==================== Excel 내보내기 ====================
 function exportToExcel() {
-  alert("데이터 무단 유출 방지를 위해 다운로드 기능이 제한되었습니다.\n필요하신 경우 관리자에게 이메일(help@ai.kr)로 별도 문의 부탁드립니다.");
+  const modal = document.getElementById('custom-alert-modal');
+  if (modal) modal.style.display = 'flex';
 }
 
 // ==================== UI 헬퍼 ====================

@@ -39,6 +39,10 @@ button {
   min-width: 44px;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* 접근성: 스크린 리더 전용 텍스트 */
 .sr-only {
   position: absolute;
@@ -163,15 +167,17 @@ nav ul li a i {
 
 nav ul li a.active,
 nav ul li a:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: transparent;
   color: #fff;
   text-decoration: none;
-  backdrop-filter: blur(4px);
+  opacity: 1;
 }
 
 nav ul li a.active {
-  background: rgba(255, 255, 255, 0.22);
-  font-weight: 600;
+  background: transparent;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 /* 모바일 햄버거 메뉴 */
