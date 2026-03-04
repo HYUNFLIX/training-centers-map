@@ -572,6 +572,13 @@
                         <div class="text-xs text-gray-500 max-w-xs truncate" title="${center.basicInfo || ''}">${center.basicInfo || '-'}</div>
                     </td>
                     <td class="px-4 py-3 text-sm font-medium whitespace-nowrap">
+                        <label class="inline-flex items-center text-xs mr-3 text-gray-700 cursor-pointer">
+                            <input type="checkbox"
+                                   class="mr-1 h-3.5 w-3.5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                   ${center.isYouthFacility ? 'checked' : ''}
+                                   onchange="toggleIsYouthFacility('${center.id}', this.checked)">
+                            청소년시설
+                        </label>
                         <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editCenter('${center.id}')">수정</button>
                         <button class="text-red-600 hover:text-red-900" onclick="deleteCenter('${center.id}')">삭제</button>
                     </td>
@@ -880,6 +887,28 @@
                 const savedPage = currentPage;
                 await loadCenters();
                 adminGoToPage(savedPage);
+            }
+        };
+
+        window.toggleIsYouthFacility = async (centerId, isChecked) => {
+            try {
+                await updateDoc(doc(db, "trainingCenters", centerId), {
+                    isYouthFacility: isChecked,
+                    updatedAt: new Date()
+                });
+
+                // 로컬 상태 업데이트
+                const center = allCenters.find(c => c.id === centerId);
+                if (center) center.isYouthFacility = isChecked;
+
+                // 다시 렌더링 (보고 있던 페이지 유지)
+                applySort();
+                renderTable();
+            } catch (error) {
+                console.error('Error updating facility status:', error);
+                alert('상태 업데이트 중 오류가 발생했습니다.');
+                // 에러 발생 시 원래 상태로 렌더링
+                renderTable();
             }
         };
 
