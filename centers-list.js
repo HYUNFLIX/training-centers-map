@@ -11,7 +11,7 @@ const state = {
   filteredCenters: [],
   currentPage: 1,
   itemsPerPage: 20,
-  viewMode: 'table', // 'table' or 'card'
+  viewMode: 'card', // 초기 기본값을 'card'로 변경 (기존 'table')
   sortField: 'name',
   sortOrder: 'asc',
   searchTerm: '',
@@ -518,79 +518,12 @@ function updateStats() {
 
 // ==================== CSV 내보내기 ====================
 function exportToCsv() {
-  try {
-    const headers = ['연수원명', '지점', '지역', '주소', '수용인원', '연락처'];
-    const rows = state.filteredCenters.map(c => [
-      c.name || '',
-      c.branch || '',
-      c.region || '',
-      c.address || '',
-      c.capacity || '',
-      c.phone || ''
-    ]);
-
-    let csv = headers.join(',') + '\n';
-    rows.forEach(row => {
-      csv += row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',') + '\n';
-    });
-
-    // BOM 추가 (한글 깨짐 방지)
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `연수원목록_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-
-    URL.revokeObjectURL(url);
-    showToast(`${state.filteredCenters.length}개 연수원을 CSV로 내보냈습니다`, 'success');
-  } catch (error) {
-    console.error('CSV 내보내기 실패:', error);
-    showToast('CSV 내보내기에 실패했습니다', 'error');
-  }
+  alert("데이터 무단 유출 방지를 위해 다운로드 기능이 제한되었습니다.\n필요하신 경우 관리자에게 이메일(help@ai.kr)로 별도 문의 부탁드립니다.");
 }
 
 // ==================== Excel 내보내기 ====================
 function exportToExcel() {
-  try {
-    const headers = ['연수원명', '지점', '지역', '주소', '수용인원', '연락처'];
-    const rows = state.filteredCenters.map(c => [
-      c.name || '',
-      c.branch || '',
-      c.region || '',
-      c.address || '',
-      c.capacity || '',
-      c.phone || ''
-    ]);
-
-    let html = '<table><thead><tr>';
-    headers.forEach(h => { html += `<th>${h}</th>`; });
-    html += '</tr></thead><tbody>';
-
-    rows.forEach(row => {
-      html += '<tr>';
-      row.forEach(cell => { html += `<td>${String(cell)}</td>`; });
-      html += '</tr>';
-    });
-    html += '</tbody></table>';
-
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `연수원목록_${new Date().toISOString().split('T')[0]}.xls`;
-    link.click();
-
-    URL.revokeObjectURL(url);
-    showToast(`${state.filteredCenters.length}개 연수원을 Excel로 내보냈습니다`, 'success');
-  } catch (error) {
-    console.error('Excel 내보내기 실패:', error);
-    showToast('Excel 내보내기에 실패했습니다', 'error');
-  }
+  alert("데이터 무단 유출 방지를 위해 다운로드 기능이 제한되었습니다.\n필요하신 경우 관리자에게 이메일(help@ai.kr)로 별도 문의 부탁드립니다.");
 }
 
 // ==================== UI 헬퍼 ====================
