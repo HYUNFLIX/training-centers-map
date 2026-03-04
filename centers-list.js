@@ -390,8 +390,7 @@ function renderTable(centers) {
               <td>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                   ${center.links?.website ? `<a href="${center.links.website}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f1f5f9;color:#334155;border-radius:6px;font-size:0.82em;font-weight:600;text-decoration:none;border:1px solid #e2e8f0;white-space:nowrap;"><i class="fas fa-home" style="font-size:0.85em;"></i> 홈페이지</a>` : ''}
-                  ${center.links?.naver ? `<a href="${center.links.naver}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#03C75A;color:#fff;border-radius:6px;font-size:0.82em;font-weight:600;text-decoration:none;white-space:nowrap;"><i class="fas fa-map-marker-alt" style="font-size:0.85em;"></i> 네이버로 이동</a>` : ''}
-                  ${!center.links?.website && !center.links?.naver ? `<span style="color:#cbd5e1;font-size:0.9em;">링크 없음</span>` : ''}
+                  <a href="${center.links?.naver || `https://map.naver.com/v5/search/${encodeURIComponent(center.name)}`}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#03C75A;color:#fff;border-radius:6px;font-size:0.82em;font-weight:600;text-decoration:none;white-space:nowrap;"><i class="fas fa-map-marker-alt" style="font-size:0.85em;"></i> 네이버로 이동</a>
                 </div>
               </td>
             </tr>
@@ -421,8 +420,7 @@ function renderCards(centers) {
           </div>
           <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
             ${center.links?.website ? `<a href="${center.links.website}" target="_blank" rel="noopener" style="flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#f1f5f9;color:#334155;border-radius:8px;font-size:0.85em;font-weight:600;text-decoration:none;border:1px solid #e2e8f0;"><i class="fas fa-home"></i> 홈페이지</a>` : ''}
-            ${center.links?.naver ? `<a href="${center.links.naver}" target="_blank" rel="noopener" style="flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#03C75A;color:#fff;border-radius:8px;font-size:0.85em;font-weight:600;text-decoration:none;"><i class="fas fa-map-marker-alt"></i> 네이버로 이동</a>` : ''}
-            ${!center.links?.website && !center.links?.naver ? `<span style="color:#94a3b8;font-size:0.85em;font-style:italic;">링크 없음</span>` : ''}
+            <a href="${center.links?.naver || `https://map.naver.com/v5/search/${encodeURIComponent(center.name)}`}" target="_blank" rel="noopener" style="flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#03C75A;color:#fff;border-radius:8px;font-size:0.85em;font-weight:600;text-decoration:none;"><i class="fas fa-map-marker-alt"></i> 네이버로 이동</a>
           </div>
         </div>
       `).join('')
