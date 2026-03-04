@@ -104,8 +104,6 @@ function setupEventListeners() {
   elements.exportCsv.addEventListener('click', exportToCsv);
   elements.exportExcel.addEventListener('click', exportToExcel);
 
-  // 인쇄
-  elements.printBtn.addEventListener('click', () => window.print());
 }
 
 // ==================== 데이터 로드 ====================

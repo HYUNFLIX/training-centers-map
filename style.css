@@ -149,15 +149,15 @@ nav ul li {
 nav ul li a {
   color: rgba(255, 255, 255, 0.85);
   font-weight: 500;
-  font-size: 0.92rem;
-  padding: 7px 14px;
-  border-radius: 8px;
-  transition: background 0.2s, color 0.2s;
+  font-size: 0.95rem;
+  padding: 7px 5px;
+  /* 박스 느낌을 지우고 텍스트 간격을 조금 줌 */
+  transition: color 0.2s;
   display: flex;
   align-items: center;
   gap: 6px;
-  min-height: 38px;
-  letter-spacing: -0.2px;
+  background: none;
+  border: none;
 }
 
 nav ul li a i {
@@ -167,17 +167,19 @@ nav ul li a i {
 
 nav ul li a.active,
 nav ul li a:hover {
-  background: transparent;
+  background: none;
   color: #fff;
   text-decoration: none;
   opacity: 1;
 }
 
 nav ul li a.active {
-  background: transparent;
+  background: none;
   font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  border-bottom: 2px solid #fff;
+  /* 밑줄로만 포인트를 줌 (박스 아님) */
+  padding-bottom: 5px;
+  /* 밑줄과의 간격 */
 }
 
 /* 모바일 햄버거 메뉴 */
