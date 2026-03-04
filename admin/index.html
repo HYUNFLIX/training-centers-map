@@ -4,13 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>?�수??관�??�?�보??/title>
+    <link rel="icon" href="data:,">
+    <title>연수원 관리 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="text/javascript"
         src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=geocoder"></script>
     <style>
-        /* 지??�� 분포 CSS �?차트 */
+        /* 지역별 분포 CSS 바 차트 */
         .bar-chart-row {
             display: flex;
             align-items: center;
@@ -54,70 +55,70 @@
 
 <body class="bg-gray-100">
 
-    <!-- ?�비게이??�?-->
+    <!-- 네비게이션 바 -->
     <nav class="bg-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between h-16">
                 <div class="flex items-center gap-4">
-                    <span class="text-xl font-semibold">?�수??관�?/span>
+                    <span class="text-xl font-semibold">연수원 관리</span>
                     <span id="adminEmail" class="text-sm text-gray-500"></span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a href="../index.html" class="text-sm text-blue-600 hover:underline">??지?�로 ?�아가�?/a>
+                    <a href="../index.html" class="text-sm text-blue-600 hover:underline">← 지도로 돌아가기</a>
                     <button id="logoutBtn"
-                        class="text-gray-600 hover:text-gray-900 text-sm px-3 py-1 border rounded">로그?�웃</button>
+                        class="text-gray-600 hover:text-gray-900 text-sm px-3 py-1 border rounded">로그아웃</button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- 메인 컨텐�?-->
+    <!-- 메인 컨텐츠 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- ===== ?�계 카드 ?�션 (기능 11) ===== -->
+        <!-- ===== 통계 카드 섹션 (기능 11) ===== -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white rounded-lg shadow p-5 text-center">
                 <div class="text-3xl font-bold text-blue-600" id="stat-total">-</div>
-                <div class="text-sm text-gray-500 mt-1">�??�수????/div>
+                <div class="text-sm text-gray-500 mt-1">총 연수원 수</div>
             </div>
             <div class="bg-white rounded-lg shadow p-5 text-center">
                 <div class="text-3xl font-bold text-green-600" id="stat-regions">-</div>
-                <div class="text-sm text-gray-500 mt-1">?�록??지????/div>
+                <div class="text-sm text-gray-500 mt-1">등록된 지역 수</div>
             </div>
             <div class="bg-white rounded-lg shadow p-5 text-center">
                 <div class="text-3xl font-bold text-purple-600" id="stat-avg">-</div>
-                <div class="text-sm text-gray-500 mt-1">?�균 ?�용?�원 (�?</div>
+                <div class="text-sm text-gray-500 mt-1">평균 수용인원 (명)</div>
             </div>
             <div class="bg-white rounded-lg shadow p-5 text-center">
                 <div class="text-xl font-bold text-orange-500" id="stat-latest">-</div>
-                <div class="text-sm text-gray-500 mt-1">최근 ?�록??/div>
+                <div class="text-sm text-gray-500 mt-1">최근 등록일</div>
             </div>
         </div>
 
-        <!-- 지??�� 분포 + 최근 ?�록 -->
+        <!-- 지역별 분포 + 최근 등록 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <!-- 지??�� 분포 (CSS �?차트) -->
+            <!-- 지역별 분포 (CSS 바 차트) -->
             <div class="bg-white rounded-lg shadow p-5">
-                <h3 class="font-semibold text-gray-700 mb-4">?�� 지??�� ?�수??분포</h3>
+                <h3 class="font-semibold text-gray-700 mb-4">📊 지역별 연수원 분포</h3>
                 <div id="region-chart">
-                    <div class="text-sm text-gray-400">로딩 �?..</div>
+                    <div class="text-sm text-gray-400">로딩 중...</div>
                 </div>
             </div>
-            <!-- 최근 ?�록 5�?-->
+            <!-- 최근 등록 5개 -->
             <div class="bg-white rounded-lg shadow p-5">
-                <h3 class="font-semibold text-gray-700 mb-4">?�� 최근 ?�록???�수??/h3>
+                <h3 class="font-semibold text-gray-700 mb-4">🕐 최근 등록된 연수원</h3>
                 <div id="recent-list">
-                    <div class="text-sm text-gray-400">로딩 �?..</div>
+                    <div class="text-sm text-gray-400">로딩 중...</div>
                 </div>
             </div>
         </div>
 
-        <!-- ?�어 ?�역 (검??& 버튼) -->
+        <!-- 제어 영역 (검색 & 버튼) -->
         <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h3 class="font-semibold text-gray-700 w-full sm:w-auto">?�체 ?�수??목록</h3>
+            <h3 class="font-semibold text-gray-700 w-full sm:w-auto">전체 연수원 목록</h3>
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <div class="relative w-full sm:w-64">
-                    <input type="text" id="searchInput" placeholder="?�수?�명 ?�는 지????검??.."
+                    <input type="text" id="searchInput" placeholder="연수원명 또는 지역 등 검색..."
                         class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,98 +129,88 @@
                 </div>
                 <button id="addCenterBtn"
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm whitespace-nowrap">
-                    + ???�수??추�?
+                    + 새 연수원 추가
                 </button>
                 <button id="excelDownBtn"
                     class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm whitespace-nowrap">
-                    ?��? ?�운로드
+                    엑셀 다운로드
                 </button>
             </div>
         </div>
 
-        <!-- ?�수??목록 ?�이�?-->
+        <!-- 연수원 목록 테이블 -->
         <div class="bg-white shadow overflow-hidden sm:rounded-lg">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">번호
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">?�수?�명
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연수원명
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">지??
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">지역
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">?�용?�원
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연락처
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">기본?�보
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">기본정보
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관�?
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리
                         </th>
                     </tr>
                 </thead>
                 <tbody id="centersList" class="bg-white divide-y divide-gray-200">
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">로딩 �?..</td>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">로딩 중...</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- ?�합 ?�수??추�?/?�정 모달 -->
+    <!-- 통합 연수원 추가/수정 모달 -->
     <div id="centerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto w-full h-full">
         <div class="relative top-10 mx-auto p-5 border w-3/4 max-w-4xl shadow-lg rounded-md bg-white mb-20">
-            <h3 class="text-xl font-bold leading-6 text-gray-900 mb-6 border-b pb-4" id="modalTitle">?�수????/h3>
+            <h3 class="text-xl font-bold leading-6 text-gray-900 mb-6 border-b pb-4" id="modalTitle">연수원 폼</h3>
             <form id="centerForm" class="space-y-6">
-                <!-- 1. 기본 ?�보 그룹 -->
+                <!-- 1. 기본 정보 그룹 -->
                 <div class="bg-gray-50 p-4 rounded-lg space-y-4">
-                    <h4 class="font-semibold text-gray-700">?�� 기본 ?�보</h4>
+                    <h4 class="font-semibold text-gray-700">📌 기본 정보</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">?�수?�명 *</label>
+                            <label class="block text-sm font-medium text-gray-700">연수원명 *</label>
                             <input type="text" id="centerName" required
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">지???�치 *</label>
-                            <input type="text" id="centerBranch" required
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">지??????</label>
-                            <input type="text" id="centerRegion" placeholder="?? 경기?? ?�울?�별??
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">?�용?�원</label>
-                            <input type="number" id="centerCapacity" placeholder="?? 300"
+                            <label class="block text-sm font-medium text-gray-700">지역(도/시)</label>
+                            <input type="text" id="centerRegion" placeholder="예: 경기도, 서울특별시"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">?�락�?/label>
-                            <input type="text" id="centerContact" placeholder="?? 02-1234-5678"
+                            <label class="block text-sm font-medium text-gray-700">연락처</label>
+                            <input type="text" id="centerContact" placeholder="예: 02-1234-5678"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700">기본?�보 ?�명 *</label>
+                            <label class="block text-sm font-medium text-gray-700">기본정보 설명 *</label>
                             <textarea id="centerBasicInfo" required
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500 h-24"
-                                placeholder="?�수?�의 주요 ?�설 �??�징???�력?�주?�요."></textarea>
+                                placeholder="연수원의 주요 시설 및 특징을 입력해주세요."></textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- 2. ?�라??링크 그룹 -->
+                <!-- 2. 온라인 링크 그룹 -->
                 <div class="bg-gray-50 p-4 rounded-lg space-y-4">
-                    <h4 class="font-semibold text-gray-700">?�� 관??링크</h4>
+                    <h4 class="font-semibold text-gray-700">🔗 관련 링크</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">?�이�?지??링크 *</label>
+                            <label class="block text-sm font-medium text-gray-700">네이버 지도 링크 *</label>
                             <input type="url" id="centerNaverLink" required
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="https://map.naver.com/...">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">?�사?�트 링크 *</label>
+                            <label class="block text-sm font-medium text-gray-700">웹사이트 링크 *</label>
                             <input type="url" id="centerWebsite" required
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
                                 placeholder="https://...">
@@ -227,26 +218,26 @@
                     </div>
                 </div>
 
-                <!-- 3. ?�치 ?�정 그룹 (지???�동) -->
+                <!-- 3. 위치 설정 그룹 (지도 연동) -->
                 <div class="bg-gray-50 p-4 rounded-lg space-y-4">
-                    <h4 class="font-semibold text-gray-700">?�� ?�치 ?�정</h4>
+                    <h4 class="font-semibold text-gray-700">📍 위치 설정</h4>
                     <div class="flex gap-2">
-                        <input type="text" id="searchAddress" placeholder="지�? ?�로�?주소 검??.."
+                        <input type="text" id="searchAddress" placeholder="지번, 도로명 주소 검색..."
                             class="block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500">
                         <button type="button" id="mapSearchBtn"
                             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 whitespace-nowrap font-medium transition-colors">주소
                             찾기</button>
                     </div>
-                    <!-- ?�이�?지?��? ?�더링될 ?�역 -->
+                    <!-- 네이버 지도가 렌더링될 영역 -->
                     <div id="map" class="h-64 w-full rounded-lg border border-gray-300 shadow-inner"></div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-medium text-gray-500">?�도 (직접 ?�정 가??</label>
+                            <label class="block text-xs font-medium text-gray-500">위도 (직접 수정 가능)</label>
                             <input type="number" id="centerLat" step="any"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border bg-white focus:ring-blue-500 focus:border-blue-500 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-500">경도 (직접 ?�정 가??</label>
+                            <label class="block text-xs font-medium text-gray-500">경도 (직접 수정 가능)</label>
                             <input type="number" id="centerLng" step="any"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border bg-white focus:ring-blue-500 focus:border-blue-500 text-sm">
                         </div>
@@ -257,7 +248,7 @@
                     <button type="button" id="cancelBtn"
                         class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors">취소</button>
                     <button type="submit"
-                        class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">?�?�하�?/button>
+                        class="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors">저장하기</button>
                 </div>
             </form>
         </div>
@@ -271,7 +262,7 @@
         const { getDoc, doc, getDocs, collection, addDoc, updateDoc, deleteDoc } = modules;
         const { signOut, onAuthStateChanged } = modules;
 
-        // ???�증 + isAdmin 검�?(기능 7)
+        // ✅ 인증 + isAdmin 검증 (기능 7)
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
                 window.location.href = './login.html';
@@ -286,7 +277,7 @@
             document.getElementById('adminEmail').textContent = user.email;
         });
 
-        // ===== ?�계 계산 �??�더�?(기능 11) =====
+        // ===== 통계 계산 및 렌더링 (기능 11) =====
         async function renderStats(centers) {
             const total = centers.length;
             const regionMap = {};
@@ -294,19 +285,19 @@
             let latestDate = null;
 
             centers.forEach(c => {
-                // 지??�� 카운??
-                const r = c.region || '기�?';
+                // 지역별 카운트
+                const r = c.region || '기타';
                 regionMap[r] = (regionMap[r] || 0) + 1;
 
-                // ?�용?�원 ?�계
+                // 수용인원 합계
                 if (c.capacity) { capacitySum += parseInt(c.capacity); capacityCount++; }
 
-                // 최근 ?�록??
+                // 최근 등록일
                 const created = c.createdAt?.toDate?.() || (c.createdAt ? new Date(c.createdAt) : null);
                 if (created && (!latestDate || created > latestDate)) latestDate = created;
             });
 
-            // ?�약 카드
+            // 요약 카드
             document.getElementById('stat-total').textContent = total;
             document.getElementById('stat-regions').textContent = Object.keys(regionMap).length;
             document.getElementById('stat-avg').textContent = capacityCount > 0 ? Math.round(capacitySum / capacityCount) : '-';
@@ -314,7 +305,7 @@
                 ? latestDate.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })
                 : '-';
 
-            // 지??�� �?차트
+            // 지역별 바 차트
             const maxVal = Math.max(...Object.values(regionMap), 1);
             const sorted = Object.entries(regionMap).sort((a, b) => b[1] - a[1]);
             document.getElementById('region-chart').innerHTML = sorted.map(([region, count]) => `
@@ -327,7 +318,7 @@
                 </div>
             `).join('');
 
-            // 최근 ?�록 5�?(createdAt 기�? ?�렬)
+            // 최근 등록 5개 (createdAt 기준 정렬)
             const recent = [...centers]
                 .filter(c => c.createdAt)
                 .sort((a, b) => {
@@ -348,16 +339,36 @@
                         <span class="text-xs text-gray-400">${d.toLocaleDateString('ko-KR')}</span>
                     </div>
                 `;
-            }).join('') : '<p class="text-sm text-gray-400">?�록 ?�짜 ?�보 ?�음</p>';
+            }).join('') : '<p class="text-sm text-gray-400">등록 날짜 정보 없음</p>';
         }
 
-        // ===== ?�수??목록 로드 =====
-        // ?�역 ?�태 관�?
+        // ===== 연수원 목록 로드 =====
+        // 전역 상태 관리
         let allCenters = [];
+
+        // 데이터 일괄 스왑 기능
+        document.getElementById('fixLinksBtn').addEventListener('click', async () => {
+            if (!confirm('모든 연수원의 네이버 링크와 웹사이트 링크를 서로 맞바꿉니다. 진행하시겠습니까? (이 작업 후 새로고침하세요)')) return;
+            try {
+                const qs = await getDocs(collection(db, "trainingCenters"));
+                let count = 0;
+                for (const docSnap of qs.docs) {
+                    const data = docSnap.data();
+                    if (data.links && data.links.naver && data.links.website) {
+                        await updateDoc(doc(db, "trainingCenters", docSnap.id), {
+                            links: { naver: data.links.website, website: data.links.naver }
+                        });
+                        count++;
+                    }
+                }
+                alert(`총 ${count}개의 연수원 정보가 스왑되었습니다!`);
+                loadCenters();
+            } catch (e) { alert("에러: " + e.message); }
+        });
 
         async function loadCenters() {
             const centersList = document.getElementById('centersList');
-            centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">?�이?��? 불러?�는 �?..</td></tr>';
+            centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">데이터를 불러오는 중...</td></tr>';
 
             const querySnapshot = await getDocs(collection(db, "trainingCenters"));
             allCenters = [];
@@ -365,49 +376,52 @@
                 allCenters.push({ id: d.id, ...d.data() });
             });
 
-            // ?�성??최신?�으�??�렬
+            // 생성일 최신순으로 정렬
             allCenters.sort((a, b) => {
                 const dateA = a.createdAt?.seconds || 0;
                 const dateB = b.createdAt?.seconds || 0;
                 return dateB - dateA;
             });
 
-            // ?�계 ?�더�?
+            // 통계 렌더링
             await renderStats(allCenters);
 
-            // 초기 ?�체 ?�이??그리�?
+            // 초기 전체 데이터 그리기
             renderTable(allCenters);
         }
 
-        // ?�이�??�더�??�수
+        // 테이블 렌더링 함수
         function renderTable(centers) {
             const centersList = document.getElementById('centersList');
             if (centers.length === 0) {
-                centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">?�록???�수?�이 ?�거??검??결과가 ?�습?�다</td></tr>';
+                centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">등록된 연수원이 없거나 검색 결과가 없습니다</td></tr>';
                 return;
             }
 
             centersList.innerHTML = centers.map((center, i) => `
                 <tr class="hover:bg-gray-50">
                     <td class="px-4 py-3 text-sm text-gray-500">${i + 1}</td>
-                    <td class="px-4 py-3">
-                        <div class="text-sm font-medium text-gray-900">${center.name || '-'}</div>
-                        <div class="text-xs text-gray-400">${center.branch || ''}</div>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        ${center.name || '-'}
                     </td>
-                    <td class="px-4 py-3 text-sm text-gray-600">${center.region || '-'}</td>
-                    <td class="px-4 py-3 text-sm text-gray-600">${center.capacity ? center.capacity.toLocaleString() + '�? : '-'}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${center.region || '-'}
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${center.contact || '-'}
+                    </td>
                     <td class="px-4 py-3">
                         <div class="text-xs text-gray-500 max-w-xs truncate">${center.basicInfo || '-'}</div>
                     </td>
                     <td class="px-4 py-3 text-sm font-medium whitespace-nowrap">
-                        <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editCenter('${center.id}')">?�정</button>
-                        <button class="text-red-600 hover:text-red-900" onclick="deleteCenter('${center.id}')">??��</button>
+                        <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editCenter('${center.id}')">수정</button>
+                        <button class="text-red-600 hover:text-red-900" onclick="deleteCenter('${center.id}')">삭제</button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // 검???�벤??
+        // 검색 이벤트
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const keyword = e.target.value.toLowerCase().trim();
             if (!keyword) {
@@ -423,14 +437,14 @@
             renderTable(filtered);
         });
 
-        // ===== 모달 �?지??관??=====
+        // ===== 모달 및 지도 관련 =====
         const centerModal = document.getElementById('centerModal');
         const centerForm = document.getElementById('centerForm');
         let currentCenterId = null;
         let map = null;
         let marker = null;
 
-        // 지??초기??�?마커 ?�팅 ?�수
+        // 지도 초기화 및 마커 세팅 함수
         function initOrUpdateMap(lat, lng) {
             const coord = new naver.maps.LatLng(lat, lng);
             if (!map) {
@@ -466,16 +480,16 @@
             }
         }
 
-        // 주소 검??버튼 ?�벤??
+        // 주소 검색 버튼 이벤트
         document.getElementById('mapSearchBtn').addEventListener('click', () => {
             const address = document.getElementById('searchAddress').value.trim();
             if (!address) {
-                alert('검?�할 주소�??�력?�주?�요!');
+                alert('검색할 주소를 입력해주세요!');
                 return;
             }
             naver.maps.Service.geocode({ query: address }, function (status, response) {
                 if (status !== naver.maps.Service.Status.OK || response.v2.addresses.length === 0) {
-                    alert('주소 검??결과가 ?�습?�다.');
+                    alert('주소 검색 결과가 없습니다.');
                     return;
                 }
                 const result = response.v2.addresses[0];
@@ -487,7 +501,7 @@
             });
         });
 
-        // ?�터??주소 검??방�? �??�행
+        // 엔터키 주소 검색 방지 및 실행
         document.getElementById('searchAddress').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -495,36 +509,34 @@
             }
         });
 
-        // ??초기???�틸
+        // 폼 초기화 유틸
         function resetForm() {
             centerForm.reset();
             currentCenterId = null;
-            document.getElementById('modalTitle').textContent = '???�수??추�?';
+            document.getElementById('modalTitle').textContent = '새 연수원 추가';
             if (marker) marker.setMap(null);
         }
 
-        // ?�수??추�? 버튼
+        // 연수원 추가 버튼
         document.getElementById('addCenterBtn').addEventListener('click', () => {
             resetForm();
             centerModal.classList.remove('hidden');
-            // 모달???�린 직후 지???�이�?버그�?방�??�기 ?�해 setTimeout ?�용
+            // 모달이 열린 직후 지도 사이즈 버그를 방지하기 위해 setTimeout 사용
             setTimeout(() => {
-                // 기본 ?�치 (?�울 중심 ??
+                // 기본 위치 (서울 중심 등)
                 initOrUpdateMap(37.5666805, 126.9784147);
                 if (map) map.autoResize();
             }, 100);
         });
 
-        // ?�수???�정 버튼
+        // 연수원 수정 버튼
         window.editCenter = async (centerId) => {
             currentCenterId = centerId;
             const docSnap = await getDoc(doc(db, "trainingCenters", centerId));
             const center = docSnap.data();
 
             document.getElementById('centerName').value = center.name || '';
-            
             document.getElementById('centerRegion').value = center.region || '';
-            
             document.getElementById('centerContact').value = center.contact || '';
             document.getElementById('centerBasicInfo').value = center.basicInfo || '';
             document.getElementById('centerNaverLink').value = center.links?.naver || '';
@@ -535,7 +547,7 @@
             document.getElementById('centerLat').value = center.location?.lat || '';
             document.getElementById('centerLng').value = center.location?.lng || '';
 
-            document.getElementById('modalTitle').textContent = '?�수???�정';
+            document.getElementById('modalTitle').textContent = '연수원 수정';
             centerModal.classList.remove('hidden');
 
             setTimeout(() => {
@@ -545,13 +557,13 @@
         };
 
         window.deleteCenter = async (centerId) => {
-            if (confirm('?�말 ??��?�시겠습?�까? ??�� ?�에??복구?????�습?�다.')) {
+            if (confirm('정말 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.')) {
                 await deleteDoc(doc(db, "trainingCenters", centerId));
                 loadCenters();
             }
         };
 
-        // ?��? ?�운로드 (???�드 ?�함)
+        // 엑셀 다운로드 (새 필드 포함)
         document.getElementById('excelDownBtn').addEventListener('click', async () => {
             const querySnapshot = await getDocs(collection(db, "trainingCenters"));
             const data = [];
@@ -559,20 +571,20 @@
             querySnapshot.forEach((d) => {
                 const c = d.data();
                 data.push({
-                    '번호': i++, '?�수?�명': c.name, '지??: c.branch || '',
-                    '지??: c.region || '', '?�용?�원': c.capacity || '',
-                    '?�락�?: c.contact || '', '기본?�보': c.basicInfo || '',
-                    '?�도': c.location?.lat || '', '경도': c.location?.lng || '',
-                    '?�이�?지??: c.links?.naver || '', '?�사?�트': c.links?.website || ''
+                    '번호': i++, '연수원명': c.name,
+                    '지역': c.region || '',
+                    '연락처': c.contact || '', '기본정보': c.basicInfo || '',
+                    '위도': c.location?.lat || '', '경도': c.location?.lng || '',
+                    '네이버 지도': c.links?.naver || '', '웹사이트': c.links?.website || ''
                 });
             });
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "?�수?�목�?);
-            XLSX.writeFile(wb, "?�수?�목�?xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, "연수원목록");
+            XLSX.writeFile(wb, "연수원목록.xlsx");
         });
 
-        // ???�기
+        // 폼 닫기
         document.getElementById('cancelBtn').addEventListener('click', () => {
             centerModal.classList.add('hidden');
         });
@@ -583,22 +595,20 @@
             }
         });
 
-        // ???�??로직
+        // 폼 저장 로직
         centerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const latVal = document.getElementById('centerLat').value;
             const lngVal = document.getElementById('centerLng').value;
             if (!latVal || !lngVal) {
-                alert('주소�?검?�하거나 지?�에???�치�??�릭?�서 ?�도/경도�??�력?�주?�요!');
+                alert('주소를 검색하거나 지도에서 위치를 클릭해서 위도/경도를 입력해주세요!');
                 return;
             }
 
             const centerData = {
                 name: document.getElementById('centerName').value.trim(),
-                
                 region: document.getElementById('centerRegion').value.trim(),
-                
                 contact: document.getElementById('centerContact').value.trim(),
                 basicInfo: document.getElementById('centerBasicInfo').value.trim(),
                 links: {
@@ -621,15 +631,15 @@
                 }
                 centerModal.classList.add('hidden');
                 currentCenterId = null;
-                alert('?�공?�으�??�?�되?�습?�다!');
+                alert('성공적으로 저장되었습니다!');
                 loadCenters();
             } catch (error) {
                 console.error('Error saving center:', error);
-                alert('?�??�??�류가 발생?�습?�다.');
+                alert('저장 중 오류가 발생했습니다.');
             }
         });
 
-        // 로그?�웃
+        // 로그아웃
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth).then(() => window.location.href = './login.html');
         });
