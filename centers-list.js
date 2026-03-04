@@ -371,11 +371,11 @@ function renderTable(centers) {
               연수원명
             </th>
             <th class="sortable ${state.sortField === 'region' ? 'sorted-' + state.sortOrder : ''}"
-                onclick="window.handleSort('region')" style="width: 12%;">
+                onclick="window.handleSort('region')" style="width: 10%;">
               지역
             </th>
             <th style="width: 38%;">주소</th>
-            <th style="width: 18%;">연락처</th>
+            <th style="width: 24%;">링크</th>
           </tr>
         </thead>
         <tbody>
@@ -388,9 +388,11 @@ function renderTable(centers) {
               <td><span class="badge badge-region">${center.region}</span></td>
               <td><span style="color: #334155;">${center.address || '<span style="color: #cbd5e1; font-size: 0.9em;">주소 미등록</span>'}</span></td>
               <td>
-                ${(center.phone || center.contact)
-      ? `<span style="color: #475569;"><i class="fas fa-phone-alt" style="font-size: 0.85em; color: #94a3b8; margin-right: 4px;"></i>${center.phone || center.contact}</span>`
-      : `<span style="color: #cbd5e1; font-size: 0.9em;">연락처 없음</span>`}
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  ${center.links?.website ? `<a href="${center.links.website}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f1f5f9;color:#334155;border-radius:6px;font-size:0.82em;font-weight:600;text-decoration:none;border:1px solid #e2e8f0;white-space:nowrap;"><i class="fas fa-home" style="font-size:0.85em;"></i> 홈페이지</a>` : ''}
+                  ${center.links?.naver ? `<a href="${center.links.naver}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#03C75A;color:#fff;border-radius:6px;font-size:0.82em;font-weight:600;text-decoration:none;white-space:nowrap;"><i class="fas fa-map-marker-alt" style="font-size:0.85em;"></i> 네이버로 이동</a>` : ''}
+                  ${!center.links?.website && !center.links?.naver ? `<span style="color:#cbd5e1;font-size:0.9em;">링크 없음</span>` : ''}
+                </div>
               </td>
             </tr>
           `).join('')}
@@ -416,22 +418,16 @@ function renderCards(centers) {
               <i class="fas fa-map-marker-alt"></i>
               <span><span class="badge badge-region" style="margin-right:6px;">${center.region}</span> ${center.address || '-'}</span>
             </div>
-            ${(center.phone || center.contact) ? `
-              <div class="card-info">
-                <i class="fas fa-phone-alt"></i>
-                <span style="color: #475569; font-weight: 500;">${center.phone || center.contact}</span>
-              </div>
-            ` : `
-              <div class="card-info" style="color: #94a3b8;">
-                <i class="fas fa-phone-alt" style="color: #cbd5e1;"></i>
-                <span style="font-style: italic;">연락처 없음</span>
-              </div>
-            `}
+          </div>
+          <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+            ${center.links?.website ? `<a href="${center.links.website}" target="_blank" rel="noopener" style="flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#f1f5f9;color:#334155;border-radius:8px;font-size:0.85em;font-weight:600;text-decoration:none;border:1px solid #e2e8f0;"><i class="fas fa-home"></i> 홈페이지</a>` : ''}
+            ${center.links?.naver ? `<a href="${center.links.naver}" target="_blank" rel="noopener" style="flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#03C75A;color:#fff;border-radius:8px;font-size:0.85em;font-weight:600;text-decoration:none;"><i class="fas fa-map-marker-alt"></i> 네이버로 이동</a>` : ''}
+            ${!center.links?.website && !center.links?.naver ? `<span style="color:#94a3b8;font-size:0.85em;font-style:italic;">링크 없음</span>` : ''}
           </div>
         </div>
       `).join('')
     }
-    </div >
+    </div>
   `;
 
   elements.centersContainer.innerHTML = html;
