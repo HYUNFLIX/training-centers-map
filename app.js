@@ -107,14 +107,15 @@ async function initializeFirebase() {
 
         // 공통 설정에서 가져온 URL 사용
         const { initializeApp } = await import(getFirebaseUrl('app'));
-        const { getFirestore, collection, getDocs, addDoc } = await import(getFirebaseUrl('firestore'));
+        const { getFirestore, collection, getDocs, addDoc, doc, updateDoc, increment, query, orderBy, limit, setDoc, deleteDoc } = await import(getFirebaseUrl('firestore'));
 
         // 공통 설정 사용 (firebase-config.js)
         const app = initializeApp(FIREBASE_CONFIG);
         db = getFirestore(app);
         firebaseLoaded = true;
 
-        // 전역으로 노출
+        // 전역으로 노출 (마커 클릭 카운트, 인기 연수원에서 사용)
+        window._fbModules = { doc, updateDoc, increment, query, orderBy, limit, collection, getDocs, setDoc, deleteDoc };
         window.firebase = { db, collection, getDocs, addDoc };
 
         console.log('✅ Firebase 초기화 성공 (SDK v' + FIREBASE_SDK_VERSION + ')');
@@ -601,6 +602,15 @@ const createMarkersFromData = async (centersData) => {
                 naver.maps.Event.addListener(marker, 'click', function () {
                     const content = createInfoWindowContent(center);
                     infoWindowManager.openInfoWindow(map, marker, content);
+                    // Firestore clickCount 증가 (비동기 비시)
+                    if (center.id && db) {
+                        try {
+                            const { doc: docFn, updateDoc: updateDocFn, increment: incFn, setDoc: setDocFn } = window._fbModules || {};
+                            if (updateDocFn && incFn) {
+                                updateDocFn(docFn(db, 'trainingCenters', center.id), { clickCount: incFn(1) }).catch(() => { });
+                            }
+                        } catch (e) { }
+                    }
                 });
 
                 allMarkers.push(marker);
@@ -1022,6 +1032,9 @@ const setupSearchEvents = () => {
                     const targetMarker = allMarkers.find(marker => marker.centerData.id === centerId);
 
                     if (targetMarker) {
+                        // 최근 검색어 기록 (window.addRecentSearch)
+                        if (window.addRecentSearch) window.addRecentSearch(targetMarker.centerData);
+
                         // 부드러운 애니메이션으로 이동
                         map.morph(targetMarker.getPosition(), 15, {
                             duration: 800,
@@ -1032,10 +1045,20 @@ const setupSearchEvents = () => {
                         setTimeout(() => {
                             const content = createInfoWindowContent(targetMarker.centerData);
                             infoWindowManager.openInfoWindow(map, targetMarker, content);
+                            // Firestore clickCount 증가
+                            if (targetMarker.centerData.id && db) {
+                                try {
+                                    const { doc: docFn, updateDoc: updateDocFn, increment: incFn } = window._fbModules || {};
+                                    if (updateDocFn && incFn) {
+                                        updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1) }).catch(() => { });
+                                    }
+                                } catch (e) { }
+                            }
                         }, 800);
 
                         hideSearchResults();
                         if (searchInput) searchInput.blur();
+                        if (window.closeSearchPanel) window.closeSearchPanel();
                     }
                 });
             });
@@ -1325,6 +1348,28 @@ window.debugInfo = {
     applyFilters: () => applyFilters(),
     resetFilters: () => resetAllFilters(),
     showSampleData: () => generateSampleData()
+};
+
+// 외부(인기, 최근 검색어 등)에서 연수원으로 바로 이동하는 전역 함수
+window.goToCenter = function (centerId) {
+    if (!map || allMarkers.length === 0) return;
+    const targetMarker = allMarkers.find(marker => marker.centerData.id === centerId);
+    if (targetMarker) {
+        if (window.addRecentSearch) window.addRecentSearch(targetMarker.centerData);
+        map.morph(targetMarker.getPosition(), 15, { duration: 800, easing: 'easeInOutCubic' });
+        setTimeout(() => {
+            const content = createInfoWindowContent(targetMarker.centerData);
+            infoWindowManager.openInfoWindow(map, targetMarker, content);
+            // clickCount
+            if (targetMarker.centerData.id && db) {
+                try {
+                    const { doc: docFn, updateDoc: updateDocFn, increment: incFn } = window._fbModules || {};
+                    if (updateDocFn && incFn) updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1) }).catch(() => { });
+                } catch (e) { }
+            }
+        }, 800);
+        if (window.closeSearchPanel) window.closeSearchPanel();
+    }
 };
 
 // ===== 전역 에러 처리 =====

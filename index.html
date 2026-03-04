@@ -127,6 +127,13 @@
               <i class="fas fa-info-circle" aria-hidden="true"></i>
               <span>이용안내</span>
             </a></li>
+          <!-- 검색 토글 버튼 -->
+          <li>
+            <button id="searchToggleBtn" onclick="toggleSearchPanel()" aria-expanded="false" aria-controls="searchPanel"
+              style="background:rgba(255,255,255,0.15);border:none;border-radius:8px;color:#fff;padding:7px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.88rem;font-weight:600;min-height:unset;min-width:unset;transition:background 0.18s;">
+              <i class="fas fa-search"></i> 검색
+            </button>
+          </li>
         </ul>
       </nav>
     </div>
@@ -134,31 +141,61 @@
 
   <!-- 메인 컨텐츠 -->
   <main id="main-content" role="main">
-    <!-- 검색 및 필터 섹션 -->
-    <section class="search-filter-container" aria-label="연수원 검색 및 필터">
+    <!-- 슬라이드 검색 패널 -->
+    <section id="searchPanel" class="search-panel-slide" aria-label="연수원 검색">
       <div class="container">
-        <div class="search-container">
-          <div class="search-box" role="search">
-            <label for="search-input" class="sr-only">연수원 이름 검색</label>
-            <i class="fas fa-search search-icon" aria-hidden="true"></i>
-            <input type="text" id="search-input" class="search-input" placeholder="연수원 이름 지역 주소 검색..."
-              autocomplete="off" spellcheck="false" aria-describedby="search-help" />
-            <button class="clear-icon" aria-label="검색어 지우기" tabindex="-1">
-              <i class="fas fa-times" aria-hidden="true"></i>
-            </button>
-            <div id="search-help" class="sr-only">연수원 이름을 입력하여 검색할 수 있습니다</div>
+        <div class="search-panel-inner">
+          <!-- 검색칅 -->
+          <div class="search-container" style="flex:1; max-width:600px;">
+            <div class="search-box" role="search">
+              <label for="search-input" class="sr-only">연수원 검색</label>
+              <i class="fas fa-search search-icon" aria-hidden="true"></i>
+              <input type="text" id="search-input" class="search-input" placeholder="연수원 이름 지역 주소 검색..."
+                autocomplete="off" spellcheck="false" aria-describedby="search-help" />
+              <button class="clear-icon" aria-label="검색어 지우기" tabindex="-1">
+                <i class="fas fa-times" aria-hidden="true"></i>
+              </button>
+              <div id="search-help" class="sr-only">연수원 이름을 입력하여 검색할 수 있습니다</div>
+            </div>
+            <div class="search-results" role="listbox" aria-label="검색 결과"></div>
           </div>
-          <div class="search-results" role="listbox" aria-label="검색 결과"></div>
+
+          <!-- 닫기 버튼 -->
+          <button onclick="toggleSearchPanel()"
+            style="background:none;border:none;color:#64748b;cursor:pointer;padding:6px 8px;border-radius:6px;min-height:unset;min-width:unset;font-size:1.1rem;">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
 
-        <!-- app.js 호환용 hidden selects -->
-        <select id="region-filter" class="sr-only" aria-hidden="true" tabindex="-1">
-          <option value="">전체</option>
-        </select>
-        <select id="capacity-filter" class="sr-only" aria-hidden="true" tabindex="-1">
-          <option value="">전체</option>
-        </select>
+        <!-- 전수 바 (최신 + 인기) -->
+        <div class="search-suggestions" id="searchSuggestions">
+          <div class="suggestion-col" id="recentSearchesSection">
+            <div class="suggestion-header">
+              <i class="fas fa-history" style="color:#6366f1;"></i>
+              <span>최근 검색어</span>
+              <button onclick="clearRecentSearches()" class="suggestion-clear-btn">전체 삭제</button>
+            </div>
+            <div id="recentSearchesList" class="suggestion-list"></div>
+          </div>
+          <div class="suggestion-col">
+            <div class="suggestion-header">
+              <i class="fas fa-fire" style="color:#f97316;"></i>
+              <span>인기 연수원 TOP 5</span>
+            </div>
+            <div id="popularCentersList" class="suggestion-list">
+              <div style="color:#94a3b8;font-size:0.82rem;padding:8px 0;">로딩 중...</div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- app.js 호환용 hidden selects -->
+      <select id="region-filter" class="sr-only" aria-hidden="true" tabindex="-1">
+        <option value="">전체</option>
+      </select>
+      <select id="capacity-filter" class="sr-only" aria-hidden="true" tabindex="-1">
+        <option value="">전체</option>
+      </select>
     </section>
 
     <!-- 지도 컨테이너 -->
@@ -385,6 +422,136 @@
     .search-filter-container {
       padding: 12px 0 !important;
       top: 62px !important;
+    }
+
+    /* ===== 슬라이드 검색 패널 CSS ===== */
+    .search-panel-slide {
+      position: fixed;
+      top: 62px;
+      left: 0;
+      width: 100%;
+      background: #fff;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      transform: translateY(-100%);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+      pointer-events: none;
+      padding: 20px 0 30px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .search-panel-slide.open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .search-panel-inner {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 24px;
+    }
+
+    /* 검색 추천(최근/인기) 섹션 */
+    .search-suggestions {
+      display: flex;
+      gap: 30px;
+      max-width: 800px;
+    }
+
+    @media (max-width: 640px) {
+      .search-suggestions {
+        flex-direction: column;
+        gap: 20px;
+      }
+    }
+
+    .suggestion-col {
+      flex: 1;
+    }
+
+    .suggestion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .suggestion-header span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .suggestion-clear-btn {
+      background: none;
+      border: none;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      cursor: pointer;
+    }
+
+    .suggestion-clear-btn:hover {
+      color: #64748b;
+      text-decoration: underline;
+    }
+
+    .suggestion-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .suggestion-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.88rem;
+      color: #475569;
+      padding: 6px 12px;
+      background: #f8fafc;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .suggestion-item:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .suggestion-item-del {
+      color: #cbd5e1;
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 4px;
+    }
+
+    .suggestion-item-del:hover {
+      color: #ef4444;
+    }
+
+    .popular-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      background: #cbd5e1;
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .popular-badge.top-3 {
+      background: #f97316;
     }
 
     /* ===== 이용안내 모달 ===== */
@@ -709,6 +876,131 @@
       </div>
     </div>
   </div>
+
+  <!-- 검색 패널 및 추천 로직 -->
+  <script>
+    // 패널 열기/닫기
+    window.toggleSearchPanel = function () {
+      const panel = document.getElementById('searchPanel');
+      const btn = document.getElementById('searchToggleBtn');
+      const searchInput = document.getElementById('search-input');
+      const isOpen = panel.classList.contains('open');
+
+      if (isOpen) {
+        window.closeSearchPanel();
+      } else {
+        panel.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+        setTimeout(() => searchInput.focus(), 100);
+        renderRecentSearches();
+        loadPopularCenters();
+      }
+    };
+
+    window.closeSearchPanel = function () {
+      const panel = document.getElementById('searchPanel');
+      const btn = document.getElementById('searchToggleBtn');
+      panel.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    };
+
+    // 최근 검색어 관리 (LocalStorage)
+    const RECENT_SEARCHES_KEY = 'tc_recent_searches';
+
+    window.addRecentSearch = function (center) {
+      if (!center || !center.id) return;
+      let recents = JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]');
+      // 중복 제거
+      recents = recents.filter(item => item.id !== center.id);
+      // 맨 앞에 추가
+      recents.unshift({ id: center.id, name: center.name, branch: center.branch, region: center.region });
+      // 최대 5개 유지
+      if (recents.length > 5) recents.pop();
+      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recents));
+    };
+
+    window.renderRecentSearches = function () {
+      const recents = JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]');
+      const listEl = document.getElementById('recentSearchesList');
+      if (recents.length === 0) {
+        listEl.innerHTML = '<div style="color:#94a3b8;font-size:0.82rem;padding:8px 0;">최근 검색 기록이 없습니다.</div>';
+        return;
+      }
+      listEl.innerHTML = recents.map(item => `
+        <div class="suggestion-item" onclick="if(window.goToCenter) window.goToCenter('${item.id}')">
+          <div>
+            <span style="font-weight:600;color:#334155;">${item.name}</span>
+            <span style="font-size:0.75rem;color:#94a3b8;margin-left:4px;">${item.branch || ''} ${item.region || ''}</span>
+          </div>
+          <div class="suggestion-item-del" onclick="event.stopPropagation(); removeRecentSearch('${item.id}')">
+            <i class="fas fa-times"></i>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    window.clearRecentSearches = function () {
+      localStorage.removeItem(RECENT_SEARCHES_KEY);
+      renderRecentSearches();
+    };
+
+    window.removeRecentSearch = function (id) {
+      let recents = JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]');
+      recents = recents.filter(item => item.id !== id);
+      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recents));
+      renderRecentSearches();
+    };
+
+    // 인기 연수원 불러오기 (Firestore clickCount 기준 1~5위)
+    window.loadPopularCenters = async function () {
+      const listEl = document.getElementById('popularCentersList');
+
+      // FB 모듈이 로드될 때까지 약간 대기하거나 직접 확인
+      if (!window._fbModules || !window.firebase || !window.firebase.db) {
+        listEl.innerHTML = '<div style="color:#94a3b8;font-size:0.82rem;padding:8px 0;">데이터를 불러오는 중...</div>';
+        setTimeout(window.loadPopularCenters, 1000); // 1초 뒤 재시도
+        return;
+      }
+
+      try {
+        const { query, collection, orderBy, limit, getDocs } = window._fbModules;
+        const db = window.firebase.db;
+
+        const q = query(
+          collection(db, 'trainingCenters'),
+          orderBy('clickCount', 'desc'),
+          limit(5)
+        );
+
+        const querySnapshot = await getDocs(q);
+        const populars = [];
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.clickCount > 0) populars.push({ id: doc.id, ...data });
+        });
+
+        if (populars.length === 0) {
+          listEl.innerHTML = '<div style="color:#94a3b8;font-size:0.82rem;padding:8px 0;">아직 충분한 클릭 데이터가 없습니다.</div>';
+          return;
+        }
+
+        listEl.innerHTML = populars.map((item, index) => `
+          <div class="suggestion-item" onclick="if(window.goToCenter) window.goToCenter('${item.id}')">
+            <div>
+              <span class="popular-badge ${index < 3 ? 'top-3' : ''}">${index + 1}</span>
+              <span style="font-weight:600;color:#334155;">${item.name}</span>
+              <span style="font-size:0.75rem;color:#94a3b8;margin-left:4px;">${item.branch || ''}</span>
+            </div>
+            <div style="font-size:0.75rem;color:#cbd5e1;"><i class="fas fa-mouse-pointer" style="margin-right:3px;"></i>${item.clickCount}</div>
+          </div>
+        `).join('');
+
+      } catch (e) {
+        console.error("인기 연수원 로드 중 오류:", e);
+        listEl.innerHTML = '<div style="color:#ef4444;font-size:0.82rem;padding:8px 0;">순위 정보를 불러오지 못했습니다.</div>';
+      }
+    };
+  </script>
 
 </body>
 
