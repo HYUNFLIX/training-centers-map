@@ -632,11 +632,12 @@
                     const addr = item.roadAddress || item.address || '';
                     const phone = item.telephone || '';
                     const category = item.category || '';
+                    const link = item.link || '';
                     return `
                         <div class="naver-result-item flex items-start gap-3 p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
                              data-lat="${lat}" data-lng="${lng}"
                              data-name="${name}" data-address="${addr}"
-                             data-phone="${phone}" data-category="${category}">
+                             data-phone="${phone}" data-category="${category}" data-link="${link}">
                             <div class="flex-1 min-w-0">
                                 <div class="font-medium text-sm text-gray-800">${name}</div>
                                 ${category ? `<div class="text-xs text-blue-500 mt-0.5">${category}</div>` : ''}
@@ -658,12 +659,17 @@
                         const address = el.dataset.address;
                         const phone = el.dataset.phone;
                         const category = el.dataset.category;
+                        const link = el.dataset.link;
 
                         document.getElementById('centerName').value = name;
                         document.getElementById('centerLat').value = lat;
                         document.getElementById('centerLng').value = lng;
                         document.getElementById('searchAddress').value = address;
                         if (phone) document.getElementById('centerContact').value = phone;
+
+                        // 링크 자동 입력
+                        document.getElementById('centerNaverLink').value = `https://map.naver.com/v5/search/${encodeURIComponent(name)}`;
+                        if (link) document.getElementById('centerWebsite').value = link;
 
                         // 지역 자동 추출
                         const regionMatch = address.match(/^(서울|경기|인천|강원|충북|충남|대전|세종|전북|전남|광주|경북|경남|부산|대구|울산|제주)/);
