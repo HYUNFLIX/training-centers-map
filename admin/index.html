@@ -591,8 +591,9 @@
             document.getElementById('naverSearchStatus').classList.add('hidden');
         }
 
-        // ===== 네이버 지역 검색 API =====
+        // ===== 네이버 지역 검색 API (REST) =====
         const NAVER_CLIENT_ID = 'nQzRhczvTq8q3mu8MzlA';
+        const NAVER_CLIENT_SECRET = 'Ryo3nBB0Hv';
 
         async function searchNaverLocal(query) {
             const statusEl = document.getElementById('naverSearchStatus');
@@ -602,34 +603,44 @@
             resultsEl.classList.add('hidden');
             resultsEl.innerHTML = '';
 
-            // 네이버 지도 keywordSearch: 장소명으로 검색 (브라우저에서 직접 호출 가능)
-            naver.maps.Service.keywordSearch({ query: query }, function (status, response) {
-                if (status !== naver.maps.Service.Status.OK) {
-                    statusEl.textContent = '검색 결과가 없습니다. 다른 검색어로 시도해보세요.';
-                    return;
-                }
+            try {
+                // corsproxy.io를 통해 CORS 우회 → 네이버 Local Search REST API 호출
+                const naverUrl = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(query)}&display=8&sort=comment`;
+                const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(naverUrl)}`, {
+                    headers: {
+                        'X-Naver-Client-Id': NAVER_CLIENT_ID,
+                        'X-Naver-Client-Secret': NAVER_CLIENT_SECRET,
+                    }
+                });
 
-                const items = response.v2.results.items.slice(0, 8);
+                if (!res.ok) throw new Error(`API 오류 ${res.status}`);
+                const data = await res.json();
+                const items = data.items || [];
+
                 if (!items.length) {
-                    statusEl.textContent = '검색 결과가 없습니다.';
+                    statusEl.textContent = '검색 결과가 없습니다. 다른 검색어로 시도하세요.';
                     return;
                 }
 
                 statusEl.classList.add('hidden');
                 resultsEl.classList.remove('hidden');
                 resultsEl.innerHTML = items.map((item) => {
-                    const lat = parseFloat(item.point.y);
-                    const lng = parseFloat(item.point.x);
+                    // 네이버 REST API 좌표: mapx/mapy (1/10,000,000도)
+                    const lat = parseInt(item.mapy) / 10000000;
+                    const lng = parseInt(item.mapx) / 10000000;
+                    const name = item.title.replace(/<[^>]+>/g, ''); // HTML 태그 제거
                     const addr = item.roadAddress || item.address || '';
                     const phone = item.telephone || '';
+                    const category = item.category || '';
                     return `
                         <div class="naver-result-item flex items-start gap-3 p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
                              data-lat="${lat}" data-lng="${lng}"
-                             data-name="${item.name}" data-address="${addr}"
-                             data-phone="${phone}" data-category="${item.category || ''}">
-                            <div class="flex-1">
-                                <div class="font-medium text-sm text-gray-800">${item.name}</div>
-                                <div class="text-xs text-gray-500 mt-0.5">${addr}</div>
+                             data-name="${name}" data-address="${addr}"
+                             data-phone="${phone}" data-category="${category}">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium text-sm text-gray-800">${name}</div>
+                                ${category ? `<div class="text-xs text-blue-500 mt-0.5">${category}</div>` : ''}
+                                <div class="text-xs text-gray-500 mt-0.5 truncate">${addr}</div>
                                 ${phone ? `<div class="text-xs text-gray-400 mt-0.5">📞 ${phone}</div>` : ''}
                                 <div class="text-xs text-blue-400 mt-0.5">📍 ${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
                             </div>
@@ -646,6 +657,7 @@
                         const name = el.dataset.name;
                         const address = el.dataset.address;
                         const phone = el.dataset.phone;
+                        const category = el.dataset.category;
 
                         document.getElementById('centerName').value = name;
                         document.getElementById('centerLat').value = lat;
@@ -658,7 +670,6 @@
                         if (regionMatch) document.getElementById('centerRegion').value = regionMatch[1];
 
                         // 기본정보 자동 입력
-                        const category = el.dataset.category || '';
                         document.getElementById('centerBasicInfo').value =
                             `${name}. ${address}${phone ? '. 전화: ' + phone : ''}${category ? '. 분류: ' + category : ''}`;
 
@@ -670,7 +681,10 @@
                         statusEl.classList.remove('hidden');
                     });
                 });
-            });
+
+            } catch (e) {
+                statusEl.textContent = `검색 오류: ${e.message}`;
+            }
         }
 
         // 네이버 검색 버튼 이벤트
