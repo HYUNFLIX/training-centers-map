@@ -1142,12 +1142,22 @@ const applyFilters = () => {
         return true;
     });
 
+    // 모든 기존 마커 숨김 처리
+    allMarkers.forEach(marker => {
+        marker.setMap(null);
+    });
+
     // 클러스터러 업데이트
     if (clusterer) {
-        clusterer.clearMarkers();
-        if (filteredMarkers.length > 0) {
-            clusterer.setMarkers(filteredMarkers);
+        clusterer.setMarkers(filteredMarkers);
+        if (typeof clusterer._redraw === 'function') {
+            clusterer._redraw();
         }
+    } else {
+        // 클러스터러가 없는 경우 필터링된 마커만 지도에 표시
+        filteredMarkers.forEach(marker => {
+            marker.setMap(map);
+        });
     }
 
     // 결과 카운트 업데이트
@@ -1180,9 +1190,17 @@ const resetAllFilters = () => {
     if (searchResults) searchResults.style.display = 'none';
 
     // 모든 마커 다시 표시
+    // 먼저 모든 마커를 숨김 
+    allMarkers.forEach(marker => marker.setMap(null));
+
     if (clusterer && allMarkers.length > 0) {
-        clusterer.clearMarkers();
         clusterer.setMarkers(allMarkers);
+        if (typeof clusterer._redraw === 'function') {
+            clusterer._redraw();
+        }
+    } else {
+        // 클러스터러가 없는 경우 모두 표시
+        allMarkers.forEach(marker => marker.setMap(map));
     }
 
     filteredMarkers = [...allMarkers];
