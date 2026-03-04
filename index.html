@@ -127,7 +127,6 @@
               <i class="fas fa-info-circle" aria-hidden="true"></i>
               <span>이용안내</span>
             </a></li>
-
         </ul>
       </nav>
     </div>
@@ -152,48 +151,34 @@
           <div class="search-results" role="listbox" aria-label="검색 결과"></div>
         </div>
 
-        <div class="filter-container">
-          <button class="filter-toggle" aria-expanded="false" aria-controls="filter-options">
-            <i class="fas fa-filter" aria-hidden="true"></i>
-            <span>필터</span>
-          </button>
-          <div id="filter-options" class="filter-options" role="region" aria-label="검색 필터 옵션">
-            <div class="filter-option">
-              <label for="region-filter">지역</label>
-              <select id="region-filter" aria-describedby="region-help">
-                <option value="">전체</option>
-                <option value="서울">서울</option>
-                <option value="경기">경기</option>
-                <option value="인천">인천</option>
-                <option value="부산">부산</option>
-                <option value="대구">대구</option>
-                <option value="대전">대전</option>
-                <option value="광주">광주</option>
-                <option value="울산">울산</option>
-                <option value="세종">세종</option>
-                <option value="강원">강원</option>
-                <option value="충북">충북</option>
-                <option value="충남">충남</option>
-                <option value="전북">전북</option>
-                <option value="전남">전남</option>
-                <option value="경북">경북</option>
-                <option value="경남">경남</option>
-                <option value="제주">제주</option>
-              </select>
-              <div id="region-help" class="sr-only">지역별로 연수원을 필터링할 수 있습니다</div>
-            </div>
-            <div class="filter-option">
-              <label for="capacity-filter">수용인원</label>
-              <select id="capacity-filter" aria-describedby="capacity-help">
-                <option value="">전체</option>
-                <option value="0-50">50명 이하</option>
-                <option value="51-100">51-100명</option>
-                <option value="101-200">101-200명</option>
-                <option value="201+">201명 이상</option>
-              </select>
-              <div id="capacity-help" class="sr-only">수용인원별로 연수원을 필터링할 수 있습니다</div>
-            </div>
-          </div>
+        <!-- 지역 필터 (상시 표시 pill 버튼) -->
+        <div class="region-filter-bar" role="group" aria-label="지역 필터">
+          <button class="region-chip active" data-region="" onclick="selectRegion(this)">전체</button>
+          <button class="region-chip" data-region="서울" onclick="selectRegion(this)">서울</button>
+          <button class="region-chip" data-region="경기" onclick="selectRegion(this)">경기</button>
+          <button class="region-chip" data-region="인천" onclick="selectRegion(this)">인천</button>
+          <button class="region-chip" data-region="강원" onclick="selectRegion(this)">강원</button>
+          <button class="region-chip" data-region="충북" onclick="selectRegion(this)">충북</button>
+          <button class="region-chip" data-region="충남" onclick="selectRegion(this)">충남</button>
+          <button class="region-chip" data-region="대전" onclick="selectRegion(this)">대전</button>
+          <button class="region-chip" data-region="세종" onclick="selectRegion(this)">세종</button>
+          <button class="region-chip" data-region="전북" onclick="selectRegion(this)">전북</button>
+          <button class="region-chip" data-region="전남" onclick="selectRegion(this)">전남</button>
+          <button class="region-chip" data-region="광주" onclick="selectRegion(this)">광주</button>
+          <button class="region-chip" data-region="경북" onclick="selectRegion(this)">경북</button>
+          <button class="region-chip" data-region="경남" onclick="selectRegion(this)">경남</button>
+          <button class="region-chip" data-region="부산" onclick="selectRegion(this)">부산</button>
+          <button class="region-chip" data-region="울산" onclick="selectRegion(this)">울산</button>
+          <button class="region-chip" data-region="대구" onclick="selectRegion(this)">대구</button>
+          <button class="region-chip" data-region="제주" onclick="selectRegion(this)">제주</button>
+          <!-- applyFilters용 hidden select (app.js 호환) -->
+          <select id="region-filter" class="sr-only" aria-hidden="true" tabindex="-1">
+            <option value="">전체</option>
+          </select>
+          <!-- 수용인원 필터(app.js 호환용 hidden) -->
+          <select id="capacity-filter" class="sr-only" aria-hidden="true" tabindex="-1">
+            <option value="">전체</option>
+          </select>
         </div>
       </div>
     </section>
@@ -525,6 +510,17 @@
         const visibleCount = document.getElementById('visible-count');
         if (visibleCount) {
           visibleCount.textContent = count;
+        }
+      };
+
+      // 지역 chip 버튼 선택 함수
+      window.selectRegion = function (btn) {
+        document.querySelectorAll('.region-chip').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const regionSelect = document.getElementById('region-filter');
+        if (regionSelect) regionSelect.value = btn.dataset.region || '';
+        if (window.mapApp && window.mapApp.applyFilters) {
+          window.mapApp.applyFilters();
         }
       };
     });
