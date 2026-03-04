@@ -535,7 +535,6 @@ const loadCenters = async () => {
                 });
 
                 console.log(`✅ Firebase에서 ${centersData.length}개 연수원 로드 완료`);
-                toast.success(`${centersData.length}개의 연수원 정보를 불러왔습니다.`, '데이터 로드 완료', 4000);
 
             } catch (firebaseError) {
                 console.warn('⚠️ Firebase 데이터 로드 실패, 샘플 데이터 사용:', firebaseError);

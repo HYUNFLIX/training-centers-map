@@ -123,7 +123,7 @@
               <i class="fas fa-list" aria-hidden="true"></i>
               <span>연수원 목록</span>
             </a></li>
-          <li><a href="#about" aria-describedby="about-tooltip">
+          <li><a href="#" onclick="document.getElementById('aboutModal').style.display='flex'; return false;">
               <i class="fas fa-info-circle" aria-hidden="true"></i>
               <span>이용안내</span>
             </a></li>
@@ -151,35 +151,13 @@
           <div class="search-results" role="listbox" aria-label="검색 결과"></div>
         </div>
 
-        <!-- 지역 필터 (상시 표시 pill 버튼) -->
-        <div class="region-filter-bar" role="group" aria-label="지역 필터">
-          <button class="region-chip active" data-region="" onclick="selectRegion(this)">전체</button>
-          <button class="region-chip" data-region="서울" onclick="selectRegion(this)">서울</button>
-          <button class="region-chip" data-region="경기" onclick="selectRegion(this)">경기</button>
-          <button class="region-chip" data-region="인천" onclick="selectRegion(this)">인천</button>
-          <button class="region-chip" data-region="강원" onclick="selectRegion(this)">강원</button>
-          <button class="region-chip" data-region="충북" onclick="selectRegion(this)">충북</button>
-          <button class="region-chip" data-region="충남" onclick="selectRegion(this)">충남</button>
-          <button class="region-chip" data-region="대전" onclick="selectRegion(this)">대전</button>
-          <button class="region-chip" data-region="세종" onclick="selectRegion(this)">세종</button>
-          <button class="region-chip" data-region="전북" onclick="selectRegion(this)">전북</button>
-          <button class="region-chip" data-region="전남" onclick="selectRegion(this)">전남</button>
-          <button class="region-chip" data-region="광주" onclick="selectRegion(this)">광주</button>
-          <button class="region-chip" data-region="경북" onclick="selectRegion(this)">경북</button>
-          <button class="region-chip" data-region="경남" onclick="selectRegion(this)">경남</button>
-          <button class="region-chip" data-region="부산" onclick="selectRegion(this)">부산</button>
-          <button class="region-chip" data-region="울산" onclick="selectRegion(this)">울산</button>
-          <button class="region-chip" data-region="대구" onclick="selectRegion(this)">대구</button>
-          <button class="region-chip" data-region="제주" onclick="selectRegion(this)">제주</button>
-          <!-- applyFilters용 hidden select (app.js 호환) -->
-          <select id="region-filter" class="sr-only" aria-hidden="true" tabindex="-1">
-            <option value="">전체</option>
-          </select>
-          <!-- 수용인원 필터(app.js 호환용 hidden) -->
-          <select id="capacity-filter" class="sr-only" aria-hidden="true" tabindex="-1">
-            <option value="">전체</option>
-          </select>
-        </div>
+        <!-- app.js 호환용 hidden selects -->
+        <select id="region-filter" class="sr-only" aria-hidden="true" tabindex="-1">
+          <option value="">전체</option>
+        </select>
+        <select id="capacity-filter" class="sr-only" aria-hidden="true" tabindex="-1">
+          <option value="">전체</option>
+        </select>
       </div>
     </section>
 
@@ -349,6 +327,170 @@
       nav ul {
         transition: none;
       }
+    }
+
+    /* ===== 헤더 프리미엄 디자인 (override) ===== */
+    .main-header {
+      background: linear-gradient(135deg, #0b1f3a 0%, #0d3b71 55%, #0e5aa8 100%) !important;
+      padding: 0 !important;
+      box-shadow: 0 3px 16px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    .main-header .container {
+      height: 62px !important;
+    }
+
+    .logo a {
+      gap: 10px;
+    }
+
+    .logo i {
+      background: rgba(255, 255, 255, 0.12);
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .logo h1 {
+      font-size: 1.2rem;
+      letter-spacing: -0.3px;
+    }
+
+    nav ul {
+      gap: 2px;
+    }
+
+    nav ul li {
+      margin-left: 0;
+    }
+
+    nav ul li a {
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 7px 13px;
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.82);
+      gap: 6px;
+      min-height: unset;
+      transition: background 0.18s, color 0.18s;
+    }
+
+    nav ul li a:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      text-decoration: none;
+    }
+
+    nav ul li a.active {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .search-filter-container {
+      padding: 12px 0 !important;
+      top: 62px !important;
+    }
+
+    /* ===== 이용안내 모달 ===== */
+    #aboutModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .about-modal-box {
+      background: #fff;
+      border-radius: 16px;
+      max-width: 560px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 32px;
+      position: relative;
+    }
+
+    .about-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #f1f5f9;
+      border: none;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: unset;
+      min-width: unset;
+    }
+
+    .about-modal-close:hover {
+      background: #e2e8f0;
+    }
+
+    .about-modal-box h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #0d3b71;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .about-section {
+      margin-bottom: 22px;
+    }
+
+    .about-section h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .about-section p,
+    .about-section li {
+      font-size: 0.88rem;
+      color: #475569;
+      line-height: 1.7;
+    }
+
+    .about-section ul {
+      padding-left: 18px;
+    }
+
+    .about-section li {
+      margin-bottom: 4px;
+    }
+
+    .about-tag {
+      display: inline-block;
+      background: #eff6ff;
+      color: #2563eb;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin: 2px;
     }
   </style>
 
@@ -526,6 +668,57 @@
     });
   </script>
 
+
+  <!-- 이용안내 모달 -->
+  <div id="aboutModal" onclick="if(event.target===this)this.style.display='none'">
+    <div class="about-modal-box">
+      <button class="about-modal-close" onclick="document.getElementById('aboutModal').style.display='none'">
+        <i class="fas fa-times"></i>
+      </button>
+      <h2><i class="fas fa-map-marked-alt" style="color:#0d3b71;"></i> 연수원 여기어때</h2>
+
+      <div class="about-section">
+        <h3><i class="fas fa-info-circle"></i> 서비스 소개</h3>
+        <p>전국의 연수원·수련원·교육원·야영장 정보를 지도 위에서 한눈에 확인할 수 있는 서비스입니다. 현재 <strong>820여 개</strong> 이상의 시설 정보를 제공합니다.</p>
+      </div>
+
+      <div class="about-section">
+        <h3><i class="fas fa-mouse-pointer"></i> 이용 방법</h3>
+        <ul>
+          <li><strong>지도 클릭</strong> — 마커를 클릭하면 연수원 이름, 주소, 홈페이지·네이버 지도 링크를 확인할 수 있습니다.</li>
+          <li><strong>검색</strong> — 상단 검색창에 연수원 이름을 입력하면 자동완성 결과가 표시됩니다.</li>
+          <li><strong>연수원 목록</strong> — 지역별 검색, 카드/테이블 보기, 페이지 탐색이 가능합니다.</li>
+          <li><strong>클러스터</strong> — 지도를 축소하면 가까운 연수원이 묶여 표시되고, 확대하면 개별 마커로 분리됩니다.</li>
+        </ul>
+      </div>
+
+      <div class="about-section">
+        <h3><i class="fas fa-database"></i> 데이터 출처</h3>
+        <p>연수원 정보는 네이버 지역 검색 API를 통해 수집되었으며, 주기적으로 업데이트됩니다.<br>
+          일부 정보는 실제와 다를 수 있으니 방문 전 반드시 공식 홈페이지 또는 전화로 확인하시기 바랍니다.</p>
+        <div style="margin-top:8px;">
+          <span class="about-tag">네이버 지역 검색 API</span>
+          <span class="about-tag">네이버 지도 API</span>
+          <span class="about-tag">Google Firebase</span>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h3><i class="fas fa-exclamation-triangle"></i> 유의사항</h3>
+        <ul>
+          <li>연수원 정보(운영 여부, 요금 등)는 변경될 수 있습니다.</li>
+          <li>지도 마커 위치는 주소 기반으로 표시되어 실제 위치와 차이가 있을 수 있습니다.</li>
+          <li>누락된 연수원이나 오류 정보는 관리자에게 문의해 주세요.</li>
+        </ul>
+      </div>
+
+      <div class="about-section" style="margin-bottom:0;">
+        <h3><i class="fas fa-envelope"></i> 문의</h3>
+        <p>오류 신고 및 데이터 추가 요청은 <a href="mailto:hyunnet@gmail.com"
+            style="color:#2563eb; font-weight:600;">hyunnet@gmail.com</a>으로 연락해 주세요.</p>
+      </div>
+    </div>
+  </div>
 
 </body>
 
