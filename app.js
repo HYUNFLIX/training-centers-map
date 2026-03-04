@@ -1106,6 +1106,20 @@ const applyFilters = () => {
             return false;
         }
 
+        // 청소년 수련시설 필터 (토글 상태)
+        const youthToggle = document.getElementById('youth-facility-toggle');
+        const includeYouth = youthToggle ? youthToggle.checked : true; // 없을 경우 기본 표시
+        const isYouthFacility = (
+            center.name.includes("청소년") ||
+            center.name.includes("학생") ||
+            center.name.includes("수련원") ||
+            center.name.includes("야영장")
+        );
+
+        if (!includeYouth && isYouthFacility) {
+            return false;
+        }
+
         // 수용인원 필터
         if (capacityFilter) {
             const capacity = parseInt(center.capacity) || 0;
