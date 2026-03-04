@@ -8,6 +8,7 @@
         "collect": "node collect-centers.js"
     },
     "dependencies": {
+        "firebase": "^12.10.0",
         "firebase-admin": "^12.0.0"
     }
 }
