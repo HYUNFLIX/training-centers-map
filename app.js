@@ -584,9 +584,12 @@ const createMarkersFromData = async (centersData) => {
 
         // 마커 생성
         centersData.forEach((center, index) => {
-            if (center.location && center.location.lat && center.location.lng) {
+            // location 객체 또는 최상위 lat/lng 모두 지원
+            const lat = center.location?.lat ?? center.lat;
+            const lng = center.location?.lng ?? center.lng;
+            if (lat && lng) {
                 const marker = new naver.maps.Marker({
-                    position: new naver.maps.LatLng(center.location.lat, center.location.lng),
+                    position: new naver.maps.LatLng(lat, lng),
                     map: null, // 클러스터러가 관리
                     title: center.name,
                     icon: {
