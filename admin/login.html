@@ -77,19 +77,24 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const uid = userCredential.user.uid;
 
-                // ✅ Firestore에서 isAdmin 확인, 없으면 자동 생성
+                // ✅ Firestore에서 isAdmin 권한 검증
                 try {
                     const userDocRef = doc(db, 'users', uid);
                     const userDoc = await getDoc(userDocRef);
                     if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
-                        await setDoc(userDocRef, {
-                            email: userCredential.user.email,
-                            isAdmin: true,
-                            createdAt: serverTimestamp()
-                        }, { merge: true });
+                        alert('관리자 권한이 없습니다.');
+                        await signOut(auth);
+                        submitButton.disabled = false;
+                        submitButton.textContent = '로그인';
+                        return;
                     }
                 } catch (e) {
-                    console.warn('Firestore 사용자 문서 처리 중 오류 (무시):', e);
+                    console.error('Firestore 사용자 권한 확인 오류:', e);
+                    alert('권한 확인 중 오류가 발생했습니다.');
+                    await signOut(auth);
+                    submitButton.disabled = false;
+                    submitButton.textContent = '로그인';
+                    return;
                 }
 
                 window.location.href = './index.html';
