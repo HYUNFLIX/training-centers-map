@@ -140,6 +140,19 @@
         <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
             <h3 class="font-semibold text-gray-700 w-full sm:w-auto">전체 연수원 목록</h3>
             <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <div class="relative w-full sm:w-40">
+                    <select id="sortSelect"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm bg-white appearance-none">
+                        <option value="name">이름 (가나다순)</option>
+                        <option value="recent">최근 등록순</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
                 <div class="relative w-full sm:w-64">
                     <input type="text" id="searchInput" placeholder="연수원명 또는 지역 등 검색..."
                         class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
@@ -161,11 +174,25 @@
             </div>
         </div>
 
+        <!-- 다중 선택 행동 바 (기본적으로 숨김) -->
+        <div id="batchActionBar"
+            class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex justify-between items-center hidden">
+            <span class="text-sm font-medium"><span id="selectedCount">0</span>개의 연수원이 선택되었습니다.</span>
+            <button id="deleteSelectedBtn"
+                class="bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-4 rounded text-sm transition-colors">
+                선택 삭제
+            </button>
+        </div>
+
         <!-- 연수원 목록 테이블 -->
         <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200" id="centersTable">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="px-4 py-3 w-12 text-left">
+                            <input type="checkbox" id="selectAllCheckbox"
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer">
+                        </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">번호
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연수원명
@@ -346,30 +373,60 @@
         let filteredCenters = [];
         let currentPage = 1;
         const PAGE_SIZE = 50;
+        let currentSort = 'name'; // 초기 정렬: 이름순
+        let selectedCenters = new Set(); // 다중 선택 목록 저장
 
         // 데이터 일괄 스왑 기능
-        document.getElementById('fixLinksBtn').addEventListener('click', async () => {
-            if (!confirm('모든 연수원의 네이버 링크와 웹사이트 링크를 서로 맞바꿉니다. 진행하시겠습니까? (이 작업 후 새로고침하세요)')) return;
-            try {
-                const qs = await getDocs(collection(db, "trainingCenters"));
-                let count = 0;
-                for (const docSnap of qs.docs) {
-                    const data = docSnap.data();
-                    if (data.links && data.links.naver && data.links.website) {
-                        await updateDoc(doc(db, "trainingCenters", docSnap.id), {
-                            links: { naver: data.links.website, website: data.links.naver }
-                        });
-                        count++;
+        const fixLinksBtn = document.getElementById('fixLinksBtn');
+        if (fixLinksBtn) {
+            fixLinksBtn.addEventListener('click', async () => {
+                if (!confirm('모든 연수원의 네이버 링크와 웹사이트 링크를 서로 맞바꿉니다. 진행하시겠습니까? (이 작업 후 새로고침하세요)')) return;
+                try {
+                    const qs = await getDocs(collection(db, "trainingCenters"));
+                    let count = 0;
+                    for (const docSnap of qs.docs) {
+                        const data = docSnap.data();
+                        if (data.links && data.links.naver && data.links.website) {
+                            await updateDoc(doc(db, "trainingCenters", docSnap.id), {
+                                links: { naver: data.links.website, website: data.links.naver }
+                            });
+                            count++;
+                        }
                     }
-                }
-                alert(`총 ${count}개의 연수원 정보가 스왑되었습니다!`);
-                loadCenters();
-            } catch (e) { alert("에러: " + e.message); }
+                    alert(`총 ${count}개의 연수원 정보가 스왑되었습니다!`);
+                    loadCenters();
+                } catch (e) { alert("에러: " + e.message); }
+            });
+        }
+
+        // 정렬 이벤트 핸들러
+        document.getElementById('sortSelect').addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            applySort();
+            renderTable();
         });
+
+        function applySort() {
+            if (currentSort === 'name') {
+                allCenters.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                filteredCenters.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            } else if (currentSort === 'recent') {
+                allCenters.sort((a, b) => {
+                    const dateA = a.createdAt?.seconds || 0;
+                    const dateB = b.createdAt?.seconds || 0;
+                    return dateB - dateA;
+                });
+                filteredCenters.sort((a, b) => {
+                    const dateA = a.createdAt?.seconds || 0;
+                    const dateB = b.createdAt?.seconds || 0;
+                    return dateB - dateA;
+                });
+            }
+        }
 
         async function loadCenters() {
             const centersList = document.getElementById('centersList');
-            centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">데이터를 불러오는 중...</td></tr>';
+            centersList.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">데이터를 불러오는 중...</td></tr>';
 
             const querySnapshot = await getDocs(collection(db, "trainingCenters"));
             allCenters = [];
@@ -377,36 +434,114 @@
                 allCenters.push({ id: d.id, ...d.data() });
             });
 
-            // 생성일 최신순으로 정렬
-            allCenters.sort((a, b) => {
-                const dateA = a.createdAt?.seconds || 0;
-                const dateB = b.createdAt?.seconds || 0;
-                return dateB - dateA;
-            });
+            filteredCenters = [...allCenters];
+            applySort(); // 최초 로드시 정렬 적용
 
-
-
-            // 초기 전체 데이터 그리기
-            filteredCenters = allCenters;
             currentPage = 1;
+            selectedCenters.clear();
+            updateActionBar();
+            document.getElementById('selectAllCheckbox').checked = false;
             renderTable();
         }
+
+        // 다중 선택 상태 업데이트 함수
+        function updateActionBar() {
+            const actionBar = document.getElementById('batchActionBar');
+            const countSpan = document.getElementById('selectedCount');
+            const selectAllCheck = document.getElementById('selectAllCheckbox');
+
+            if (selectedCenters.size > 0) {
+                actionBar.classList.remove('hidden');
+                countSpan.textContent = selectedCenters.size;
+            } else {
+                actionBar.classList.add('hidden');
+                selectAllCheck.checked = false;
+            }
+        }
+
+        window.toggleCenterSelection = function (checkbox, centerId) {
+            if (checkbox.checked) {
+                selectedCenters.add(centerId);
+            } else {
+                selectedCenters.delete(centerId);
+                document.getElementById('selectAllCheckbox').checked = false;
+            }
+            updateActionBar();
+        };
+
+        // 전체 선택/해제 핸들러
+        document.getElementById('selectAllCheckbox').addEventListener('click', (e) => {
+            const isChecked = e.target.checked;
+            const checkboxes = document.querySelectorAll('.center-checkbox');
+
+            checkboxes.forEach(cb => {
+                cb.checked = isChecked;
+                if (isChecked) {
+                    selectedCenters.add(cb.value);
+                } else {
+                    selectedCenters.delete(cb.value);
+                }
+            });
+            updateActionBar();
+        });
+
+        // 다중 삭제 로직
+        document.getElementById('deleteSelectedBtn').addEventListener('click', async () => {
+            if (selectedCenters.size === 0) return;
+
+            if (confirm(`정말 선택한 ${selectedCenters.size}개의 연수원을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
+                try {
+                    document.getElementById('deleteSelectedBtn').textContent = '삭제 중...';
+                    document.getElementById('deleteSelectedBtn').disabled = true;
+
+                    const deletePromises = Array.from(selectedCenters).map(id => deleteDoc(doc(db, "trainingCenters", id)));
+                    await Promise.all(deletePromises);
+
+                    alert(`${selectedCenters.size}개의 연수원이 삭제되었습니다.`);
+                    selectedCenters.clear();
+                    document.getElementById('deleteSelectedBtn').textContent = '선택 삭제';
+                    document.getElementById('deleteSelectedBtn').disabled = false;
+                    loadCenters();
+                } catch (error) {
+                    console.error('Batch delete error:', error);
+                    alert('일괄 삭제 중 오류가 발생했습니다.');
+                    document.getElementById('deleteSelectedBtn').textContent = '선택 삭제';
+                    document.getElementById('deleteSelectedBtn').disabled = false;
+                }
+            }
+        });
 
         // 테이블 렌더링 함수 (페이지네이션 지원)
         function renderTable() {
             const centersList = document.getElementById('centersList');
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+
             if (filteredCenters.length === 0) {
-                centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">등록된 연수원이 없거나 검색 결과가 없습니다</td></tr>';
+                centersList.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">등록된 연수원이 없거나 검색 결과가 없습니다</td></tr>';
                 document.getElementById('adminPagination').innerHTML = '';
+                selectAllCheckbox.disabled = true;
                 return;
             }
+
+            selectAllCheckbox.disabled = false;
+
             const totalPages = Math.ceil(filteredCenters.length / PAGE_SIZE);
             if (currentPage > totalPages) currentPage = totalPages;
             const start = (currentPage - 1) * PAGE_SIZE;
             const pageItems = filteredCenters.slice(start, start + PAGE_SIZE);
 
+            // 현재 페이지의 모든 항목이 선택되었는지 확인
+            const allPageItemsSelected = pageItems.every(c => selectedCenters.has(c.id));
+            selectAllCheckbox.checked = pageItems.length > 0 && allPageItemsSelected;
+
             centersList.innerHTML = pageItems.map((center, i) => `
-                <tr class="hover:bg-gray-50">
+                <tr class="hover:bg-gray-50 ${selectedCenters.has(center.id) ? 'bg-blue-50' : ''}">
+                    <td class="px-4 py-3">
+                        <input type="checkbox" class="center-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer" 
+                            value="${center.id}" 
+                            ${selectedCenters.has(center.id) ? 'checked' : ''}
+                            onchange="toggleCenterSelection(this, '${center.id}')">
+                    </td>
                     <td class="px-4 py-3 text-sm text-gray-500">${start + i + 1}</td>
                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                         ${center.name || '-'}
@@ -418,7 +553,7 @@
                         ${center.contact || '-'}
                     </td>
                     <td class="px-4 py-3">
-                        <div class="text-xs text-gray-500 max-w-xs truncate">${center.basicInfo || '-'}</div>
+                        <div class="text-xs text-gray-500 max-w-xs truncate" title="${center.basicInfo || ''}">${center.basicInfo || '-'}</div>
                     </td>
                     <td class="px-4 py-3 text-sm font-medium whitespace-nowrap">
                         <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editCenter('${center.id}')">수정</button>
@@ -475,6 +610,7 @@
                     (c.basicInfo && c.basicInfo.toLowerCase().includes(keyword))
                 )
                 : allCenters;
+            applySort(); // 검색 후에도 현재 정렬 조건 유지
             currentPage = 1;
             renderTable();
         });
