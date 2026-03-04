@@ -167,6 +167,10 @@
                 </tbody>
             </table>
         </div>
+        <!-- 페이지네이션 -->
+        <div id="adminPagination"
+            style="display:flex; justify-content:center; align-items:center; gap:6px; padding:16px 0; flex-wrap:wrap;">
+        </div>
     </div>
 
     <!-- 통합 연수원 추가/수정 모달 -->
@@ -357,6 +361,9 @@
         // ===== 연수원 목록 로드 =====
         // 전역 상태 관리
         let allCenters = [];
+        let filteredCenters = [];
+        let currentPage = 1;
+        const PAGE_SIZE = 50;
 
         // 데이터 일괄 스왑 기능
         document.getElementById('fixLinksBtn').addEventListener('click', async () => {
@@ -399,20 +406,27 @@
             await renderStats(allCenters);
 
             // 초기 전체 데이터 그리기
-            renderTable(allCenters);
+            filteredCenters = allCenters;
+            currentPage = 1;
+            renderTable();
         }
 
-        // 테이블 렌더링 함수
-        function renderTable(centers) {
+        // 테이블 렌더링 함수 (페이지네이션 지원)
+        function renderTable() {
             const centersList = document.getElementById('centersList');
-            if (centers.length === 0) {
+            if (filteredCenters.length === 0) {
                 centersList.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">등록된 연수원이 없거나 검색 결과가 없습니다</td></tr>';
+                document.getElementById('adminPagination').innerHTML = '';
                 return;
             }
+            const totalPages = Math.ceil(filteredCenters.length / PAGE_SIZE);
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const pageItems = filteredCenters.slice(start, start + PAGE_SIZE);
 
-            centersList.innerHTML = centers.map((center, i) => `
+            centersList.innerHTML = pageItems.map((center, i) => `
                 <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3 text-sm text-gray-500">${i + 1}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">${start + i + 1}</td>
                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                         ${center.name || '-'}
                     </td>
@@ -431,22 +445,57 @@
                     </td>
                 </tr>
             `).join('');
+
+            renderPagination(totalPages);
         }
+
+        // 페이지네이션 렌더링
+        function renderPagination(totalPages) {
+            const el = document.getElementById('adminPagination');
+            if (totalPages <= 1) { el.innerHTML = ''; return; }
+
+            const btnStyle = (active) => `style="padding:6px 12px;border-radius:6px;font-size:0.85em;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:${active ? '#3b82f6' : '#fff'};color:${active ? '#fff' : '#374151'};"`;
+            const disabledStyle = `style="padding:6px 12px;border-radius:6px;font-size:0.85em;border:1px solid #e2e8f0;background:#f9fafb;color:#d1d5db;cursor:default;"`;
+
+            let html = `<button ${currentPage === 1 ? disabledStyle : btnStyle(false)} onclick="adminGoToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>&#8249;</button>`;
+
+            const maxBtns = 7;
+            let start = Math.max(1, currentPage - Math.floor(maxBtns / 2));
+            let end = Math.min(totalPages, start + maxBtns - 1);
+            if (end - start < maxBtns - 1) start = Math.max(1, end - maxBtns + 1);
+
+            if (start > 1) html += `<button ${btnStyle(false)} onclick="adminGoToPage(1)">1</button>${start > 2 ? '<span style="padding:0 4px;color:#9ca3af;">...</span>' : ''}`;
+            for (let p = start; p <= end; p++) {
+                html += `<button ${btnStyle(p === currentPage)} onclick="adminGoToPage(${p})">${p}</button>`;
+            }
+            if (end < totalPages) html += `${end < totalPages - 1 ? '<span style="padding:0 4px;color:#9ca3af;">...</span>' : ''}<button ${btnStyle(false)} onclick="adminGoToPage(${totalPages})">${totalPages}</button>`;
+
+            html += `<button ${currentPage === totalPages ? disabledStyle : btnStyle(false)} onclick="adminGoToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>&#8250;</button>`;
+            html += `<span style="font-size:0.82em;color:#6b7280;margin-left:8px;">${filteredCenters.length}개 켜 / 페이지 ${currentPage}/${totalPages}</span>`;
+            el.innerHTML = html;
+        }
+
+        window.adminGoToPage = function (page) {
+            const totalPages = Math.ceil(filteredCenters.length / PAGE_SIZE);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderTable();
+            document.getElementById('centersTable')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
 
         // 검색 이벤트
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const keyword = e.target.value.toLowerCase().trim();
-            if (!keyword) {
-                renderTable(allCenters);
-                return;
-            }
-            const filtered = allCenters.filter(c =>
-                (c.name && c.name.toLowerCase().includes(keyword)) ||
-                (c.branch && c.branch.toLowerCase().includes(keyword)) ||
-                (c.region && c.region.toLowerCase().includes(keyword)) ||
-                (c.basicInfo && c.basicInfo.toLowerCase().includes(keyword))
-            );
-            renderTable(filtered);
+            filteredCenters = keyword
+                ? allCenters.filter(c =>
+                    (c.name && c.name.toLowerCase().includes(keyword)) ||
+                    (c.branch && c.branch.toLowerCase().includes(keyword)) ||
+                    (c.region && c.region.toLowerCase().includes(keyword)) ||
+                    (c.basicInfo && c.basicInfo.toLowerCase().includes(keyword))
+                )
+                : allCenters;
+            currentPage = 1;
+            renderTable();
         });
 
         // ===== 모달 및 지도 관련 =====
