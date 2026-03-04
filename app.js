@@ -1156,6 +1156,14 @@ const applyFilters = () => {
     console.log(`🔎 필터 적용: ${filteredMarkers.length}개 결과`);
 };
 
+// 청소년 수련시설 토글 이벤트 직접 바인딩
+const youthToggle = document.getElementById('youth-facility-toggle');
+if (youthToggle) {
+    youthToggle.addEventListener('change', () => {
+        applyFilters();
+    });
+}
+
 // ===== 모든 필터 초기화 =====
 const resetAllFilters = () => {
     // 필터 초기화
@@ -1358,12 +1366,17 @@ window.debugInfo = {
     getMap: () => map,
     isMapInitialized: () => mapInitialized,
     isFirebaseLoaded: () => firebaseLoaded,
-    reloadCenters: () => loadCenters(),
     applyFilters: () => applyFilters(),
     resetFilters: () => resetAllFilters(),
     showSampleData: () => generateSampleData()
 };
 
+// index.html 등 외부에서 접근 가능한 전역 mapApp 객체 노출
+window.mapApp = {
+    applyFilters: () => applyFilters(),
+    resetFilters: () => resetAllFilters(),
+    showSampleData: () => generateSampleData()
+};
 // 외부(인기, 최근 검색어 등)에서 연수원으로 바로 이동하는 전역 함수
 window.goToCenter = function (centerId) {
     if (!map || allMarkers.length === 0) return;
