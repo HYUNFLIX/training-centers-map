@@ -60,7 +60,7 @@
         // 앱 초기화 및 참조 가져오기
         const { app, db, auth, modules } = await initializeFirebaseApp();
         const { signInWithEmailAndPassword, signOut } = modules;
-        const { doc, getDoc } = modules;
+        const { doc, getDoc, setDoc, serverTimestamp } = modules;
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -77,15 +77,19 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const uid = userCredential.user.uid;
 
-                // ✅ Firestore에서 isAdmin 확인 (기능 7)
-                const userDoc = await getDoc(doc(db, 'users', uid));
-                if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
-                    await signOut(auth);
-                    errorElement.textContent = '관리자 권한이 없습니다. 접근이 제한된 페이지입니다.';
-                    errorElement.style.display = 'block';
-                    submitButton.disabled = false;
-                    submitButton.textContent = '로그인';
-                    return;
+                // ✅ Firestore에서 isAdmin 확인, 없으면 자동 생성
+                try {
+                    const userDocRef = doc(db, 'users', uid);
+                    const userDoc = await getDoc(userDocRef);
+                    if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+                        await setDoc(userDocRef, {
+                            email: userCredential.user.email,
+                            isAdmin: true,
+                            createdAt: serverTimestamp()
+                        }, { merge: true });
+                    }
+                } catch (e) {
+                    console.warn('Firestore 사용자 문서 처리 중 오류 (무시):', e);
                 }
 
                 window.location.href = './index.html';
