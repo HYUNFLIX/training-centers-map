@@ -53,12 +53,13 @@
     </style>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-gray-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
     <style>
         /* 메인 홈페이지와 유사한 헤더 스타일 정의 (Tailwind 기반 보조) */
         .main-header {
-            background-color: #0077cc;
+            background-color: #0f172a;
+            /* Slate 900 for modern admin look */
             color: white;
             padding: 1rem 0;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -81,31 +82,43 @@
         }
 
         .main-header nav a {
-            opacity: 0.8;
+            opacity: 0.7;
             font-size: 0.95rem;
             font-weight: 500;
             padding-bottom: 4px;
-            transition: opacity 0.2s;
+            transition: all 0.2s ease;
         }
 
         .main-header nav a:hover,
         .main-header nav a.active {
             opacity: 1;
+            color: #38bdf8;
+            /* sky-400 */
         }
 
         .main-header nav a.active {
-            border-bottom: 2px solid white;
+            border-bottom: 2px solid #38bdf8;
+        }
+
+        .stat-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
     </style>
 
     <!-- 메인 홈페이지 테마의 상단 네비게이션 -->
     <header class="main-header">
-        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-10">
             <div class="flex items-center gap-3">
                 <a href="../index.html"
-                    class="text-xl font-bold flex items-center gap-2 hover:opacity-90 transition-opacity">
-                    <span>📍</span> 연수원 여기어때 <span
-                        class="text-sm font-normal bg-blue-800 px-2 py-0.5 rounded-full ml-1">Admin</span>
+                    class="text-xl font-bold flex items-center gap-2 hover:opacity-90 transition-opacity tracking-tight">
+                    <span class="text-2xl">📍</span> 연수원 여기어때
+                    <span
+                        class="text-xs font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-0.5 rounded-full ml-1 uppercase tracking-wider">Admin</span>
                 </a>
             </div>
 
@@ -117,169 +130,391 @@
             </nav>
 
             <div class="flex items-center gap-4">
-                <span id="adminEmail" class="text-sm opacity-80 hidden sm:inline-block"></span>
+                <span id="adminEmail" class="text-sm text-slate-300 hidden sm:inline-block font-medium"></span>
                 <button id="logoutBtn"
-                    class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1.5 rounded text-sm transition-colors">
+                    class="bg-white/10 hover:bg-white/20 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors border border-white/5">
                     로그아웃
                 </button>
             </div>
         </div>
-        <!-- 모바일 탭 메뉴 추가 (선택사항) -->
-        <div class="sm:hidden flex justify-center mt-3 border-t border-blue-500 pt-3 gap-6">
-            <a href="index.html" class="active text-sm opacity-100 border-b-2 border-white pb-1">대시보드</a>
-            <a href="list.html" class="text-sm opacity-80 hover:opacity-100 pb-1">연수원 관리</a>
+        <!-- 모바일 탭 메뉴 추가 -->
+        <div class="sm:hidden flex justify-center mt-3 border-t border-slate-700/50 pt-3 gap-6">
+            <a href="index.html"
+                class="active text-sm opacity-100 border-b-2 border-sky-400 pb-1 text-sky-400 font-medium">대시보드</a>
+            <a href="list.html" class="text-sm opacity-70 hover:opacity-100 pb-1 transition-opacity">연수원 관리</a>
         </div>
     </header>
 
     <!-- 메인 컨텐츠 -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- ===== 통계 카드 섹션 (기능 11, 12 개선) ===== -->
-        <div class="grid grid-cols-2 gap-4 mb-8">
-            <div class="bg-white rounded-lg shadow p-5 text-center">
-                <div class="text-3xl font-bold text-blue-600" id="stat-total">-</div>
-                <div class="text-sm text-gray-500 mt-1">총 연수원 수</div>
+        <div class="mb-8 flex justify-between items-end">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">대시보드 요약</h1>
+                <p class="text-sm text-slate-500 mt-1">등록된 연수원 데이터의 핵심 지표입니다.</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-5 text-center">
-                <div class="text-3xl font-bold text-green-600" id="stat-regions">-</div>
-                <div class="text-sm text-gray-500 mt-1">등록된 지역 수</div>
+            <div class="text-xs text-slate-400" id="last-updated">데이터 불러오는 중...</div>
+        </div>
+
+        <!-- ===== 핵심 요약 카드 섹션 ===== -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card flex items-center">
+                <div class="rounded-full bg-blue-50 p-3 mr-4">
+                    <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                        </path>
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-1">총 연수원 수</div>
+                    <div class="text-3xl font-black text-slate-800" id="stat-total">-</div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card flex items-center">
+                <div class="rounded-full bg-emerald-50 p-3 mr-4">
+                    <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-1">등록된 지역 수</div>
+                    <div class="text-3xl font-black text-slate-800" id="stat-regions">-</div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card flex items-center">
+                <div class="rounded-full bg-indigo-50 p-3 mr-4">
+                    <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+                        </path>
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-1">총 수용 가능 인원</div>
+                    <div class="text-3xl font-black text-slate-800" id="stat-capacity">-<span
+                            class="text-lg font-bold text-slate-400 ml-1">명</span></div>
+                </div>
             </div>
         </div>
 
-        <!-- 지역별 분포 + 최근 등록 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <!-- 지역별 분포 (CSS 바 차트) -->
-            <div class="bg-white rounded-lg shadow p-5">
-                <h3 class="font-semibold text-gray-700 mb-4">📊 지역별 연수원 분포</h3>
-                <div id="region-chart">
-                    <div class="text-sm text-gray-400">로딩 중...</div>
+        <!-- 1st Row: Region Chart + Youth Ratio -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- 지역별 분포 (Chart.js Bar) -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 lg:col-span-2">
+                <div class="flex items-center mb-4">
+                    <div class="w-2 h-6 bg-blue-500 rounded-full mr-3"></div>
+                    <h3 class="font-bold text-slate-800 text-lg">지역별 연수원 분포</h3>
+                </div>
+                <div class="relative h-72 w-full">
+                    <canvas id="regionCanvas"></canvas>
                 </div>
             </div>
+
+            <!-- 청소년 시설 비율 (Chart.js Doughnut) -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <div class="flex items-center mb-4">
+                    <div class="w-2 h-6 bg-amber-400 rounded-full mr-3"></div>
+                    <h3 class="font-bold text-slate-800 text-lg">시설 유형 비율</h3>
+                </div>
+                <div class="relative h-64 w-full flex justify-center items-center">
+                    <canvas id="youthRatioCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2nd Row: Capacity + Top 5 + Recent Additions -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- 수용 인원 규모별 분포 (Chart.js Bar) -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <div class="flex items-center mb-4">
+                    <div class="w-2 h-6 bg-emerald-400 rounded-full mr-3"></div>
+                    <h3 class="font-bold text-slate-800 text-lg">수용 규모별 분포</h3>
+                </div>
+                <div class="relative h-56 w-full">
+                    <canvas id="capacityCanvas"></canvas>
+                </div>
+            </div>
+
             <!-- 조회수 TOP 5 -->
-            <div class="bg-white rounded-lg shadow p-5">
-                <h3 class="font-semibold text-gray-700 mb-4">📈 많이 조회된 연수원 TOP 5</h3>
-                <div id="popular-list">
-                    <div class="text-sm text-gray-400">로딩 중...</div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <div class="flex items-center mb-4">
+                    <div class="w-2 h-6 bg-rose-400 rounded-full mr-3"></div>
+                    <h3 class="font-bold text-slate-800 text-lg">조회수 TOP 5</h3>
+                </div>
+                <div id="popular-list" class="space-y-3">
+                    <div class="animate-pulse flex space-x-4">
+                        <div class="flex-1 space-y-4 py-1">
+                            <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                            <div class="h-4 bg-slate-200 rounded"></div>
+                            <div class="h-4 bg-slate-200 rounded w-5/6"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 최근 등록 연수원 -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <div class="flex items-center mb-4">
+                    <div class="w-2 h-6 bg-indigo-400 rounded-full mr-3"></div>
+                    <h3 class="font-bold text-slate-800 text-lg">최근 추가된 연수원</h3>
+                </div>
+                <div id="recent-list"
+                    class="space-y-3 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+                    <div class="text-sm text-slate-400 text-center py-4">로딩 중...</div>
                 </div>
             </div>
         </div>
 
+    </main>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        <!-- Firebase SDK -->
-        <script type="module">
-            import { initializeFirebaseApp } from '../firebase-config.js';
+    <!-- Firebase SDK & Logic -->
+    <script type="module">
+        import { initializeFirebaseApp } from '../firebase-config.js';
 
-            const { db, auth, modules } = await initializeFirebaseApp();
-            const { getDoc, doc, getDocs, collection, addDoc, updateDoc, deleteDoc } = modules;
-            const { signOut, onAuthStateChanged } = modules;
+        const { db, auth, modules } = await initializeFirebaseApp();
+        const { getDoc, doc, getDocs, collection } = modules;
+        const { signOut, onAuthStateChanged } = modules;
 
-            // ✅ 인증 확인 및 관리자 권한 검증
-            onAuthStateChanged(auth, async (user) => {
-                if (!user) {
-                    window.location.href = './login.html';
-                    return;
-                }
-                try {
-                    const userDocRef = doc(db, 'users', user.uid);
-                    const userDoc = await getDoc(userDocRef);
-                    if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
-                        // 권한 없음: 로그아웃 및 접근 차단
-                        alert('관리자 권한이 없습니다. 접근이 차단되었습니다.');
-                        await signOut(auth);
-                        window.location.href = './login.html';
-                        return;
-                    }
-                } catch (e) {
-                    console.error('Firestore 관리자 권한 확인 중 오류:', e);
-                    alert('권한 확인 중 오류가 발생했습니다.');
+        // ✅ 인증 확인 및 관리자 권한 검증
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = './login.html';
+                return;
+            }
+            try {
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+                    alert('관리자 권한이 없습니다. 접근이 차단되었습니다.');
                     await signOut(auth);
                     window.location.href = './login.html';
                     return;
                 }
-                // 검증이 완료된 최고 관리자만 아래 코드 실행
-                document.getElementById('adminEmail').textContent = user.email;
-            });
-
-            // ===== 통계 계산 및 렌더링 (기능 11) =====
-            async function renderStats(centers) {
-                const total = centers.length;
-                const regionMap = {};
-                let capacitySum = 0, capacityCount = 0;
-                let latestDate = null;
-
-                centers.forEach(c => {
-                    // 지역별 카운트
-                    const r = c.region || '기타';
-                    regionMap[r] = (regionMap[r] || 0) + 1;
-
-                    // 수용인원 합계
-                    if (c.capacity) { capacitySum += parseInt(c.capacity); capacityCount++; }
-
-                    // 최근 등록일
-                    const created = c.createdAt?.toDate?.() || (c.createdAt ? new Date(c.createdAt) : null);
-                    if (created && (!latestDate || created > latestDate)) latestDate = created;
-                });
-
-                // 요약 카드
-                document.getElementById('stat-total').textContent = total;
-                document.getElementById('stat-regions').textContent = Object.keys(regionMap).length;
-
-                // 지역별 바 차트
-                const maxVal = Math.max(...Object.values(regionMap), 1);
-                const sorted = Object.entries(regionMap).sort((a, b) => b[1] - a[1]);
-                document.getElementById('region-chart').innerHTML = sorted.map(([region, count]) => `
-                <div class="bar-chart-row">
-                    <span class="bar-chart-label">${region}</span>
-                    <div class="bar-chart-bar-wrap">
-                        <div class="bar-chart-bar" style="width:${Math.round(count / maxVal * 100)}%"></div>
-                    </div>
-                    <span class="bar-chart-count">${count}</span>
-                </div>
-            `).join('');
-
-                // 많이 조회된 연수원 TOP 5 (clickCount 기준 내림차순 정렬)
-                const popular = [...centers]
-                    .filter(c => c.clickCount && c.clickCount > 0)
-                    .sort((a, b) => b.clickCount - a.clickCount)
-                    .slice(0, 5);
-
-                document.getElementById('popular-list').innerHTML = popular.length > 0 ? popular.map(c => {
-                    return `
-                    <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                        <div>
-                            <span class="font-medium text-sm text-gray-800">${c.name}</span>
-                            ${c.region ? `<span class="ml-2 text-xs text-gray-400">${c.region}</span>` : ''}
-                        </div>
-                        <span class="text-xs font-semibold text-orange-500">${c.clickCount.toLocaleString()}회 조회</span>
-                    </div>
-                `;
-                }).join('') : '<p class="text-sm text-gray-400">아직 조회된 데이터가 없습니다.</p>';
+            } catch (e) {
+                console.error('Firestore 인증 오류:', e);
+                window.location.href = './login.html';
+                return;
             }
+            document.getElementById('adminEmail').textContent = user.email;
+        });
 
-            // ===== 대시보드 데이터 로드 =====
-            async function loadCenters() {
-                try {
-                    const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-                    const allCenters = [];
-                    querySnapshot.forEach((d) => {
-                        allCenters.push({ id: d.id, ...d.data() });
-                    });
+        // 헬퍼 함수: 날짜 포맷
+        const formatDate = (dateObj) => {
+            if (!dateObj) return '-';
+            const date = dateObj.toDate ? dateObj.toDate() : new Date(dateObj);
+            return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+        };
 
-                    // 통계 렌더링만 수행 (테이블 로직 제거됨)
-                    await renderStats(allCenters);
-                } catch (error) {
-                    console.error("데이터 로드 중 오류:", error);
+        // 전역 차트 인스턴스 (재렌더링 시 파괴 용도)
+        let charts = {};
+
+        // ===== 통계 렌더링 =====
+        async function renderStats(centers) {
+            document.getElementById('last-updated').textContent = `최근 업데이트: ${new Date().toLocaleTimeString('ko-KR')}`;
+
+            // 1. 요약 카드 계산
+            const total = centers.length;
+            const regionMap = {};
+            let capacitySum = 0;
+            let youthCount = 0;
+            let capacityZones = { "0-50명": 0, "51-100명": 0, "101-300명": 0, "301명 이상": 0, "미상": 0 };
+
+            centers.forEach(c => {
+                const r = c.region || '기타';
+                regionMap[r] = (regionMap[r] || 0) + 1;
+
+                if (c.capacity) {
+                    const cap = parseInt(c.capacity);
+                    if (!isNaN(cap)) {
+                        capacitySum += cap;
+                        if (cap <= 50) capacityZones["0-50명"]++;
+                        else if (cap <= 100) capacityZones["51-100명"]++;
+                        else if (cap <= 300) capacityZones["101-300명"]++;
+                        else capacityZones["301명 이상"]++;
+                    } else {
+                        capacityZones["미상"]++;
+                    }
+                } else {
+                    capacityZones["미상"]++;
                 }
-            }
 
-            // 로그아웃
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                signOut(auth).then(() => window.location.href = './login.html');
+                // 청소년 시설 확인
+                if (c.isYouthFacility === true) {
+                    youthCount++;
+                } else if (c.isYouthFacility === undefined) {
+                    // Fallback
+                    if ((c.name || '').includes('청소년') || (c.name || '').includes('수련원') || (c.name || '').includes('학생') || (c.name || '').includes('야영장')) {
+                        youthCount++;
+                    }
+                }
             });
 
-            loadCenters();
-        </script>
+            document.getElementById('stat-total').textContent = total.toLocaleString();
+            document.getElementById('stat-regions').textContent = Object.keys(regionMap).length;
+            document.getElementById('stat-capacity').innerHTML = `${capacitySum.toLocaleString()}<span class="text-lg font-normal text-slate-400 ml-1">명</span>`;
+
+            // Chart.js 공통 옵션
+            Chart.defaults.font.family = "'Pretendard', 'Noto Sans KR', sans-serif";
+            Chart.defaults.color = '#64748b';
+
+            // 1. 지역별 분포 차트
+            const sortedRegions = Object.entries(regionMap).sort((a, b) => b[1] - a[1]);
+            const rLabels = sortedRegions.map(i => i[0]);
+            const rData = sortedRegions.map(i => i[1]);
+
+            if (charts.region) charts.region.destroy();
+            charts.region = new Chart(document.getElementById('regionCanvas'), {
+                type: 'bar',
+                data: {
+                    labels: rLabels,
+                    datasets: [{
+                        label: '연수원 수',
+                        data: rData,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' }, ticks: { precision: 0 } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. 시설 유형 비율 도넛형
+            if (charts.youth) charts.youth.destroy();
+            charts.youth = new Chart(document.getElementById('youthRatioCanvas'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['청소년 시설', '일반 연수원'],
+                    datasets: [{
+                        data: [youthCount, total - youthCount],
+                        backgroundColor: ['#f59e0b', '#e2e8f0'],
+                        hoverBackgroundColor: ['#d97706', '#cbd5e1'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                    }
+                }
+            });
+
+            // 3. 수용 인원 규모 분포 바 차트
+            if (charts.capacity) charts.capacity.destroy();
+            charts.capacity = new Chart(document.getElementById('capacityCanvas'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(capacityZones),
+                    datasets: [{
+                        label: '연수원 수',
+                        data: Object.values(capacityZones),
+                        backgroundColor: '#10b981',
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y', // 가로 막대
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' }, ticks: { precision: 0 } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 4. 많이 조회된 연수원 TOP 5
+            const popular = [...centers]
+                .filter(c => c.clickCount && c.clickCount > 0)
+                .sort((a, b) => b.clickCount - a.clickCount)
+                .slice(0, 5);
+
+            document.getElementById('popular-list').innerHTML = popular.length > 0 ? popular.map((c, i) => `
+                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors group">
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center justify-center w-6 h-6 rounded-full ${i === 0 ? 'bg-amber-100 text-amber-600 font-bold' : i === 1 ? 'bg-slate-200 text-slate-600 font-bold' : i === 2 ? 'bg-orange-100 text-orange-700 font-bold' : 'bg-slate-100 text-slate-400'} text-xs shrink-0">
+                            ${i + 1}
+                        </div>
+                        <div class="overflow-hidden">
+                            <h4 class="text-sm font-semibold text-slate-700 truncate group-hover:text-blue-600 transition-colors">${c.name}</h4>
+                            <p class="text-xs text-slate-400 truncate">${c.region || '지역 미상'} ${c.capacity ? `· ${c.capacity}명` : ''}</p>
+                        </div>
+                    </div>
+                    <div class="text-right pl-2">
+                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-rose-500 bg-rose-50 px-2 py-1 rounded-md">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            ${c.clickCount.toLocaleString()}
+                        </span>
+                    </div>
+                </div>
+            `).join('') : '<div class="text-sm text-slate-400 text-center py-4">조회 데이터가 없습니다.</div>';
+
+            // 5. 최근 생성된 연수원 (타임라인 뷰)
+            const recent = [...centers]
+                .filter(c => c.createdAt)
+                .sort((a, b) => {
+                    const dateA = a.createdAt?.seconds || 0;
+                    const dateB = b.createdAt?.seconds || 0;
+                    return dateB - dateA;
+                })
+                .slice(0, 5);
+
+            document.getElementById('recent-list').innerHTML = recent.length > 0 ? recent.map((c, i) => `
+                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                    <div class="flex items-center justify-center w-6 h-6 rounded-full border-4 border-white bg-indigo-200 text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 relative z-10 transition-colors group-hover:bg-indigo-500"></div>
+                    <div class="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] p-3 rounded-lg border border-slate-100 bg-white shadow-sm transition-all group-hover:shadow-md group-hover:border-indigo-100">
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="font-bold text-slate-700 text-sm group-hover:text-indigo-600 transition-colors">${c.name}</div>
+                            <time class="font-mono text-xs text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded">${formatDate(c.createdAt)}</time>
+                        </div>
+                        <div class="text-xs text-slate-500">${c.region || '지역 미상'} ${c.isYouthFacility ? '<span class="ml-1 inline-flex bg-amber-50 text-amber-600 px-1.5 rounded items-center">청소년시설</span>' : ''}</div>
+                    </div>
+                </div>
+            `).join('') : '<div class="text-sm text-slate-400 text-center py-4">최근 등록된 데이터가 없습니다.</div>';
+        }
+
+        // ===== 데이터 로드 =====
+        async function loadCenters() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "trainingCenters"));
+                const allCenters = [];
+                querySnapshot.forEach((d) => {
+                    allCenters.push({ id: d.id, ...d.data() });
+                });
+                await renderStats(allCenters);
+            } catch (error) {
+                console.error("데이터 로드 중 오류:", error);
+                document.getElementById('last-updated').textContent = "연결 오류";
+            }
+        }
+
+        // 로그아웃 이벤트
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth).then(() => window.location.href = './login.html');
+        });
+
+        loadCenters();
+    </script>
 </body>
 
 </html>

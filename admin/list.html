@@ -53,12 +53,13 @@
     </style>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
 
     <style>
         /* 메인 홈페이지와 유사한 헤더 스타일 정의 (Tailwind 기반 보조) */
         .main-header {
-            background-color: #0077cc;
+            background-color: #0f172a;
+            /* Slate 900 for modern admin look */
             color: white;
             padding: 1rem 0;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -81,31 +82,34 @@
         }
 
         .main-header nav a {
-            opacity: 0.8;
+            opacity: 0.7;
             font-size: 0.95rem;
             font-weight: 500;
             padding-bottom: 4px;
-            transition: opacity 0.2s;
+            transition: all 0.2s ease;
         }
 
         .main-header nav a:hover,
         .main-header nav a.active {
             opacity: 1;
+            color: #38bdf8;
+            /* sky-400 */
         }
 
         .main-header nav a.active {
-            border-bottom: 2px solid white;
+            border-bottom: 2px solid #38bdf8;
         }
     </style>
 
     <!-- 메인 홈페이지 테마의 상단 네비게이션 -->
     <header class="main-header">
-        <div class="max-w-7xl mx-auto px-4 flex justify-between items-center h-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-10">
             <div class="flex items-center gap-3">
                 <a href="../index.html"
-                    class="text-xl font-bold flex items-center gap-2 hover:opacity-90 transition-opacity">
-                    <span>📍</span> 연수원 여기어때 <span
-                        class="text-sm font-normal bg-blue-800 px-2 py-0.5 rounded-full ml-1">Admin</span>
+                    class="text-xl font-bold flex items-center gap-2 hover:opacity-90 transition-opacity tracking-tight">
+                    <span class="text-2xl">📍</span> 연수원 여기어때
+                    <span
+                        class="text-xs font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-0.5 rounded-full ml-1 uppercase tracking-wider">Admin</span>
                 </a>
             </div>
 
@@ -117,108 +121,155 @@
             </nav>
 
             <div class="flex items-center gap-4">
-                <span id="adminEmail" class="text-sm opacity-80 hidden sm:inline-block"></span>
+                <span id="adminEmail" class="text-sm text-slate-300 hidden sm:inline-block font-medium"></span>
                 <button id="logoutBtn"
-                    class="bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1.5 rounded text-sm transition-colors">
+                    class="bg-white/10 hover:bg-white/20 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors border border-white/5">
                     로그아웃
                 </button>
             </div>
         </div>
-        <!-- 모바일 탭 메뉴 추가 (선택사항) -->
-        <div class="sm:hidden flex justify-center mt-3 border-t border-blue-500 pt-3 gap-6">
-            <a href="index.html" class="text-sm opacity-80 hover:opacity-100 pb-1">대시보드</a>
-            <a href="list.html" class="active text-sm opacity-100 border-b-2 border-white pb-1">연수원 관리</a>
+        <!-- 모바일 탭 메뉴 추가 -->
+        <div class="sm:hidden flex justify-center mt-3 border-t border-slate-700/50 pt-3 gap-6">
+            <a href="index.html" class="text-sm opacity-70 hover:opacity-100 pb-1 transition-opacity">대시보드</a>
+            <a href="list.html"
+                class="active text-sm opacity-100 border-b-2 border-sky-400 pb-1 text-sky-400 font-medium">연수원 관리</a>
         </div>
     </header>
 
     <!-- 메인 컨텐츠 -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-grow max-w-[90rem] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">연수원 통합 목록</h1>
+            <p class="text-sm text-slate-500 mt-1">모든 연수원의 데이터를 조회, 수정, 삭제할 수 있습니다.</p>
+        </div>
 
         <!-- 제어 영역 (검색 & 버튼) -->
-        <div class="mb-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h3 class="font-semibold text-gray-700 w-full sm:w-auto">전체 연수원 목록</h3>
-            <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <div class="relative w-full sm:w-40">
+        <div
+            class="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+            <!-- Left Side / Actions -->
+            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
+                <button id="addCenterBtn"
+                    class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors whitespace-nowrap flex items-center justify-center gap-2 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    새 연수원 추가
+                </button>
+                <button id="excelDownBtn"
+                    class="w-full sm:w-auto bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium py-2 px-5 rounded-lg text-sm transition-colors whitespace-nowrap flex items-center justify-center gap-2 border border-emerald-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    엑셀 다운로드
+                </button>
+            </div>
+            <!-- Right Side / Search & Sort -->
+            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
+                <div class="relative w-full sm:w-48">
                     <select id="sortSelect"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm bg-white appearance-none">
+                        class="w-full pl-4 pr-10 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm bg-slate-50 text-slate-700 appearance-none font-medium transition-shadow">
                         <option value="name">이름 (가나다순)</option>
                         <option value="recent">최근 등록순</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
                             </path>
                         </svg>
                     </div>
                 </div>
-                <div class="relative w-full sm:w-64">
-                    <input type="text" id="searchInput" placeholder="연수원명 또는 지역 등 검색..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm">
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="relative w-full sm:w-72">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                     </div>
+                    <input type="text" id="searchInput" placeholder="연수원 이름, 지역 검색..."
+                        class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm bg-slate-50 transition-shadow">
                 </div>
-                <button id="addCenterBtn"
-                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm whitespace-nowrap">
-                    + 새 연수원 추가
-                </button>
-                <button id="excelDownBtn"
-                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm whitespace-nowrap">
-                    엑셀 다운로드
-                </button>
             </div>
         </div>
 
         <!-- 다중 선택 행동 바 (기본적으로 숨김) -->
         <div id="batchActionBar"
-            class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex justify-between items-center hidden">
-            <span class="text-sm font-medium"><span id="selectedCount">0</span>개의 연수원이 선택되었습니다.</span>
+            class="mb-6 bg-rose-50 border border-rose-200 text-rose-700 px-5 py-3.5 rounded-xl flex justify-between items-center hidden shadow-sm transition-all">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                    </path>
+                </svg>
+                <span class="text-sm font-medium"><span id="selectedCount"
+                        class="font-bold text-rose-600 text-base">0</span>개의 연수원이 선택되었습니다.</span>
+            </div>
             <button id="deleteSelectedBtn"
-                class="bg-red-500 hover:bg-red-600 text-white font-bold py-1.5 px-4 rounded text-sm transition-colors">
+                class="bg-rose-600 hover:bg-rose-700 text-white font-medium py-1.5 px-5 rounded-lg text-sm transition-colors shadow-sm">
                 선택 삭제
             </button>
         </div>
 
         <!-- 연수원 목록 테이블 -->
-        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200" id="centersTable">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 w-12 text-left">
-                            <input type="checkbox" id="selectAllCheckbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer">
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">번호
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연수원명
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">지역
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">연락처
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">기본정보
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">관리
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="centersList" class="bg-white divide-y divide-gray-200">
-                    <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">로딩 중...</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="bg-white shadow-sm border border-slate-200 overflow-hidden sm:rounded-xl mb-6">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200" id="centersTable">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-5 py-3.5 w-12 text-left">
+                                <input type="checkbox" id="selectAllCheckbox"
+                                    class="h-4 w-4 text-sky-600 focus:ring-sky-500 border-slate-300 rounded cursor-pointer transition-colors">
+                            </th>
+                            <th
+                                class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                번호
+                            </th>
+                            <th
+                                class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                연수원명
+                            </th>
+                            <th
+                                class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                지역
+                            </th>
+                            <th
+                                class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                연락처
+                            </th>
+                            <th
+                                class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                기본정보
+                            </th>
+                            <th
+                                class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                관리
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="centersList" class="bg-white divide-y divide-slate-100">
+                        <tr>
+                            <td colspan="7" class="px-5 py-12 text-center text-slate-400">
+                                <svg class="animate-spin h-6 w-6 text-indigo-500 mx-auto mb-3"
+                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                    </path>
+                                </svg>
+                                데이터 불러오는 중...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
         <!-- 페이지네이션 -->
-        <div id="adminPagination"
-            style="display:flex; justify-content:center; align-items:center; gap:6px; padding:16px 0; flex-wrap:wrap;">
+        <div id="adminPagination" class="flex justify-center items-center gap-1.5 py-4 flex-wrap">
         </div>
-    </div>
+    </main>
 
     <!-- 통합 연수원 추가/수정 모달 -->
     <div id="centerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50 overflow-y-auto w-full h-full">
@@ -550,35 +601,43 @@
             selectAllCheckbox.checked = pageItems.length > 0 && allPageItemsSelected;
 
             centersList.innerHTML = pageItems.map((center, i) => `
-                <tr class="hover:bg-gray-50 ${selectedCenters.has(center.id) ? 'bg-blue-50' : ''}">
-                    <td class="px-4 py-3">
-                        <input type="checkbox" class="center-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer" 
+                <tr class="hover:bg-slate-50 transition-colors ${selectedCenters.has(center.id) ? 'bg-sky-50' : ''}">
+                    <td class="px-5 py-4">
+                        <input type="checkbox" class="center-checkbox h-4 w-4 text-sky-600 focus:ring-sky-500 border-slate-300 rounded cursor-pointer transition-colors" 
                             value="${center.id}" 
                             ${selectedCenters.has(center.id) ? 'checked' : ''}
                             onchange="toggleCenterSelection(this, '${center.id}')">
                     </td>
-                    <td class="px-4 py-3 text-sm text-gray-500">${start + i + 1}</td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                        ${center.name || '-'}
-                        ${center.isYouthFacility ? '<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">청소년시설</span>' : ''}
+                    <td class="px-5 py-4 text-sm text-slate-500 font-medium">${start + i + 1}</td>
+                    <td class="px-5 py-4 whitespace-nowrap">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-slate-800">${center.name || '-'}</span>
+                            ${center.isYouthFacility ? '<span class="mt-1 inline-flex w-max items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-700">청소년시설</span>' : ''}
+                        </div>
                     </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-600">
                         ${center.region || '-'}
                     </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-600">
                         ${center.contact || '-'}
                     </td>
-                    <td class="px-4 py-3">
-                        <div class="text-xs text-gray-500 max-w-xs truncate" title="${center.basicInfo || ''}">${center.basicInfo || '-'}</div>
+                    <td class="px-5 py-4">
+                        <div class="text-xs text-slate-500 max-w-xs line-clamp-2" title="${center.basicInfo || ''}">${center.basicInfo || '-'}</div>
                     </td>
-                    <td class="px-4 py-3 text-sm font-medium whitespace-nowrap">
-                        <label class="inline-flex items-center cursor-pointer mr-3">
-                            <input type="checkbox" value="" class="sr-only peer" ${center.isYouthFacility ? 'checked' : ''} onchange="toggleIsYouthFacility('${center.id}', this.checked)">
-                            <div class="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                            <span class="ms-2 text-xs font-medium text-gray-700">청소년시설</span>
-                        </label>
-                        <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editCenter('${center.id}')">수정</button>
-                        <button class="text-red-600 hover:text-red-900" onclick="deleteCenter('${center.id}')">삭제</button>
+                    <td class="px-5 py-4 whitespace-nowrap">
+                        <div class="flex items-center gap-3">
+                            <label class="inline-flex flex-col items-center cursor-pointer mr-2">
+                                <span class="text-[10px] font-semibold text-slate-400 mb-1">청소년시설</span>
+                                <div class="relative">
+                                    <input type="checkbox" class="sr-only peer" ${center.isYouthFacility ? 'checked' : ''} onchange="toggleIsYouthFacility('${center.id}', this.checked)">
+                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-500"></div>
+                                </div>
+                            </label>
+                            <div class="flex flex-col gap-1.5">
+                                <button class="text-xs font-medium text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded transition-colors" onclick="editCenter('${center.id}')">수정</button>
+                                <button class="text-xs font-medium text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded transition-colors" onclick="deleteCenter('${center.id}')">삭제</button>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             `).join('');
@@ -591,24 +650,31 @@
             const el = document.getElementById('adminPagination');
             if (totalPages <= 1) { el.innerHTML = ''; return; }
 
-            const btnStyle = (active) => `style="padding:6px 12px;border-radius:6px;font-size:0.85em;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:${active ? '#3b82f6' : '#fff'};color:${active ? '#fff' : '#374151'};"`;
-            const disabledStyle = `style="padding:6px 12px;border-radius:6px;font-size:0.85em;border:1px solid #e2e8f0;background:#f9fafb;color:#d1d5db;cursor:default;"`;
+            const btnBase = "px-3 py-1.5 min-w-[36px] rounded-lg text-sm font-semibold transition-all shadow-sm border";
+            const btnActive = `${btnBase} border-sky-500 bg-sky-500 text-white`;
+            const btnDefault = `${btnBase} border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500`;
+            const btnDisabled = `${btnBase} border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed`;
 
-            let html = `<button ${currentPage === 1 ? disabledStyle : btnStyle(false)} onclick="adminGoToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>&#8249;</button>`;
+            let html = `<button class="${currentPage === 1 ? btnDisabled : btnDefault}" onclick="adminGoToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>`;
 
             const maxBtns = 7;
             let start = Math.max(1, currentPage - Math.floor(maxBtns / 2));
             let end = Math.min(totalPages, start + maxBtns - 1);
             if (end - start < maxBtns - 1) start = Math.max(1, end - maxBtns + 1);
 
-            if (start > 1) html += `<button ${btnStyle(false)} onclick="adminGoToPage(1)">1</button>${start > 2 ? '<span style="padding:0 4px;color:#9ca3af;">...</span>' : ''}`;
+            if (start > 1) html += `<button class="${btnDefault}" onclick="adminGoToPage(1)">1</button>${start > 2 ? '<span class="px-1 text-slate-400">...</span>' : ''}`;
             for (let p = start; p <= end; p++) {
-                html += `<button ${btnStyle(p === currentPage)} onclick="adminGoToPage(${p})">${p}</button>`;
+                html += `<button class="${p === currentPage ? btnActive : btnDefault}" onclick="adminGoToPage(${p})">${p}</button>`;
             }
-            if (end < totalPages) html += `${end < totalPages - 1 ? '<span style="padding:0 4px;color:#9ca3af;">...</span>' : ''}<button ${btnStyle(false)} onclick="adminGoToPage(${totalPages})">${totalPages}</button>`;
+            if (end < totalPages) html += `${end < totalPages - 1 ? '<span class="px-1 text-slate-400">...</span>' : ''}<button class="${btnDefault}" onclick="adminGoToPage(${totalPages})">${totalPages}</button>`;
 
-            html += `<button ${currentPage === totalPages ? disabledStyle : btnStyle(false)} onclick="adminGoToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>&#8250;</button>`;
-            html += `<span style="font-size:0.82em;color:#6b7280;margin-left:8px;">${filteredCenters.length}개 켜 / 페이지 ${currentPage}/${totalPages}</span>`;
+            html += `<button class="${currentPage === totalPages ? btnDisabled : btnDefault}" onclick="adminGoToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>`;
+
+            html += `<span class="text-xs text-slate-500 font-medium ml-3 bg-white px-3 py-1.5 rounded-lg border border-slate-200">총 <span class="text-sky-600 font-bold">${filteredCenters.length}</span>건 <span class="mx-1 text-slate-300">|</span> 페이지 <span class="text-slate-800 font-bold">${currentPage}</span> / ${totalPages}</span>`;
             el.innerHTML = html;
         }
 
