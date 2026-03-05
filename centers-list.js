@@ -16,7 +16,7 @@ const state = {
   sortOrder: 'asc',
   searchTerm: '',
   regionFilter: 'all',
-  includeYouth: true
+  includeYouth: false
 };
 
 // ==================== DOM 요소 ====================
