@@ -202,17 +202,6 @@
     <section class="map-container" aria-label="연수원 위치 지도" style="position:relative;">
       <div id="map" role="application" aria-label="네이버 지도 - 연수원 위치"></div>
 
-      <!-- 청소년시설 폼함 여부 토글 UI -->
-      <div
-        style="position: absolute; top: 15px; left: 15px; z-index: 100; background: rgba(255,255,255,0.95); padding: 8px 14px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: #334155; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.6);">
-        <span>청소년 수련시설 포함</span>
-        <label class="switch" style="position: relative; display: inline-block; width: 34px; height: 18px; margin: 0;">
-          <input type="checkbox" id="youth-facility-toggle"
-            onchange="if(window.mapApp && window.mapApp.applyFilters) window.mapApp.applyFilters()"
-            style="opacity: 0; width: 0; height: 0; position:absolute;">
-          <span class="slider round"></span>
-        </label>
-      </div>
 
       <!-- 지도 컨트롤 -->
       <div class="map-controls" role="toolbar" aria-label="지도 제어">
