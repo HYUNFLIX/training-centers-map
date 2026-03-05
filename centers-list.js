@@ -11,7 +11,7 @@ const state = {
   filteredCenters: [],
   currentPage: 1,
   itemsPerPage: 20,
-  viewMode: window.innerWidth > 768 ? 'table' : 'card', // 웹은 테이블, 모바일은 카드가 기본
+  viewMode: 'card', // 웹이든 모바일이든 무조건 카드보기를 기본값으로
   sortField: 'name',
   sortOrder: 'asc',
   searchTerm: '',
