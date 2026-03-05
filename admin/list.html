@@ -243,6 +243,10 @@
                                 기본정보
                             </th>
                             <th
+                                class="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                등록일시
+                            </th>
+                            <th
                                 class="px-5 py-3.5 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                 관리
                             </th>
@@ -511,7 +515,7 @@
 
         async function loadCenters() {
             const centersList = document.getElementById('centersList');
-            centersList.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">데이터를 불러오는 중...</td></tr>';
+            centersList.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">데이터를 불러오는 중...</td></tr>';
 
             const querySnapshot = await getDocs(collection(db, "trainingCenters"));
             allCenters = [];
@@ -604,7 +608,7 @@
             const selectAllCheckbox = document.getElementById('selectAllCheckbox');
 
             if (filteredCenters.length === 0) {
-                centersList.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">등록된 연수원이 없거나 검색 결과가 없습니다</td></tr>';
+                centersList.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">등록된 연수원이 없거나 검색 결과가 없습니다</td></tr>';
                 document.getElementById('adminPagination').innerHTML = '';
                 selectAllCheckbox.disabled = true;
                 return;
@@ -654,7 +658,18 @@
                         ${center.contact || '-'}
                     </td>
                     <td class="px-5 py-4">
-                        <div class="text-xs text-slate-500 max-w-xs line-clamp-2" title="${center.basicInfo || ''}">${center.basicInfo || '-'}</div>
+                        <div class="text-xs text-slate-500 max-w-[120px] line-clamp-1" title="${center.basicInfo || ''}">${center.basicInfo || '-'}</div>
+                    </td>
+                    <td class="px-5 py-4 whitespace-nowrap">
+                        <div class="text-xs text-slate-500">
+                            ${(() => {
+                        if (!center.createdAt) return '-';
+                        const ts = center.createdAt.seconds ? new Date(center.createdAt.seconds * 1000) : new Date(center.createdAt);
+                        const d = ts.toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' });
+                        const t = ts.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                        return `<div class="font-medium text-slate-700">${d}</div><div class="text-slate-400">${t}</div>`;
+                    })()}
+                        </div>
                     </td>
                     <td class="px-5 py-4 whitespace-nowrap">
                         <div class="flex items-center gap-3">
