@@ -816,7 +816,7 @@
             resultsEl.innerHTML = '';
 
             try {
-                const naverUrl = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(query)}&display=8&sort=random`;
+                const naverUrl = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(query)}&display=20&sort=random`;
                 const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(naverUrl)}`, {
                     headers: {
                         'X-Naver-Client-Id': NAVER_CLIENT_ID,
