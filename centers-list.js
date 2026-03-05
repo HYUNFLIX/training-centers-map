@@ -16,7 +16,7 @@ const state = {
   sortOrder: 'asc',
   searchTerm: '',
   regionFilter: 'all',
-  youthOnly: false
+  includeYouth: true
 };
 
 // ==================== DOM 요소 ====================
@@ -35,6 +35,8 @@ const elements = {
   resultsCount: null,
   viewMode: null,
   statTotal: null,
+  statGeneral: null,
+  statYouth: null,
   statRegions: null
 };
 
@@ -57,6 +59,8 @@ async function init() {
   elements.resultsCount = document.getElementById('resultsCount');
   elements.viewMode = document.getElementById('viewMode');
   elements.statTotal = document.getElementById('stat-total');
+  elements.statGeneral = document.getElementById('stat-general');
+  elements.statYouth = document.getElementById('stat-youth');
   elements.statRegions = document.getElementById('stat-regions');
 
   // 이벤트 리스너 설정
@@ -97,7 +101,7 @@ function setupEventListeners() {
 
   if (elements.youthFilter) {
     elements.youthFilter.addEventListener('change', (e) => {
-      state.youthOnly = e.target.checked;
+      state.includeYouth = e.target.checked;
       state.currentPage = 1;
       applyFiltersAndRender();
     });
@@ -279,10 +283,10 @@ function applyFiltersAndRender() {
     }
 
     // 청소년 시설 필터
-    if (state.youthOnly) {
+    if (!state.includeYouth) {
       const isYouth = center.isYouthFacility !== undefined ? center.isYouthFacility :
         ((center.name || '').includes('청소년') || (center.name || '').includes('수련원') || (center.name || '').includes('학생') || (center.name || '').includes('야영장'));
-      if (!isYouth) {
+      if (isYouth) {
         return false;
       }
     }
@@ -524,12 +528,25 @@ function goToPage(page) {
 
 // ==================== 통계 업데이트 ====================
 function updateStats() {
-  // 총 연수원 수
-  elements.statTotal.textContent = state.allCenters.length.toLocaleString();
+  const total = state.allCenters.length;
+  let youthCount = 0;
+
+  state.allCenters.forEach(center => {
+    const isYouth = center.isYouthFacility !== undefined ? center.isYouthFacility :
+      ((center.name || '').includes('청소년') || (center.name || '').includes('수련원') || (center.name || '').includes('학생') || (center.name || '').includes('야영장'));
+    if (isYouth) {
+      youthCount++;
+    }
+  });
+
+  // 총 연수원 수, 일반, 청소년
+  elements.statTotal.textContent = total.toLocaleString();
+  if (elements.statGeneral) elements.statGeneral.textContent = (total - youthCount).toLocaleString();
+  if (elements.statYouth) elements.statYouth.textContent = youthCount.toLocaleString();
 
   // 지역 수
   const regions = new Set(state.allCenters.map(c => c.region).filter(r => r));
-  elements.statRegions.textContent = regions.size;
+  if (elements.statRegions) elements.statRegions.textContent = regions.size;
 }
 
 // ==================== CSV 내보내기 ====================

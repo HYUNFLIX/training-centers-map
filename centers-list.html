@@ -706,15 +706,24 @@
     <div class="stats-grid">
       <div class="stat-card">
         <i class="fas fa-building stat-icon"></i>
-        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-value" id="stat-total">-</div>
         <div class="stat-label">총 연수원</div>
       </div>
       <div class="stat-card">
+        <i class="fas fa-city stat-icon"></i>
+        <div class="stat-value" id="stat-general">-</div>
+        <div class="stat-label">일반 연수원</div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-child stat-icon"></i>
+        <div class="stat-value" id="stat-youth">-</div>
+        <div class="stat-label">청소년 시설</div>
+      </div>
+      <div class="stat-card">
         <i class="fas fa-map-marked-alt stat-icon"></i>
-        <div class="stat-value" id="stat-regions">0</div>
+        <div class="stat-value" id="stat-regions">-</div>
         <div class="stat-label">지역 수</div>
       </div>
-
     </div>
 
     <!-- 컨트롤 -->
@@ -746,8 +755,9 @@
         </select>
 
         <label class="btn btn-outline" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-          <input type="checkbox" id="youthFilter" style="width: 16px; height: 16px; accent-color: var(--primary);">
-          <span>청소년 시설만 보기</span>
+          <input type="checkbox" id="youthFilter" checked
+            style="width: 16px; height: 16px; accent-color: var(--primary);">
+          <span>청소년 수련시설 포함</span>
         </label>
       </div>
       <div class="controls-row">
