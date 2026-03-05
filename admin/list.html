@@ -600,7 +600,18 @@
             const allPageItemsSelected = pageItems.every(c => selectedCenters.has(c.id));
             selectAllCheckbox.checked = pageItems.length > 0 && allPageItemsSelected;
 
-            centersList.innerHTML = pageItems.map((center, i) => `
+            centersList.innerHTML = pageItems.map((center, i) => {
+                let isYouth = false;
+                if (center.isYouthFacility !== undefined) {
+                    isYouth = center.isYouthFacility;
+                } else {
+                    isYouth = (center.name || '').includes('청소년') ||
+                        (center.name || '').includes('수련원') ||
+                        (center.name || '').includes('학생') ||
+                        (center.name || '').includes('야영장');
+                }
+
+                return `
                 <tr class="hover:bg-slate-50 transition-colors ${selectedCenters.has(center.id) ? 'bg-sky-50' : ''}">
                     <td class="px-5 py-4">
                         <input type="checkbox" class="center-checkbox h-4 w-4 text-sky-600 focus:ring-sky-500 border-slate-300 rounded cursor-pointer transition-colors" 
@@ -612,7 +623,7 @@
                     <td class="px-5 py-4 whitespace-nowrap">
                         <div class="flex flex-col">
                             <span class="text-sm font-bold text-slate-800">${center.name || '-'}</span>
-                            ${center.isYouthFacility ? '<span class="mt-1 inline-flex w-max items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-700">청소년시설</span>' : ''}
+                            ${isYouth ? '<span class="mt-1 inline-flex w-max items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-700">청소년시설</span>' : ''}
                         </div>
                     </td>
                     <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-600">
@@ -629,7 +640,7 @@
                             <label class="inline-flex flex-col items-center cursor-pointer mr-2">
                                 <span class="text-[10px] font-semibold text-slate-400 mb-1">청소년시설</span>
                                 <div class="relative">
-                                    <input type="checkbox" class="sr-only peer" ${center.isYouthFacility ? 'checked' : ''} onchange="toggleIsYouthFacility('${center.id}', this.checked)">
+                                    <input type="checkbox" class="sr-only peer" ${isYouth ? 'checked' : ''} onchange="toggleIsYouthFacility('${center.id}', this.checked)">
                                     <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-500"></div>
                                 </div>
                             </label>
@@ -640,7 +651,8 @@
                         </div>
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
 
             renderPagination(totalPages);
         }
