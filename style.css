@@ -1529,13 +1529,7 @@ footer .container {
     gap: 15px;
   }
 
-  .mobile-menu-toggle {
-    display: block;
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
+  /* 태블릿에서는 메뉴가 한 줄 아래로 내려감 */
 
   nav {
     width: 100%;
@@ -1655,13 +1649,27 @@ footer .container {
     font-size: 1.5rem;
   }
 
+  /* 헤더 컨테이너 롤백 (로고 중앙 정렬 복구) */
+  .main-header .container {
+    flex-direction: row;
+    height: 60px;
+  }
+
+  .mobile-menu-toggle {
+    display: block;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
   /* 네비게이션을 햄버거 메뉴로 변경 */
   nav ul {
     position: fixed;
-    top: 76px;
+    top: 60px;
     left: -100%;
     width: 100%;
-    height: calc(100vh - 76px);
+    height: calc(100vh - 60px);
     background-color: #0077cc;
     flex-direction: column;
     justify-content: flex-start;
@@ -1731,7 +1739,7 @@ footer .container {
 
   /* 헤더 */
   .main-header {
-    padding: 12px 0;
+    padding: 0;
   }
 
   .logo h1 {

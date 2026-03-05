@@ -8,6 +8,7 @@
         "collect": "node collect-centers.js"
     },
     "dependencies": {
+        "dotenv": "^17.3.1",
         "firebase": "^12.10.0",
         "firebase-admin": "^12.7.0"
     }
