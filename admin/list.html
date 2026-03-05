@@ -806,8 +806,7 @@
             resultsEl.innerHTML = '';
 
             try {
-                // corsproxy.io를 통해 CORS 우회 → 네이버 Local Search REST API 호출
-                const naverUrl = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(query)}&display=8&sort=comment`;
+                const naverUrl = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(query)}&display=8&sort=random`;
                 const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(naverUrl)}`, {
                     headers: {
                         'X-Naver-Client-Id': NAVER_CLIENT_ID,
