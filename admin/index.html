@@ -203,27 +203,16 @@
             </div>
         </div>
 
-        <!-- 1st Row: Region Chart + Youth Ratio -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- 1st Row: Region Chart -->
+        <div class="grid grid-cols-1 mb-6">
             <!-- 지역별 분포 (Chart.js Bar) -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
                 <div class="flex items-center mb-4">
                     <div class="w-2 h-6 bg-blue-500 rounded-full mr-3"></div>
                     <h3 class="font-bold text-slate-800 text-lg">지역별 연수원 분포</h3>
                 </div>
                 <div class="relative h-72 w-full">
                     <canvas id="regionCanvas"></canvas>
-                </div>
-            </div>
-
-            <!-- 청소년 시설 비율 (Chart.js Doughnut) -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                <div class="flex items-center mb-4">
-                    <div class="w-2 h-6 bg-amber-400 rounded-full mr-3"></div>
-                    <h3 class="font-bold text-slate-800 text-lg">시설 유형 비율</h3>
-                </div>
-                <div class="relative h-64 w-full flex justify-center items-center">
-                    <canvas id="youthRatioCanvas"></canvas>
                 </div>
             </div>
         </div>
@@ -325,7 +314,6 @@
             const total = centers.length;
             const regionMap = {};
             let capacitySum = 0;
-            let youthCount = 0;
             let capacityZones = { "0-50명": 0, "51-100명": 0, "101-300명": 0, "301명 이상": 0, "미상": 0 };
 
             centers.forEach(c => {
@@ -347,15 +335,6 @@
                     capacityZones["미상"]++;
                 }
 
-                // 청소년 시설 확인
-                if (c.isYouthFacility === true) {
-                    youthCount++;
-                } else if (c.isYouthFacility === undefined) {
-                    // Fallback
-                    if ((c.name || '').includes('청소년') || (c.name || '').includes('수련원') || (c.name || '').includes('학생') || (c.name || '').includes('야영장')) {
-                        youthCount++;
-                    }
-                }
             });
 
             document.getElementById('stat-total').textContent = total.toLocaleString();
@@ -395,30 +374,7 @@
                 }
             });
 
-            // 2. 시설 유형 비율 도넛형
-            if (charts.youth) charts.youth.destroy();
-            charts.youth = new Chart(document.getElementById('youthRatioCanvas'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['청소년 시설', '일반 연수원'],
-                    datasets: [{
-                        data: [youthCount, total - youthCount],
-                        backgroundColor: ['#f59e0b', '#e2e8f0'],
-                        hoverBackgroundColor: ['#d97706', '#cbd5e1'],
-                        borderWidth: 0,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
-                    }
-                }
-            });
-
-            // 3. 수용 인원 규모 분포 바 차트
+            // 2. 수용 인원 규모 분포 바 차트
             if (charts.capacity) charts.capacity.destroy();
             charts.capacity = new Chart(document.getElementById('capacityCanvas'), {
                 type: 'bar',
@@ -487,7 +443,7 @@
                             <div class="font-bold text-slate-700 text-sm group-hover:text-indigo-600 transition-colors">${c.name}</div>
                             <time class="font-mono text-xs text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded">${formatDate(c.createdAt)}</time>
                         </div>
-                        <div class="text-xs text-slate-500">${c.region || '지역 미상'} ${c.isYouthFacility ? '<span class="ml-1 inline-flex bg-amber-50 text-amber-600 px-1.5 rounded items-center">청소년시설</span>' : ''}</div>
+                        <div class="text-xs text-slate-500">${c.region || '지역 미상'}</div>
                     </div>
                 </div>
             `).join('') : '<div class="text-sm text-slate-400 text-center py-4">최근 등록된 데이터가 없습니다.</div>';

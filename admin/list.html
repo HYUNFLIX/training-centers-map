@@ -172,7 +172,6 @@
                         class="w-full pl-4 pr-10 py-2 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500 text-sm bg-slate-50 text-slate-700 appearance-none font-medium transition-shadow">
                         <option value="name">이름 (가나다순)</option>
                         <option value="recent">최근 등록순</option>
-                        <option value="youth">청소년 시설 우선</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,12 +326,7 @@
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500 h-24"
                                 placeholder="연수원의 주요 시설 및 특징을 입력해주세요."></textarea>
                         </div>
-                        <div class="md:col-span-2 flex items-center mt-2">
-                            <input type="checkbox" id="centerIsYouthFacility"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer">
-                            <label for="centerIsYouthFacility" class="ml-2 block text-sm text-gray-900 font-medium">청소년
-                                수련 시설 여부 (체크 시 지도 필터에 적용됨)</label>
-                        </div>
+
                     </div>
                 </div>
 
@@ -490,26 +484,6 @@
                     const dateB = b.createdAt?.seconds || 0;
                     return dateB - dateA;
                 });
-            } else if (currentSort === 'youth') {
-                const sortByYouthAndName = (a, b) => {
-                    // Fallback logic for Youth Facility classification
-                    const isYouthA = a.isYouthFacility !== undefined ? a.isYouthFacility :
-                        ((a.name || '').includes('청소년') || (a.name || '').includes('수련원') || (a.name || '').includes('학생') || (a.name || '').includes('야영장'));
-                    const isYouthB = b.isYouthFacility !== undefined ? b.isYouthFacility :
-                        ((b.name || '').includes('청소년') || (b.name || '').includes('수련원') || (b.name || '').includes('학생') || (b.name || '').includes('야영장'));
-
-                    if (isYouthA && !isYouthB) return -1;
-                    if (!isYouthA && isYouthB) return 1;
-
-                    // Tie-breaker: Name
-                    const nameA = (a.name || '').toLowerCase();
-                    const nameB = (b.name || '').toLowerCase();
-                    if (nameA < nameB) return -1;
-                    if (nameA > nameB) return 1;
-                    return 0;
-                };
-                allCenters.sort(sortByYouthAndName);
-                filteredCenters.sort(sortByYouthAndName);
             }
         }
 
@@ -626,15 +600,7 @@
             selectAllCheckbox.checked = pageItems.length > 0 && allPageItemsSelected;
 
             centersList.innerHTML = pageItems.map((center, i) => {
-                let isYouth = false;
-                if (center.isYouthFacility !== undefined) {
-                    isYouth = center.isYouthFacility;
-                } else {
-                    isYouth = (center.name || '').includes('청소년') ||
-                        (center.name || '').includes('수련원') ||
-                        (center.name || '').includes('학생') ||
-                        (center.name || '').includes('야영장');
-                }
+
 
                 return `
                 <tr class="hover:bg-slate-50 transition-colors ${selectedCenters.has(center.id) ? 'bg-sky-50' : ''}">
@@ -648,7 +614,7 @@
                     <td class="px-5 py-4 whitespace-nowrap">
                         <div class="flex flex-col">
                             <span class="text-sm font-bold text-slate-800">${center.name || '-'}</span>
-                            ${isYouth ? '<span class="mt-1 inline-flex w-max items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-700">청소년시설</span>' : ''}
+                            <span class="text-sm font-bold text-slate-800">${center.name || '-'}</span>
                         </div>
                     </td>
                     <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-600">
@@ -673,13 +639,7 @@
                     </td>
                     <td class="px-5 py-4 whitespace-nowrap">
                         <div class="flex items-center gap-3">
-                            <label class="inline-flex flex-col items-center cursor-pointer mr-2">
-                                <span class="text-[10px] font-semibold text-slate-400 mb-1">청소년시설</span>
-                                <div class="relative">
-                                    <input type="checkbox" class="sr-only peer" ${isYouth ? 'checked' : ''} onchange="toggleIsYouthFacility('${center.id}', this.checked)">
-                                    <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-sky-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-sky-500"></div>
-                                </div>
-                            </label>
+
                             <div class="flex flex-col gap-1.5">
                                 <button class="text-xs font-medium text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded transition-colors" onclick="editCenter('${center.id}')">수정</button>
                                 <button class="text-xs font-medium text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded transition-colors" onclick="deleteCenter('${center.id}')">삭제</button>
@@ -999,28 +959,6 @@
                 const savedPage = currentPage;
                 await loadCenters();
                 adminGoToPage(savedPage);
-            }
-        };
-
-        window.toggleIsYouthFacility = async (centerId, isChecked) => {
-            try {
-                await updateDoc(doc(db, "trainingCenters", centerId), {
-                    isYouthFacility: isChecked,
-                    updatedAt: new Date()
-                });
-
-                // 로컬 상태 업데이트
-                const center = allCenters.find(c => c.id === centerId);
-                if (center) center.isYouthFacility = isChecked;
-
-                // 다시 렌더링 (보고 있던 페이지 유지)
-                applySort();
-                renderTable();
-            } catch (error) {
-                console.error('Error updating facility status:', error);
-                alert('상태 업데이트 중 오류가 발생했습니다.');
-                // 에러 발생 시 원래 상태로 렌더링
-                renderTable();
             }
         };
 

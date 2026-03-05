@@ -15,15 +15,13 @@ const state = {
   sortField: 'name',
   sortOrder: 'asc',
   searchTerm: '',
-  regionFilter: 'all',
-  includeYouth: false
+  regionFilter: 'all'
 };
 
 // ==================== DOM 요소 ====================
 const elements = {
   searchInput: null,
   regionFilter: null,
-  youthFilter: null,
   capacityFilter: null,
   viewToggle: null,
   exportCsv: null,
@@ -35,8 +33,6 @@ const elements = {
   resultsCount: null,
   viewMode: null,
   statTotal: null,
-  statGeneral: null,
-  statYouth: null,
   statRegions: null
 };
 
@@ -47,7 +43,6 @@ async function init() {
   // DOM 요소 가져오기
   elements.searchInput = document.getElementById('searchInput');
   elements.regionFilter = document.getElementById('regionFilter');
-  elements.youthFilter = document.getElementById('youthFilter');
   elements.capacityFilter = document.getElementById('capacityFilter');
   elements.viewToggle = document.getElementById('viewToggle');
   elements.exportCsv = document.getElementById('exportCsv');
@@ -98,14 +93,6 @@ function setupEventListeners() {
     state.currentPage = 1;
     applyFiltersAndRender();
   });
-
-  if (elements.youthFilter) {
-    elements.youthFilter.addEventListener('change', (e) => {
-      state.includeYouth = e.target.checked;
-      state.currentPage = 1;
-      applyFiltersAndRender();
-    });
-  }
 
   // 보기 전환
   elements.viewToggle.addEventListener('click', () => {
@@ -529,20 +516,9 @@ function goToPage(page) {
 // ==================== 통계 업데이트 ====================
 function updateStats() {
   const total = state.allCenters.length;
-  let youthCount = 0;
 
-  state.allCenters.forEach(center => {
-    const isYouth = center.isYouthFacility !== undefined ? center.isYouthFacility :
-      ((center.name || '').includes('청소년') || (center.name || '').includes('수련원') || (center.name || '').includes('학생') || (center.name || '').includes('야영장'));
-    if (isYouth) {
-      youthCount++;
-    }
-  });
-
-  // 총 연수원 수, 일반, 청소년
+  // 총 연수원 수
   elements.statTotal.textContent = total.toLocaleString();
-  if (elements.statGeneral) elements.statGeneral.textContent = (total - youthCount).toLocaleString();
-  if (elements.statYouth) elements.statYouth.textContent = youthCount.toLocaleString();
 
   // 지역 수
   const regions = new Set(state.allCenters.map(c => c.region).filter(r => r));
