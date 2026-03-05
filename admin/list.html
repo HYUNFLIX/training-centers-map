@@ -959,6 +959,7 @@
 
             document.getElementById('centerName').value = center.name || '';
             document.getElementById('centerRegion').value = center.region || '';
+            document.getElementById('searchAddress').value = center.address || '';
             document.getElementById('centerContact').value = center.contact || '';
             document.getElementById('centerCapacity').value = center.capacity || '';
             document.getElementById('centerBasicInfo').value = center.basicInfo || '';
@@ -998,7 +999,7 @@
                 const c = d.data();
                 data.push({
                     '번호': i++, '연수원명': c.name,
-                    '지역': c.region || '',
+                    '지역': c.region || '', '상세주소': c.address || '',
                     '연락처': c.contact || '', '수용인원': c.capacity || 0, '기본정보': c.basicInfo || '',
                     '위도': c.location?.lat || '', '경도': c.location?.lng || '',
                     '네이버 주소': c.links?.naver || '', '웹사이트': c.links?.website || ''
@@ -1031,6 +1032,7 @@
             const centerData = {
                 name: document.getElementById('centerName').value.trim(),
                 region: document.getElementById('centerRegion').value.trim(),
+                address: document.getElementById('searchAddress').value.trim(),
                 contact: document.getElementById('centerContact').value.trim(),
                 capacity: document.getElementById('centerCapacity').value ? parseInt(document.getElementById('centerCapacity').value, 10) : 0,
                 basicInfo: document.getElementById('centerBasicInfo').value.trim(),
