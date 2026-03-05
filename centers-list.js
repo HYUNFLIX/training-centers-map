@@ -11,7 +11,7 @@ const state = {
   filteredCenters: [],
   currentPage: 1,
   itemsPerPage: 20,
-  viewMode: 'card', // 초기 기본값을 'card'로 변경 (기존 'table')
+  viewMode: window.innerWidth > 768 ? 'table' : 'card', // 웹은 테이블, 모바일은 카드가 기본
   sortField: 'name',
   sortOrder: 'asc',
   searchTerm: '',
@@ -56,7 +56,7 @@ async function init() {
   elements.statTotal = document.getElementById('stat-total');
   elements.statGeneral = document.getElementById('stat-general');
   elements.statYouth = document.getElementById('stat-youth');
-  elements.statRegions = document.getElementById('stat-regions');
+  elements.statYouth = document.getElementById('stat-youth');
 
   // 이벤트 리스너 설정
   setupEventListeners();
@@ -519,10 +519,6 @@ function updateStats() {
 
   // 총 연수원 수
   elements.statTotal.textContent = total.toLocaleString();
-
-  // 지역 수
-  const regions = new Set(state.allCenters.map(c => c.region).filter(r => r));
-  if (elements.statRegions) elements.statRegions.textContent = regions.size;
 }
 
 // ==================== CSV 내보내기 ====================
