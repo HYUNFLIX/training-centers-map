@@ -1112,12 +1112,19 @@ const applyFilters = () => {
         // 청소년 수련시설 필터 (토글 상태)
         const youthToggle = document.getElementById('youth-facility-toggle');
         const includeYouth = youthToggle ? youthToggle.checked : true; // 없을 경우 기본 표시
-        const isYouthFacility = (
-            center.name.includes("청소년") ||
-            center.name.includes("학생") ||
-            center.name.includes("수련원") ||
-            center.name.includes("야영장")
-        );
+
+        // 데이터베이스 명시적 분류값 확인, 없으면 이름으로 유추 (할당량 초과로 마이그레이션 실패 대비)
+        let isYouthFacility = false;
+        if (center.isYouthFacility !== undefined) {
+            isYouthFacility = center.isYouthFacility;
+        } else {
+            isYouthFacility = (
+                center.name.includes("청소년") ||
+                center.name.includes("학생") ||
+                center.name.includes("수련원") ||
+                center.name.includes("야영장")
+            );
+        }
 
         if (!includeYouth && isYouthFacility) {
             return false;
