@@ -15,13 +15,15 @@ const state = {
   sortField: 'name',
   sortOrder: 'asc',
   searchTerm: '',
-  regionFilter: 'all'
+  regionFilter: 'all',
+  youthOnly: false
 };
 
 // ==================== DOM 요소 ====================
 const elements = {
   searchInput: null,
   regionFilter: null,
+  youthFilter: null,
   capacityFilter: null,
   viewToggle: null,
   exportCsv: null,
@@ -43,6 +45,7 @@ async function init() {
   // DOM 요소 가져오기
   elements.searchInput = document.getElementById('searchInput');
   elements.regionFilter = document.getElementById('regionFilter');
+  elements.youthFilter = document.getElementById('youthFilter');
   elements.capacityFilter = document.getElementById('capacityFilter');
   elements.viewToggle = document.getElementById('viewToggle');
   elements.exportCsv = document.getElementById('exportCsv');
@@ -91,6 +94,14 @@ function setupEventListeners() {
     state.currentPage = 1;
     applyFiltersAndRender();
   });
+
+  if (elements.youthFilter) {
+    elements.youthFilter.addEventListener('change', (e) => {
+      state.youthOnly = e.target.checked;
+      state.currentPage = 1;
+      applyFiltersAndRender();
+    });
+  }
 
   // 보기 전환
   elements.viewToggle.addEventListener('click', () => {
@@ -263,6 +274,15 @@ function applyFiltersAndRender() {
     // 지역 필터
     if (state.regionFilter !== 'all') {
       if (center.region !== state.regionFilter) {
+        return false;
+      }
+    }
+
+    // 청소년 시설 필터
+    if (state.youthOnly) {
+      const isYouth = center.isYouthFacility !== undefined ? center.isYouthFacility :
+        ((center.name || '').includes('청소년') || (center.name || '').includes('수련원') || (center.name || '').includes('학생') || (center.name || '').includes('야영장'));
+      if (!isYouth) {
         return false;
       }
     }
