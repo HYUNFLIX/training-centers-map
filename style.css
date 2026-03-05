@@ -107,6 +107,7 @@ button {
   color: white;
   text-decoration: none;
   gap: 10px;
+  white-space: nowrap;
 }
 
 .logo a:hover {
@@ -129,6 +130,7 @@ button {
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.3px;
+  white-space: nowrap;
 }
 
 /* 네비게이션 */
@@ -1743,7 +1745,7 @@ footer .container {
   }
 
   .logo h1 {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
 
   .logo i {
