@@ -612,8 +612,6 @@
                     </td>
                     <td class="px-5 py-4 text-sm text-slate-500 font-medium">${start + i + 1}</td>
                     <td class="px-5 py-4 whitespace-nowrap">
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-slate-800">${center.name || '-'}</span>
                             <span class="text-sm font-bold text-slate-800">${center.name || '-'}</span>
                         </div>
                     </td>
@@ -793,7 +791,6 @@
             document.getElementById('naverSearchResults').innerHTML = '';
             document.getElementById('naverSearchResults').classList.add('hidden');
             document.getElementById('naverSearchStatus').classList.add('hidden');
-            document.getElementById('centerIsYouthFacility').checked = false;
         }
 
         // ===== 네이버 지역 검색 API (REST) =====
@@ -934,7 +931,6 @@
             document.getElementById('centerRegion').value = center.region || '';
             document.getElementById('centerContact').value = center.contact || '';
             document.getElementById('centerBasicInfo').value = center.basicInfo || '';
-            document.getElementById('centerIsYouthFacility').checked = !!center.isYouthFacility;
             document.getElementById('centerNaverLink').value = center.links?.naver || '';
             document.getElementById('centerWebsite').value = center.links?.website || '';
 
@@ -1010,7 +1006,6 @@
                 region: document.getElementById('centerRegion').value.trim(),
                 contact: document.getElementById('centerContact').value.trim(),
                 basicInfo: document.getElementById('centerBasicInfo').value.trim(),
-                isYouthFacility: document.getElementById('centerIsYouthFacility').checked,
                 links: {
                     naver: document.getElementById('centerNaverLink').value.trim(),
                     website: document.getElementById('centerWebsite').value.trim()
