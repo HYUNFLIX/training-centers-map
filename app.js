@@ -441,7 +441,7 @@ const generateSampleData = () => {
 const initMap = async () => {
     try {
         console.log('🗺️ 지도 초기화 시작');
-        showLoadingMessage('지도를 초기화하는 중...');
+        showLoadingMessage('');
 
         // 네이버 지도 API 로드 확인
         if (typeof naver === 'undefined' || !naver.maps) {
@@ -493,7 +493,7 @@ const initMap = async () => {
         setupLogoClickEvent();
 
         // 연수원 데이터 로드
-        showLoadingMessage('연수원 데이터를 불러오는 중...');
+        showLoadingMessage('');
         await loadCenters();
 
         // URL 파라미터 처리
@@ -524,7 +524,7 @@ const loadCenters = async () => {
 
         if (firebaseModules && firebaseLoaded) {
             try {
-                showLoadingMessage('Firebase에서 데이터를 가져오는 중...');
+                showLoadingMessage('');
 
                 const { collection, getDocs } = firebaseModules;
                 const querySnapshot = await getDocs(collection(db, "trainingCenters"));
@@ -553,7 +553,7 @@ const loadCenters = async () => {
         }
 
         // 마커 생성
-        showLoadingMessage('지도에 연수원을 표시하는 중...');
+        showLoadingMessage('');
         await createMarkersFromData(centersData);
 
         // 결과 카운트 업데이트
