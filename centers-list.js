@@ -164,19 +164,22 @@ async function loadFromFirebase(shouldShowToast = true) {
       centers.push({ id: doc.id, ...doc.data() });
     });
 
-    // 페이지 방문수 카운터
-    try {
-      if (_listFbModules && _listDb) {
-        const { doc, setDoc, increment } = _listFbModules;
-        if (setDoc && increment) {
-          setDoc(doc(_listDb, 'siteStats', 'visits'), {
-            totalVisits: increment(1),
-            listPageVisits: increment(1),
-            lastVisitAt: new Date()
-          }, { merge: true }).catch(() => { });
+    // 페이지 방문수 카운터 (세션당 1회)
+    if (!sessionStorage.getItem('listVisitCounted')) {
+      try {
+        if (_listFbModules && _listDb) {
+          const { doc, setDoc, increment } = _listFbModules;
+          if (setDoc && increment) {
+            setDoc(doc(_listDb, 'siteStats', 'visits'), {
+              totalVisits: increment(1),
+              listPageVisits: increment(1),
+              lastVisitAt: new Date()
+            }, { merge: true }).catch(() => { });
+            sessionStorage.setItem('listVisitCounted', '1');
+          }
         }
-      }
-    } catch (e) { }
+      } catch (e) { }
+    }
 
 
     if (centers.length > 0) {

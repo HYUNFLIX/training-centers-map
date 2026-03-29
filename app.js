@@ -538,10 +538,68 @@ const initMap = async () => {
 };
 
 // ===== 연수원 데이터 로드 =====
+const CACHE_KEY = 'map-centers-cache';
+const CACHE_TIME_KEY = 'map-centers-cache-time';
+const CACHE_TTL = 30 * 60 * 1000; // 30분
+
+const getMapCachedData = () => {
+    try {
+        const time = parseInt(localStorage.getItem(CACHE_TIME_KEY) || '0');
+        if (Date.now() - time < CACHE_TTL) {
+            const data = JSON.parse(localStorage.getItem(CACHE_KEY));
+            if (Array.isArray(data) && data.length > 0) return data;
+        }
+    } catch (e) { }
+    return null;
+};
+
+const setMapCachedData = (centers) => {
+    try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(centers));
+        localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+    } catch (e) { }
+};
+
 const loadCenters = async () => {
     try {
 
         let centersData = [];
+
+        // 캐시 확인 (30분 TTL)
+        const cached = getMapCachedData();
+        if (cached) {
+            centersData = cached;
+            // 캐시 데이터로 먼저 렌더링, 백그라운드에서 갱신
+            await createMarkersFromData(centersData);
+            updateResultsCount(centersData.length);
+
+            // 백그라운드 갱신
+            const firebaseModules = await initializeFirebase();
+            if (firebaseModules && firebaseLoaded) {
+                const { collection, getDocs } = firebaseModules;
+                getDocs(collection(db, "trainingCenters")).then(snapshot => {
+                    const fresh = [];
+                    snapshot.forEach(doc => { fresh.push({ id: doc.id, ...doc.data() }); });
+                    if (fresh.length > 0) setMapCachedData(fresh);
+                }).catch(() => { });
+
+                // 방문수 카운터 (세션당 1회)
+                if (!sessionStorage.getItem('mapVisitCounted')) {
+                    try {
+                        const { doc: docFn, setDoc: setDocFn, increment: incFn } = _fbModules;
+                        if (setDocFn && incFn) {
+                            setDocFn(docFn(db, 'siteStats', 'visits'), {
+                                totalVisits: incFn(1),
+                                mapPageVisits: incFn(1),
+                                lastVisitAt: new Date()
+                            }, { merge: true }).catch(() => { });
+                            sessionStorage.setItem('mapVisitCounted', '1');
+                        }
+                    } catch (e) { }
+                }
+            }
+            return;
+        }
 
         // Firebase 초기화 시도
         const firebaseModules = await initializeFirebase();
@@ -559,17 +617,23 @@ const loadCenters = async () => {
                     centersData.push(center);
                 });
 
-                // 페이지 방문수 카운터 (비동기, 에러 무시)
-                try {
-                    const { doc: docFn, setDoc: setDocFn, increment: incFn } = _fbModules;
-                    if (setDocFn && incFn) {
-                        setDocFn(docFn(db, 'siteStats', 'visits'), {
-                            totalVisits: incFn(1),
-                            mapPageVisits: incFn(1),
-                            lastVisitAt: new Date()
-                        }, { merge: true }).catch(() => { });
-                    }
-                } catch (e) { }
+                // 캐시 저장
+                setMapCachedData(centersData);
+
+                // 페이지 방문수 카운터 (세션당 1회)
+                if (!sessionStorage.getItem('mapVisitCounted')) {
+                    try {
+                        const { doc: docFn, setDoc: setDocFn, increment: incFn } = _fbModules;
+                        if (setDocFn && incFn) {
+                            setDocFn(docFn(db, 'siteStats', 'visits'), {
+                                totalVisits: incFn(1),
+                                mapPageVisits: incFn(1),
+                                lastVisitAt: new Date()
+                            }, { merge: true }).catch(() => { });
+                            sessionStorage.setItem('mapVisitCounted', '1');
+                        }
+                    } catch (e) { }
+                }
 
             } catch (firebaseError) {
                 console.warn('⚠️ Firebase 데이터 로드 실패, 샘플 데이터 사용:', firebaseError);
