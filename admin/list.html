@@ -7,6 +7,20 @@
     <link rel="icon" href="data:,">
     <title>연수원 관리 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans KR"', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="text/javascript"
         src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=geocoder,service"></script>
@@ -53,86 +67,41 @@
     </style>
 </head>
 
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased" style="letter-spacing: -0.2px;">
 
-    <style>
-        /* 메인 홈페이지와 유사한 헤더 스타일 정의 (Tailwind 기반 보조) */
-        .main-header {
-            background-color: #0f172a;
-            /* Slate 900 for modern admin look */
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .main-header a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .main-header nav ul {
-            list-style: none;
-            display: flex;
-            gap: 1.5rem;
-            margin: 0;
-            padding: 0;
-        }
-
-        .main-header nav a {
-            opacity: 0.7;
-            font-size: 0.95rem;
-            font-weight: 500;
-            padding-bottom: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .main-header nav a:hover,
-        .main-header nav a.active {
-            opacity: 1;
-            color: #38bdf8;
-            /* sky-400 */
-        }
-
-        .main-header nav a.active {
-            border-bottom: 2px solid #38bdf8;
-        }
-    </style>
-
-    <!-- 메인 홈페이지 테마의 상단 네비게이션 -->
-    <header class="main-header">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-10">
+    <!-- 상단 네비게이션 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50" style="box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-14">
             <div class="flex items-center gap-3">
                 <a href="../index.html"
-                    class="text-xl font-bold flex items-center gap-2 hover:opacity-90 transition-opacity tracking-tight">
-                    <span class="text-2xl">📍</span> 연수원 여기어때
+                    class="text-lg font-bold flex items-center gap-2.5 hover:opacity-80 transition-opacity tracking-tight text-slate-800 no-underline">
+                    <span class="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-lg text-base">📍</span>
+                    연수원 여기어때
                     <span
-                        class="text-xs font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-0.5 rounded-full ml-1 uppercase tracking-wider">Admin</span>
+                        class="text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full ml-0.5 uppercase tracking-wider">Admin</span>
                 </a>
             </div>
 
             <nav class="hidden sm:flex items-center">
-                <ul>
-                    <li><a href="index.html">대시보드</a></li>
-                    <li><a href="list.html" class="active">연수원 관리 (목록)</a></li>
+                <ul class="list-none flex gap-1 m-0 p-0">
+                    <li><a href="index.html" class="text-sm font-medium px-3 py-1.5 rounded-lg no-underline text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">대시보드</a></li>
+                    <li><a href="list.html" class="text-sm font-medium px-3 py-1.5 rounded-lg no-underline bg-blue-50 text-blue-600">연수원 관리 (목록)</a></li>
                 </ul>
             </nav>
 
-            <div class="flex items-center gap-4">
-                <span id="adminEmail" class="text-sm text-slate-300 hidden sm:inline-block font-medium"></span>
+            <div class="flex items-center gap-3">
+                <span id="adminEmail" class="text-sm text-slate-400 hidden sm:inline-block font-medium"></span>
                 <button id="logoutBtn"
-                    class="bg-white/10 hover:bg-white/20 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors border border-white/5">
+                    class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors border border-slate-200">
                     로그아웃
                 </button>
             </div>
         </div>
-        <!-- 모바일 탭 메뉴 추가 -->
-        <div class="sm:hidden flex justify-center mt-3 border-t border-slate-700/50 pt-3 gap-6">
-            <a href="index.html" class="text-sm opacity-70 hover:opacity-100 pb-1 transition-opacity">대시보드</a>
+        <!-- 모바일 탭 메뉴 -->
+        <div class="sm:hidden flex justify-center border-t border-slate-100 gap-1 px-4 py-2">
+            <a href="index.html" class="text-sm font-medium px-4 py-1.5 rounded-lg no-underline text-slate-500 hover:bg-slate-100 transition-colors">대시보드</a>
             <a href="list.html"
-                class="active text-sm opacity-100 border-b-2 border-sky-400 pb-1 text-sky-400 font-medium">연수원 관리</a>
+                class="text-sm font-medium px-4 py-1.5 rounded-lg no-underline bg-blue-50 text-blue-600">연수원 관리</a>
         </div>
     </header>
 

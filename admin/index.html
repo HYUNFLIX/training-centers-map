@@ -7,6 +7,20 @@
     <link rel="icon" href="data:,">
     <title>연수원 관리 대시보드</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans KR"', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="text/javascript"
         src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=9r2jb00oue&submodules=geocoder,service"></script>
@@ -53,53 +67,9 @@
     </style>
 </head>
 
-<body class="bg-gray-50 text-slate-800 font-sans min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased" style="letter-spacing: -0.2px;">
 
     <style>
-        /* 메인 홈페이지와 유사한 헤더 스타일 정의 (Tailwind 기반 보조) */
-        .main-header {
-            background-color: #0f172a;
-            /* Slate 900 for modern admin look */
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .main-header a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .main-header nav ul {
-            list-style: none;
-            display: flex;
-            gap: 1.5rem;
-            margin: 0;
-            padding: 0;
-        }
-
-        .main-header nav a {
-            opacity: 0.7;
-            font-size: 0.95rem;
-            font-weight: 500;
-            padding-bottom: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .main-header nav a:hover,
-        .main-header nav a.active {
-            opacity: 1;
-            color: #38bdf8;
-            /* sky-400 */
-        }
-
-        .main-header nav a.active {
-            border-bottom: 2px solid #38bdf8;
-        }
-
         .stat-card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -110,38 +80,39 @@
         }
     </style>
 
-    <!-- 메인 홈페이지 테마의 상단 네비게이션 -->
-    <header class="main-header">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-10">
+    <!-- 상단 네비게이션 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50" style="box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-14">
             <div class="flex items-center gap-3">
                 <a href="../index.html"
-                    class="text-xl font-bold flex items-center gap-2 hover:opacity-90 transition-opacity tracking-tight">
-                    <span class="text-2xl">📍</span> 연수원 여기어때
+                    class="text-lg font-bold flex items-center gap-2.5 hover:opacity-80 transition-opacity tracking-tight text-slate-800 no-underline">
+                    <span class="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-lg text-base">📍</span>
+                    연수원 여기어때
                     <span
-                        class="text-xs font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30 px-2.5 py-0.5 rounded-full ml-1 uppercase tracking-wider">Admin</span>
+                        class="text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full ml-0.5 uppercase tracking-wider">Admin</span>
                 </a>
             </div>
 
             <nav class="hidden sm:flex items-center">
-                <ul>
-                    <li><a href="index.html" class="active">대시보드</a></li>
-                    <li><a href="list.html">연수원 관리 (목록)</a></li>
+                <ul class="list-none flex gap-1 m-0 p-0">
+                    <li><a href="index.html" class="text-sm font-medium px-3 py-1.5 rounded-lg no-underline bg-blue-50 text-blue-600">대시보드</a></li>
+                    <li><a href="list.html" class="text-sm font-medium px-3 py-1.5 rounded-lg no-underline text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors">연수원 관리 (목록)</a></li>
                 </ul>
             </nav>
 
-            <div class="flex items-center gap-4">
-                <span id="adminEmail" class="text-sm text-slate-300 hidden sm:inline-block font-medium"></span>
+            <div class="flex items-center gap-3">
+                <span id="adminEmail" class="text-sm text-slate-400 hidden sm:inline-block font-medium"></span>
                 <button id="logoutBtn"
-                    class="bg-white/10 hover:bg-white/20 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors border border-white/5">
+                    class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors border border-slate-200">
                     로그아웃
                 </button>
             </div>
         </div>
-        <!-- 모바일 탭 메뉴 추가 -->
-        <div class="sm:hidden flex justify-center mt-3 border-t border-slate-700/50 pt-3 gap-6">
+        <!-- 모바일 탭 메뉴 -->
+        <div class="sm:hidden flex justify-center border-t border-slate-100 gap-1 px-4 py-2">
             <a href="index.html"
-                class="active text-sm opacity-100 border-b-2 border-sky-400 pb-1 text-sky-400 font-medium">대시보드</a>
-            <a href="list.html" class="text-sm opacity-70 hover:opacity-100 pb-1 transition-opacity">연수원 관리</a>
+                class="text-sm font-medium px-4 py-1.5 rounded-lg no-underline bg-blue-50 text-blue-600">대시보드</a>
+            <a href="list.html" class="text-sm font-medium px-4 py-1.5 rounded-lg no-underline text-slate-500 hover:bg-slate-100 transition-colors">연수원 관리</a>
         </div>
     </header>
 
@@ -157,7 +128,7 @@
         </div>
 
         <!-- ===== 핵심 요약 카드 섹션 ===== -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card flex items-center">
                 <div class="rounded-full bg-blue-50 p-3 mr-4">
                     <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -201,6 +172,22 @@
                             class="text-lg font-bold text-slate-400 ml-1">명</span></div>
                 </div>
             </div>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card flex items-center">
+                <div class="rounded-full bg-rose-50 p-3 mr-4">
+                    <svg class="w-8 h-8 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-1">총 조회수</div>
+                    <div class="text-3xl font-black text-slate-800" id="stat-clicks">-<span
+                            class="text-lg font-normal text-slate-400 ml-1">회</span></div>
+                </div>
+            </div>
         </div>
 
         <!-- 1st Row: Region Chart -->
@@ -217,8 +204,8 @@
             </div>
         </div>
 
-        <!-- 2nd Row: Capacity + Top 5 + Recent Additions -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- 2nd Row: Capacity + Recent Additions -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <!-- 수용 인원 규모별 분포 (Chart.js Bar) -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
                 <div class="flex items-center mb-4">
@@ -227,23 +214,6 @@
                 </div>
                 <div class="relative h-56 w-full">
                     <canvas id="capacityCanvas"></canvas>
-                </div>
-            </div>
-
-            <!-- 조회수 TOP 5 -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                <div class="flex items-center mb-4">
-                    <div class="w-2 h-6 bg-rose-400 rounded-full mr-3"></div>
-                    <h3 class="font-bold text-slate-800 text-lg">조회수 TOP 5</h3>
-                </div>
-                <div id="popular-list" class="space-y-3">
-                    <div class="animate-pulse flex space-x-4">
-                        <div class="flex-1 space-y-4 py-1">
-                            <div class="h-4 bg-slate-200 rounded w-3/4"></div>
-                            <div class="h-4 bg-slate-200 rounded"></div>
-                            <div class="h-4 bg-slate-200 rounded w-5/6"></div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -256,6 +226,88 @@
                 <div id="recent-list"
                     class="space-y-3 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
                     <div class="text-sm text-slate-400 text-center py-4">로딩 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== 조회수 분석 섹션 ===== -->
+        <div class="mb-8">
+            <div class="flex items-center mb-6">
+                <div class="w-1.5 h-7 bg-rose-500 rounded-full mr-3"></div>
+                <h2 class="text-xl font-bold text-slate-800 tracking-tight">조회수 분석</h2>
+            </div>
+
+            <!-- 조회수 요약 미니 카드 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">평균 조회수</div>
+                    <div class="text-2xl font-bold text-slate-800" id="click-avg">-</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">중앙값</div>
+                    <div class="text-2xl font-bold text-slate-800" id="click-median">-</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">최대 조회수</div>
+                    <div class="text-2xl font-bold text-rose-600" id="click-max">-</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">미조회 연수원</div>
+                    <div class="text-2xl font-bold text-amber-600" id="click-zero">-</div>
+                </div>
+            </div>
+
+            <!-- 조회수 차트 + TOP 10 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <!-- 지역별 평균 조회수 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                    <div class="flex items-center mb-4">
+                        <div class="w-2 h-6 bg-violet-400 rounded-full mr-3"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">지역별 평균 조회수</h3>
+                    </div>
+                    <div class="relative h-64 w-full">
+                        <canvas id="regionClickCanvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- 조회수 TOP 10 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                    <div class="flex items-center mb-4">
+                        <div class="w-2 h-6 bg-rose-400 rounded-full mr-3"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">조회수 TOP 10</h3>
+                    </div>
+                    <div id="popular-list" class="space-y-1.5 max-h-[320px] overflow-y-auto">
+                        <div class="animate-pulse flex space-x-4">
+                            <div class="flex-1 space-y-4 py-1">
+                                <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                                <div class="h-4 bg-slate-200 rounded"></div>
+                                <div class="h-4 bg-slate-200 rounded w-5/6"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 인사이트 & 특이점 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                    <div class="flex items-center mb-4">
+                        <div class="w-2 h-6 bg-amber-400 rounded-full mr-3"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">인사이트</h3>
+                    </div>
+                    <div id="insights-list" class="space-y-3">
+                        <div class="text-sm text-slate-400 text-center py-4">분석 중...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 조회수 분포 히스토그램 -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <div class="flex items-center mb-4">
+                    <div class="w-2 h-6 bg-sky-400 rounded-full mr-3"></div>
+                    <h3 class="font-bold text-slate-800 text-lg">조회수 분포</h3>
+                    <span class="text-xs text-slate-400 ml-2">연수원별 조회수 구간 분포</span>
+                </div>
+                <div class="relative h-56 w-full">
+                    <canvas id="clickDistCanvas"></canvas>
                 </div>
             </div>
         </div>
@@ -337,9 +389,30 @@
 
             });
 
+            // 조회수 통계 계산
+            const clickCounts = centers.map(c => c.clickCount || 0);
+            const totalClicks = clickCounts.reduce((a, b) => a + b, 0);
+            const avgClicks = centers.length > 0 ? totalClicks / centers.length : 0;
+            const sortedClicks = [...clickCounts].sort((a, b) => a - b);
+            const medianClicks = sortedClicks.length > 0
+                ? sortedClicks.length % 2 === 0
+                    ? (sortedClicks[sortedClicks.length / 2 - 1] + sortedClicks[sortedClicks.length / 2]) / 2
+                    : sortedClicks[Math.floor(sortedClicks.length / 2)]
+                : 0;
+            const maxClicks = Math.max(...clickCounts, 0);
+            const zeroClickCount = clickCounts.filter(c => c === 0).length;
+
             document.getElementById('stat-total').textContent = total.toLocaleString();
             document.getElementById('stat-regions').textContent = Object.keys(regionMap).length;
             document.getElementById('stat-capacity').innerHTML = `${capacitySum.toLocaleString()}<span class="text-lg font-normal text-slate-400 ml-1">명</span>`;
+            document.getElementById('stat-clicks').innerHTML = `${totalClicks.toLocaleString()}<span class="text-lg font-normal text-slate-400 ml-1">회</span>`;
+
+            // 조회수 미니 카드
+            document.getElementById('click-avg').textContent = avgClicks.toFixed(1);
+            document.getElementById('click-median').textContent = medianClicks.toLocaleString();
+            document.getElementById('click-max').textContent = maxClicks.toLocaleString();
+            document.getElementById('click-zero').textContent = `${zeroClickCount}개`;
+
 
             // Chart.js 공통 옵션
             Chart.defaults.font.family = "'Pretendard', 'Noto Sans KR', sans-serif";
@@ -399,31 +472,182 @@
                 }
             });
 
-            // 4. 많이 조회된 연수원 TOP 5
+            // 4. 지역별 평균 조회수 차트
+            const regionClickMap = {};
+            centers.forEach(c => {
+                const r = c.region || '기타';
+                if (!regionClickMap[r]) regionClickMap[r] = { total: 0, count: 0 };
+                regionClickMap[r].total += (c.clickCount || 0);
+                regionClickMap[r].count++;
+            });
+            const regionClickEntries = Object.entries(regionClickMap)
+                .map(([k, v]) => [k, v.count > 0 ? v.total / v.count : 0])
+                .sort((a, b) => b[1] - a[1]);
+
+            if (charts.regionClick) charts.regionClick.destroy();
+            charts.regionClick = new Chart(document.getElementById('regionClickCanvas'), {
+                type: 'bar',
+                data: {
+                    labels: regionClickEntries.map(e => e[0]),
+                    datasets: [{
+                        label: '평균 조회수',
+                        data: regionClickEntries.map(e => Math.round(e[1] * 10) / 10),
+                        backgroundColor: '#8b5cf6',
+                        borderRadius: 4,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' }, ticks: { precision: 1 } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 5. 조회수 TOP 10
             const popular = [...centers]
                 .filter(c => c.clickCount && c.clickCount > 0)
                 .sort((a, b) => b.clickCount - a.clickCount)
-                .slice(0, 5);
+                .slice(0, 10);
 
+            const topMaxClick = popular.length > 0 ? popular[0].clickCount : 1;
             document.getElementById('popular-list').innerHTML = popular.length > 0 ? popular.map((c, i) => `
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors group">
-                    <div class="flex items-center gap-3">
-                        <div class="flex items-center justify-center w-6 h-6 rounded-full ${i === 0 ? 'bg-amber-100 text-amber-600 font-bold' : i === 1 ? 'bg-slate-200 text-slate-600 font-bold' : i === 2 ? 'bg-orange-100 text-orange-700 font-bold' : 'bg-slate-100 text-slate-400'} text-xs shrink-0">
+                <div class="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors group">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="flex items-center justify-center w-5 h-5 rounded-full ${i === 0 ? 'bg-amber-100 text-amber-600 font-bold' : i === 1 ? 'bg-slate-200 text-slate-600 font-bold' : i === 2 ? 'bg-orange-100 text-orange-700 font-bold' : 'bg-slate-100 text-slate-400'} text-xs shrink-0">
                             ${i + 1}
                         </div>
-                        <div class="overflow-hidden">
+                        <div class="min-w-0 flex-1">
                             <h4 class="text-sm font-semibold text-slate-700 truncate group-hover:text-blue-600 transition-colors">${c.name}</h4>
-                            <p class="text-xs text-slate-400 truncate">${c.region || '지역 미상'} ${c.capacity ? `· ${c.capacity}명` : ''}</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-rose-400 rounded-full" style="width: ${(c.clickCount / topMaxClick * 100).toFixed(0)}%"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-rose-500 shrink-0">${c.clickCount.toLocaleString()}</span>
+                            </div>
                         </div>
-                    </div>
-                    <div class="text-right pl-2">
-                        <span class="inline-flex items-center gap-1 text-xs font-semibold text-rose-500 bg-rose-50 px-2 py-1 rounded-md">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                            ${c.clickCount.toLocaleString()}
-                        </span>
                     </div>
                 </div>
             `).join('') : '<div class="text-sm text-slate-400 text-center py-4">조회 데이터가 없습니다.</div>';
+
+            // 6. 조회수 분포 히스토그램
+            const clickBuckets = { '0회': 0, '1-5회': 0, '6-10회': 0, '11-20회': 0, '21-50회': 0, '51-100회': 0, '101회+': 0 };
+            clickCounts.forEach(c => {
+                if (c === 0) clickBuckets['0회']++;
+                else if (c <= 5) clickBuckets['1-5회']++;
+                else if (c <= 10) clickBuckets['6-10회']++;
+                else if (c <= 20) clickBuckets['11-20회']++;
+                else if (c <= 50) clickBuckets['21-50회']++;
+                else if (c <= 100) clickBuckets['51-100회']++;
+                else clickBuckets['101회+']++;
+            });
+
+            if (charts.clickDist) charts.clickDist.destroy();
+            charts.clickDist = new Chart(document.getElementById('clickDistCanvas'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(clickBuckets),
+                    datasets: [{
+                        label: '연수원 수',
+                        data: Object.values(clickBuckets),
+                        backgroundColor: ['#94a3b8', '#38bdf8', '#22d3ee', '#2dd4bf', '#a78bfa', '#f472b6', '#fb923c'],
+                        borderRadius: 4,
+                        barPercentage: 0.7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' }, ticks: { precision: 0 } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 7. 인사이트 자동 생성
+            const insights = [];
+            // 상위 집중도
+            if (popular.length >= 3) {
+                const top3Clicks = popular.slice(0, 3).reduce((a, c) => a + c.clickCount, 0);
+                const top3Pct = totalClicks > 0 ? (top3Clicks / totalClicks * 100).toFixed(1) : 0;
+                insights.push({
+                    icon: 'bg-rose-100 text-rose-600',
+                    title: '상위 집중도',
+                    desc: `TOP 3 연수원이 전체 조회수의 <strong>${top3Pct}%</strong>를 차지합니다.`,
+                    badge: top3Pct > 50 ? '높음' : top3Pct > 30 ? '보통' : '낮음',
+                    badgeColor: top3Pct > 50 ? 'bg-rose-50 text-rose-600' : top3Pct > 30 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
+                });
+            }
+            // 미조회 비율
+            if (zeroClickCount > 0) {
+                const zeroPct = (zeroClickCount / total * 100).toFixed(1);
+                insights.push({
+                    icon: 'bg-amber-100 text-amber-600',
+                    title: '미조회 연수원',
+                    desc: `전체의 <strong>${zeroPct}%</strong> (${zeroClickCount}개)가 아직 한 번도 조회되지 않았습니다.`,
+                    badge: zeroPct > 50 ? '주의' : '정상',
+                    badgeColor: zeroPct > 50 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
+                });
+            }
+            // 지역별 편차
+            if (regionClickEntries.length >= 2) {
+                const topRegion = regionClickEntries[0];
+                const bottomRegion = regionClickEntries[regionClickEntries.length - 1];
+                insights.push({
+                    icon: 'bg-violet-100 text-violet-600',
+                    title: '지역 간 편차',
+                    desc: `<strong>${topRegion[0]}</strong> 평균 ${topRegion[1].toFixed(1)}회 vs <strong>${bottomRegion[0]}</strong> 평균 ${bottomRegion[1].toFixed(1)}회`,
+                    badge: `${(topRegion[1] / Math.max(bottomRegion[1], 0.1)).toFixed(1)}배 차이`,
+                    badgeColor: 'bg-violet-50 text-violet-600'
+                });
+            }
+            // 이상치 탐지 (평균의 3배 이상)
+            const outlierThreshold = avgClicks * 3;
+            const outliers = centers.filter(c => (c.clickCount || 0) > outlierThreshold && outlierThreshold > 0);
+            if (outliers.length > 0) {
+                insights.push({
+                    icon: 'bg-sky-100 text-sky-600',
+                    title: '이상치 감지',
+                    desc: `평균(${avgClicks.toFixed(1)})의 3배 이상 조회된 연수원 <strong>${outliers.length}개</strong>: ${outliers.slice(0, 3).map(c => c.name).join(', ')}${outliers.length > 3 ? ' 외' : ''}`,
+                    badge: '특이',
+                    badgeColor: 'bg-sky-50 text-sky-600'
+                });
+            }
+            // 평균 vs 중앙값 비교
+            if (medianClicks > 0 && avgClicks > 0) {
+                const skew = avgClicks / medianClicks;
+                insights.push({
+                    icon: 'bg-emerald-100 text-emerald-600',
+                    title: '분포 편향',
+                    desc: skew > 2
+                        ? `평균(${avgClicks.toFixed(1)})이 중앙값(${medianClicks})보다 <strong>${skew.toFixed(1)}배</strong> 높습니다. 소수 인기 연수원이 평균을 높이고 있습니다.`
+                        : `평균(${avgClicks.toFixed(1)})과 중앙값(${medianClicks})이 비교적 균형적입니다.`,
+                    badge: skew > 2 ? '편향' : '균형',
+                    badgeColor: skew > 2 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
+                });
+            }
+
+            document.getElementById('insights-list').innerHTML = insights.length > 0 ? insights.map(ins => `
+                <div class="p-3 rounded-lg border border-slate-100 hover:border-slate-200 transition-colors">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <div class="flex items-center gap-2">
+                            <div class="w-5 h-5 rounded-full ${ins.icon} flex items-center justify-center">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                            </div>
+                            <span class="text-sm font-semibold text-slate-700">${ins.title}</span>
+                        </div>
+                        <span class="text-xs font-medium px-1.5 py-0.5 rounded ${ins.badgeColor}">${ins.badge}</span>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed">${ins.desc}</p>
+                </div>
+            `).join('') : '<div class="text-sm text-slate-400 text-center py-4">분석할 데이터가 부족합니다.</div>';
 
             // 5. 최근 생성된 연수원 (타임라인 뷰)
             const recent = [...centers]
