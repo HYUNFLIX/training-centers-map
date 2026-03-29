@@ -228,7 +228,11 @@
         };
         const formatDateTime = (dateObj) => {
             if (!dateObj) return '-';
-            const date = dateObj.toDate ? dateObj.toDate() : new Date(dateObj);
+            let date;
+            if (dateObj.toDate) date = dateObj.toDate();
+            else if (dateObj.seconds) date = new Date(dateObj.seconds * 1000);
+            else date = new Date(dateObj);
+            if (isNaN(date.getTime())) return '-';
             return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
         };
 
@@ -289,16 +293,21 @@
             });
 
 
+            // 날짜를 타임스탬프(ms)로 변환하는 헬퍼
+            const toMs = (d) => {
+                if (!d) return 0;
+                if (d.seconds) return d.seconds * 1000;        // Firestore Timestamp
+                if (d.toDate) return d.toDate().getTime();     // Firestore Timestamp 객체
+                if (typeof d === 'string') return new Date(d).getTime(); // ISO 문자열
+                if (d instanceof Date) return d.getTime();
+                if (typeof d === 'number') return d;
+                return 0;
+            };
+
             // 최근 조회된 연수원
             const recentViews = [...centers]
-                .filter(c => c.clickCount && c.clickCount > 0)
-                .sort((a, b) => {
-                    const dateA = (a.lastViewedAt || a.updatedAt || a.createdAt);
-                    const dateB = (b.lastViewedAt || b.updatedAt || b.createdAt);
-                    const secA = dateA?.seconds || 0;
-                    const secB = dateB?.seconds || 0;
-                    return secB - secA;
-                })
+                .filter(c => c.clickCount && c.clickCount > 0 && c.lastViewedAt)
+                .sort((a, b) => toMs(b.lastViewedAt) - toMs(a.lastViewedAt))
                 .slice(0, 10);
 
             document.getElementById('recent-views-list').innerHTML = recentViews.length > 0 ? recentViews.map((c, i) => {
@@ -321,11 +330,7 @@
             // 최근 생성된 연수원 (타임라인 뷰)
             const recent = [...centers]
                 .filter(c => c.createdAt)
-                .sort((a, b) => {
-                    const dateA = a.createdAt?.seconds || 0;
-                    const dateB = b.createdAt?.seconds || 0;
-                    return dateB - dateA;
-                })
+                .sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt))
                 .slice(0, 5);
 
             document.getElementById('recent-list').innerHTML = recent.length > 0 ? recent.map((c, i) => `
