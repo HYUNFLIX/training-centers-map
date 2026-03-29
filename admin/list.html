@@ -767,9 +767,6 @@
         }
 
         // ===== 네이버 지역 검색 API (REST) =====
-        const NAVER_CLIENT_ID = 'nQzRhczvTq8q3mu8MzlA';
-        const NAVER_CLIENT_SECRET = 'Ryo3nBB0Hv';
-
         async function searchNaverLocal(query) {
             const statusEl = document.getElementById('naverSearchStatus');
             const resultsEl = document.getElementById('naverSearchResults');
@@ -779,24 +776,11 @@
             resultsEl.innerHTML = '';
 
             try {
-                const naverUrl = `https://openapi.naver.com/v1/search/local.json?query=${encodeURIComponent(query)}&display=20&sort=random`;
+                // Firebase Cloud Function을 통한 네이버 검색
+                const functionUrl = `https://asia-northeast3-training-centers-map.cloudfunctions.net/naverSearch?query=${encodeURIComponent(query)}&display=20&sort=random`;
+                const res = await fetch(functionUrl);
 
-                // CORS 프록시 목록 (순서대로 시도)
-                const proxies = [
-                    (url) => ({ url: `https://corsproxy.io/?url=${encodeURIComponent(url)}`, headers: { 'X-Naver-Client-Id': NAVER_CLIENT_ID, 'X-Naver-Client-Secret': NAVER_CLIENT_SECRET } }),
-                    (url) => ({ url: `https://api.allorigins.win/raw?url=${encodeURIComponent(url + '&_headers=' + encodeURIComponent(JSON.stringify({ 'X-Naver-Client-Id': NAVER_CLIENT_ID, 'X-Naver-Client-Secret': NAVER_CLIENT_SECRET })))}`, headers: {} }),
-                    (url) => ({ url: `https://corsproxy.org/?url=${encodeURIComponent(url)}`, headers: { 'X-Naver-Client-Id': NAVER_CLIENT_ID, 'X-Naver-Client-Secret': NAVER_CLIENT_SECRET } }),
-                ];
-
-                let res = null;
-                for (const proxy of proxies) {
-                    try {
-                        const { url, headers } = proxy(naverUrl);
-                        res = await fetch(url, { headers });
-                        if (res.ok) break;
-                    } catch (e) { continue; }
-                }
-                if (!res || !res.ok) throw new Error('모든 프록시 실패');
+                if (!res.ok) throw new Error(`API 오류 ${res.status}`);
 
                 if (!res.ok) throw new Error(`API 오류 ${res.status}`);
                 const data = await res.json();
