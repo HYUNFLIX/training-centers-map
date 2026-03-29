@@ -188,7 +188,7 @@
         import { initializeFirebaseApp } from '../firebase-config.js';
 
         const { db, auth, modules } = await initializeFirebaseApp();
-        const { getDoc, doc, getDocs, collection } = modules;
+        const { getDoc, doc, getDocs, collection, onSnapshot } = modules;
         const { signOut, onAuthStateChanged } = modules;
 
         // ✅ 인증 확인 및 관리자 권한 검증 (세션 복원 대기)
@@ -362,35 +362,29 @@
             }
         }
 
-        // ===== 데이터 로드 =====
-        async function loadCenters() {
+        // ===== 실시간 데이터 리스너 =====
+        loadVisitStats();
+
+        onSnapshot(collection(db, "trainingCenters"), (snapshot) => {
+            const allCenters = [];
+            snapshot.forEach((d) => {
+                allCenters.push({ id: d.id, ...d.data() });
+            });
+            // sessionStorage 캐시 (analytics 페이지에서 재사용)
             try {
-                const [querySnapshot] = await Promise.all([
-                    getDocs(collection(db, "trainingCenters")),
-                    loadVisitStats()
-                ]);
-                const allCenters = [];
-                querySnapshot.forEach((d) => {
-                    allCenters.push({ id: d.id, ...d.data() });
-                });
-                // sessionStorage 캐시 (analytics 페이지에서 재사용)
-                try {
-                    sessionStorage.setItem('centersCache', JSON.stringify(allCenters));
-                    sessionStorage.setItem('centersCacheTime', Date.now().toString());
-                } catch (e) { }
-                await renderStats(allCenters);
-            } catch (error) {
-                console.error("데이터 로드 중 오류:", error);
-                document.getElementById('last-updated').textContent = "연결 오류";
-            }
-        }
+                sessionStorage.setItem('centersCache', JSON.stringify(allCenters));
+                sessionStorage.setItem('centersCacheTime', Date.now().toString());
+            } catch (e) { }
+            renderStats(allCenters);
+        }, (error) => {
+            console.error("실시간 데이터 오류:", error);
+            document.getElementById('last-updated').textContent = "연결 오류";
+        });
 
         // 로그아웃 이벤트
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth).then(() => window.location.href = './login.html');
         });
-
-        loadCenters();
     </script>
 </body>
 
