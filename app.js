@@ -706,7 +706,7 @@ const createMarkersFromData = async (centersData) => {
                         try {
                             const { doc: docFn, updateDoc: updateDocFn, increment: incFn, setDoc: setDocFn } = _fbModules || {};
                             if (updateDocFn && incFn) {
-                                updateDocFn(docFn(db, 'trainingCenters', center.id), { clickCount: incFn(1) }).catch(() => { });
+                                updateDocFn(docFn(db, 'trainingCenters', center.id), { clickCount: incFn(1), lastViewedAt: new Date() }).catch(() => { });
                             }
                         } catch (e) { }
                     }
@@ -1167,7 +1167,7 @@ const setupSearchEvents = () => {
                                 try {
                                     const { doc: docFn, updateDoc: updateDocFn, increment: incFn } = _fbModules || {};
                                     if (updateDocFn && incFn) {
-                                        updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1) }).catch(() => { });
+                                        updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1), lastViewedAt: new Date() }).catch(() => { });
                                     }
                                 } catch (e) { }
                             }
@@ -1480,7 +1480,7 @@ window.goToCenter = function (centerId) {
             if (targetMarker.centerData.id && db) {
                 try {
                     const { doc: docFn, updateDoc: updateDocFn, increment: incFn } = _fbModules || {};
-                    if (updateDocFn && incFn) updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1) }).catch(() => { });
+                    if (updateDocFn && incFn) updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1), lastViewedAt: new Date() }).catch(() => { });
                 } catch (e) { }
             }
         }, 300);
