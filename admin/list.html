@@ -603,24 +603,17 @@
                     <td class="px-5 py-4">
                         <div class="text-xs text-slate-500 max-w-[120px] line-clamp-1" title="${center.basicInfo || ''}">${center.basicInfo || '-'}</div>
                     </td>
-                    <td class="px-5 py-4 whitespace-nowrap">
-                        <div class="text-xs text-slate-500">
-                            ${(() => {
+                    <td class="px-5 py-4 whitespace-nowrap text-xs text-slate-500">
+                        ${(() => {
                         if (!center.createdAt) return '-';
                         const ts = center.createdAt.seconds ? new Date(center.createdAt.seconds * 1000) : new Date(center.createdAt);
-                        const d = ts.toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' });
-                        const t = ts.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-                        return `<div class="font-medium text-slate-700">${d}</div><div class="text-slate-400">${t}</div>`;
+                        return ts.toLocaleDateString('ko-KR', { year: '2-digit', month: '2-digit', day: '2-digit' }) + ' ' + ts.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
                     })()}
-                        </div>
                     </td>
                     <td class="px-5 py-4 whitespace-nowrap">
-                        <div class="flex items-center gap-3">
-
-                            <div class="flex flex-col gap-1.5">
-                                <button class="text-xs font-medium text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded transition-colors" onclick="editCenter('${center.id}')">수정</button>
-                                <button class="text-xs font-medium text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded transition-colors" onclick="deleteCenter('${center.id}')">삭제</button>
-                            </div>
+                        <div class="flex items-center gap-1.5">
+                            <button class="text-xs font-medium text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded transition-colors" onclick="editCenter('${center.id}')">수정</button>
+                            <button class="text-xs font-medium text-rose-600 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 px-2.5 py-1 rounded transition-colors" onclick="deleteCenter('${center.id}')">삭제</button>
                         </div>
                     </td>
                 </tr>

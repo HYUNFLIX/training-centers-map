@@ -128,7 +128,7 @@
         </div>
 
         <!-- ===== 핵심 요약 카드 섹션 ===== -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card flex items-center">
                 <div class="rounded-full bg-blue-50 p-3 mr-4">
                     <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -155,21 +155,6 @@
                 <div>
                     <div class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-1">등록된 지역 수</div>
                     <div class="text-3xl font-black text-slate-800" id="stat-regions">-</div>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card flex items-center">
-                <div class="rounded-full bg-indigo-50 p-3 mr-4">
-                    <svg class="w-8 h-8 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                        </path>
-                    </svg>
-                </div>
-                <div>
-                    <div class="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-1">총 수용 가능 인원</div>
-                    <div class="text-3xl font-black text-slate-800" id="stat-capacity">-<span
-                            class="text-lg font-bold text-slate-400 ml-1">명</span></div>
                 </div>
             </div>
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 stat-card flex items-center">
@@ -204,19 +189,8 @@
             </div>
         </div>
 
-        <!-- 2nd Row: Capacity + Recent Additions -->
+        <!-- 2nd Row: Recent Additions + Recent Views -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- 수용 인원 규모별 분포 (Chart.js Bar) -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                <div class="flex items-center mb-4">
-                    <div class="w-2 h-6 bg-emerald-400 rounded-full mr-3"></div>
-                    <h3 class="font-bold text-slate-800 text-lg">수용 규모별 분포</h3>
-                </div>
-                <div class="relative h-56 w-full">
-                    <canvas id="capacityCanvas"></canvas>
-                </div>
-            </div>
-
             <!-- 최근 등록 연수원 -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
                 <div class="flex items-center mb-4">
@@ -225,6 +199,17 @@
                 </div>
                 <div id="recent-list"
                     class="space-y-3 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+                    <div class="text-sm text-slate-400 text-center py-4">로딩 중...</div>
+                </div>
+            </div>
+
+            <!-- 최근 조회된 연수원 -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <div class="flex items-center mb-4">
+                    <div class="w-2 h-6 bg-emerald-400 rounded-full mr-3"></div>
+                    <h3 class="font-bold text-slate-800 text-lg">최근 조회된 연수원</h3>
+                </div>
+                <div id="recent-views-list" class="space-y-2">
                     <div class="text-sm text-slate-400 text-center py-4">로딩 중...</div>
                 </div>
             </div>
@@ -365,28 +350,9 @@
             // 1. 요약 카드 계산
             const total = centers.length;
             const regionMap = {};
-            let capacitySum = 0;
-            let capacityZones = { "0-50명": 0, "51-100명": 0, "101-300명": 0, "301명 이상": 0, "미상": 0 };
-
             centers.forEach(c => {
                 const r = c.region || '기타';
                 regionMap[r] = (regionMap[r] || 0) + 1;
-
-                if (c.capacity) {
-                    const cap = parseInt(c.capacity);
-                    if (!isNaN(cap)) {
-                        capacitySum += cap;
-                        if (cap <= 50) capacityZones["0-50명"]++;
-                        else if (cap <= 100) capacityZones["51-100명"]++;
-                        else if (cap <= 300) capacityZones["101-300명"]++;
-                        else capacityZones["301명 이상"]++;
-                    } else {
-                        capacityZones["미상"]++;
-                    }
-                } else {
-                    capacityZones["미상"]++;
-                }
-
             });
 
             // 조회수 통계 계산
@@ -404,7 +370,6 @@
 
             document.getElementById('stat-total').textContent = total.toLocaleString();
             document.getElementById('stat-regions').textContent = Object.keys(regionMap).length;
-            document.getElementById('stat-capacity').innerHTML = `${capacitySum.toLocaleString()}<span class="text-lg font-normal text-slate-400 ml-1">명</span>`;
             document.getElementById('stat-clicks').innerHTML = `${totalClicks.toLocaleString()}<span class="text-lg font-normal text-slate-400 ml-1">회</span>`;
 
             // 조회수 미니 카드
@@ -447,32 +412,7 @@
                 }
             });
 
-            // 2. 수용 인원 규모 분포 바 차트
-            if (charts.capacity) charts.capacity.destroy();
-            charts.capacity = new Chart(document.getElementById('capacityCanvas'), {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(capacityZones),
-                    datasets: [{
-                        label: '연수원 수',
-                        data: Object.values(capacityZones),
-                        backgroundColor: '#10b981',
-                        borderRadius: 4,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y', // 가로 막대
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' }, ticks: { precision: 0 } },
-                        y: { grid: { display: false } }
-                    }
-                }
-            });
-
-            // 4. 지역별 평균 조회수 차트
+            // 지역별 평균 조회수 차트
             const regionClickMap = {};
             centers.forEach(c => {
                 const r = c.region || '기타';
@@ -649,7 +589,36 @@
                 </div>
             `).join('') : '<div class="text-sm text-slate-400 text-center py-4">분석할 데이터가 부족합니다.</div>';
 
-            // 5. 최근 생성된 연수원 (타임라인 뷰)
+            // 최근 조회된 연수원
+            const recentViews = [...centers]
+                .filter(c => c.clickCount && c.clickCount > 0)
+                .sort((a, b) => {
+                    const dateA = (a.lastViewedAt || a.updatedAt || a.createdAt);
+                    const dateB = (b.lastViewedAt || b.updatedAt || b.createdAt);
+                    const secA = dateA?.seconds || 0;
+                    const secB = dateB?.seconds || 0;
+                    return secB - secA;
+                })
+                .slice(0, 10);
+
+            document.getElementById('recent-views-list').innerHTML = recentViews.length > 0 ? recentViews.map((c, i) => {
+                const viewDate = c.lastViewedAt || c.updatedAt || c.createdAt;
+                return `
+                <div class="flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors group">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <div class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 text-xs shrink-0 font-bold">
+                            ${i + 1}
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-sm font-semibold text-slate-700 truncate group-hover:text-emerald-600 transition-colors">${c.name}</h4>
+                            <p class="text-xs text-slate-400">${c.region || '지역 미상'} · ${c.clickCount.toLocaleString()}회 조회</p>
+                        </div>
+                    </div>
+                    <time class="text-xs text-slate-400 shrink-0 ml-2">${formatDate(viewDate)}</time>
+                </div>`;
+            }).join('') : '<div class="text-sm text-slate-400 text-center py-4">조회 데이터가 없습니다.</div>';
+
+            // 최근 생성된 연수원 (타임라인 뷰)
             const recent = [...centers]
                 .filter(c => c.createdAt)
                 .sort((a, b) => {
