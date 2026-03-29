@@ -1527,22 +1527,12 @@ footer .container {
 
   /* 헤더 */
   .main-header .container {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  /* 태블릿에서는 메뉴가 한 줄 아래로 내려감 */
-
-  nav {
-    width: 100%;
-    order: 2;
+    flex-direction: row;
+    height: 56px;
   }
 
   nav ul {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 2px;
   }
 
   nav ul li {

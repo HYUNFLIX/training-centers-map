@@ -1,6 +1,6 @@
 // Service Worker for 연수원 여기어때
-const CACHE_NAME = 'training-centers-v1.2.0';
-const RUNTIME_CACHE = 'runtime-cache-v1.2.0';
+const CACHE_NAME = 'training-centers-v2.0.0';
+const RUNTIME_CACHE = 'runtime-cache-v2.0.0';
 
 // 캐시할 정적 리소스들
 const STATIC_ASSETS = [
