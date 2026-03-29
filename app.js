@@ -1042,7 +1042,18 @@ const setupSearchEvents = () => {
                         // 최근 검색어 기록 (window.addRecentSearch)
                         if (window.addRecentSearch) window.addRecentSearch(targetMarker.centerData);
 
-                        // 부드러운 애니메이션으로 이동
+                        // 검색 UI 먼저 정리
+                        hideSearchResults();
+                        if (searchInput) {
+                            searchInput.value = '';
+                            searchInput.blur();
+                        }
+                        if (window.closeSearchPanel) window.closeSearchPanel();
+
+                        // 타겟 마커가 지도에 표시되도록 보장
+                        targetMarker.setMap(map);
+
+                        // 진행 중인 morph 취소 후 이동
                         map.morph(targetMarker.getPosition(), 15, {
                             duration: 800,
                             easing: 'easeInOutCubic'
@@ -1061,11 +1072,7 @@ const setupSearchEvents = () => {
                                     }
                                 } catch (e) { }
                             }
-                        }, 800);
-
-                        hideSearchResults();
-                        if (searchInput) searchInput.blur();
-                        if (window.closeSearchPanel) window.closeSearchPanel();
+                        }, 900);
                     }
                 });
             });
@@ -1361,6 +1368,9 @@ window.goToCenter = function (centerId) {
     const targetMarker = allMarkers.find(marker => marker.centerData.id === centerId);
     if (targetMarker) {
         if (window.addRecentSearch) window.addRecentSearch(targetMarker.centerData);
+        if (window.closeSearchPanel) window.closeSearchPanel();
+        // 타겟 마커가 지도에 표시되도록 보장
+        targetMarker.setMap(map);
         map.morph(targetMarker.getPosition(), 15, { duration: 800, easing: 'easeInOutCubic' });
         setTimeout(() => {
             const content = createInfoWindowContent(targetMarker.centerData);
@@ -1372,8 +1382,7 @@ window.goToCenter = function (centerId) {
                     if (updateDocFn && incFn) updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1) }).catch(() => { });
                 } catch (e) { }
             }
-        }, 800);
-        if (window.closeSearchPanel) window.closeSearchPanel();
+        }, 900);
     }
 };
 
