@@ -226,6 +226,11 @@
             const date = dateObj.toDate ? dateObj.toDate() : new Date(dateObj);
             return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
         };
+        const formatDateTime = (dateObj) => {
+            if (!dateObj) return '-';
+            const date = dateObj.toDate ? dateObj.toDate() : new Date(dateObj);
+            return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+        };
 
         // 전역 차트 인스턴스 (재렌더링 시 파괴 용도)
         let charts = {};
@@ -309,7 +314,7 @@
                             <p class="text-xs text-slate-400">${c.region || '지역 미상'} · ${c.clickCount.toLocaleString()}회 조회</p>
                         </div>
                     </div>
-                    <time class="text-xs text-slate-400 shrink-0 ml-2">${formatDate(viewDate)}</time>
+                    <time class="text-xs text-slate-400 shrink-0 ml-2">${formatDateTime(viewDate)}</time>
                 </div>`;
             }).join('') : '<div class="text-sm text-slate-400 text-center py-4">조회 데이터가 없습니다.</div>';
 
