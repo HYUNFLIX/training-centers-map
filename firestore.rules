@@ -24,6 +24,12 @@ service cloud.firestore {
                      || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['naverClickCount']);
     }
 
+    // 사이트 통계 컬렉션
+    match /siteStats/{docId} {
+      allow read: if true;
+      allow write: if true;  // 방문수 카운터 (increment만 사용)
+    }
+
     // 사용자 컬렉션 (관리자)
     match /users/{userId} {
       // 자기 자신의 문서만 읽기 허용

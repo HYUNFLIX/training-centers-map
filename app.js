@@ -559,6 +559,17 @@ const loadCenters = async () => {
                     centersData.push(center);
                 });
 
+                // 페이지 방문수 카운터 (비동기, 에러 무시)
+                try {
+                    const { doc: docFn, setDoc: setDocFn, increment: incFn } = _fbModules;
+                    if (setDocFn && incFn) {
+                        setDocFn(docFn(db, 'siteStats', 'visits'), {
+                            totalVisits: incFn(1),
+                            mapPageVisits: incFn(1),
+                            lastVisitAt: new Date()
+                        }, { merge: true }).catch(() => { });
+                    }
+                } catch (e) { }
 
             } catch (firebaseError) {
                 console.warn('⚠️ Firebase 데이터 로드 실패, 샘플 데이터 사용:', firebaseError);
