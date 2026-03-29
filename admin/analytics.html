@@ -210,7 +210,7 @@
         import { initializeFirebaseApp } from '../firebase-config.js';
 
         const { db, auth, modules } = await initializeFirebaseApp();
-        const { getDoc, doc, getDocs, collection } = modules;
+        const { getDoc, doc, getDocs, collection, onSnapshot } = modules;
         const { signOut, onAuthStateChanged } = modules;
 
         // 인증 확인 (세션 복원 대기)
@@ -547,38 +547,21 @@
             });
         }
 
-        // 데이터 로드 (sessionStorage 캐시 활용)
-        async function loadData() {
-            try {
-                // 대시보드에서 캐시한 데이터가 있으면 재사용 (5분 이내)
-                const cached = sessionStorage.getItem('centersCache');
-                const cachedTime = parseInt(sessionStorage.getItem('centersCacheTime') || '0');
-                if (cached && (Date.now() - cachedTime) < 300000) {
-                    await renderAnalytics(JSON.parse(cached));
-                    return;
-                }
-
-                const querySnapshot = await getDocs(collection(db, "trainingCenters"));
-                const allCenters = [];
-                querySnapshot.forEach((d) => {
-                    allCenters.push({ id: d.id, ...d.data() });
-                });
-                try {
-                    sessionStorage.setItem('centersCache', JSON.stringify(allCenters));
-                    sessionStorage.setItem('centersCacheTime', Date.now().toString());
-                } catch (e) { }
-                await renderAnalytics(allCenters);
-            } catch (error) {
-                console.error("데이터 로드 오류:", error);
-                document.getElementById('last-updated').textContent = "연결 오류";
-            }
-        }
+        // ===== 실시간 데이터 리스너 =====
+        onSnapshot(collection(db, "trainingCenters"), (snapshot) => {
+            const allCenters = [];
+            snapshot.forEach((d) => {
+                allCenters.push({ id: d.id, ...d.data() });
+            });
+            renderAnalytics(allCenters);
+        }, (error) => {
+            console.error("실시간 데이터 오류:", error);
+            document.getElementById('last-updated').textContent = "연결 오류";
+        });
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth).then(() => window.location.href = './login.html');
         });
-
-        loadData();
     </script>
 </body>
 
