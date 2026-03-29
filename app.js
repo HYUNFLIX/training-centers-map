@@ -907,11 +907,19 @@ const setupSearchEvents = () => {
     const clearIcon = document.querySelector('.clear-icon');
     const searchResults = document.querySelector('.search-results');
 
+    // 프로그래밍 방식 입력 변경 시 input 이벤트 무시 플래그
+    let suppressInputEvent = false;
+    let searchTimeout;
+
     if (searchInput) {
-        let searchTimeout;
 
         // 검색 입력 이벤트
         searchInput.addEventListener('input', function () {
+            if (suppressInputEvent) {
+                suppressInputEvent = false;
+                return;
+            }
+
             const query = this.value.trim();
 
             // 클리어 버튼 표시/숨김
@@ -1043,10 +1051,15 @@ const setupSearchEvents = () => {
                         // 최근 검색어 기록 (window.addRecentSearch)
                         if (window.addRecentSearch) window.addRecentSearch(targetMarker.centerData);
 
-                        // 검색 UI 먼저 정리
+                        // 진행 중인 디바운스 취소 (applyFilters 방지)
+                        clearTimeout(searchTimeout);
+
+                        // 검색 UI 정리 (input 이벤트 무시)
                         hideSearchResults();
                         if (searchInput) {
+                            suppressInputEvent = true;
                             searchInput.value = '';
+                            if (clearIcon) clearIcon.style.display = 'none';
                             searchInput.blur();
                         }
                         if (window.closeSearchPanel) window.closeSearchPanel();
@@ -1054,13 +1067,11 @@ const setupSearchEvents = () => {
                         // 타겟 마커가 지도에 표시되도록 보장
                         targetMarker.setMap(map);
 
-                        // 진행 중인 morph 취소 후 이동
-                        map.morph(targetMarker.getPosition(), 15, {
-                            duration: 800,
-                            easing: 'easeInOutCubic'
-                        });
+                        // 현재 위치로 즉시 이동 후 애니메이션
+                        map.setCenter(targetMarker.getPosition());
+                        map.setZoom(15);
 
-                        // 애니메이션 완료 후 정보창 열기
+                        // 정보창 열기
                         setTimeout(() => {
                             const content = createInfoWindowContent(targetMarker.centerData);
                             infoWindowManager.openInfoWindow(map, targetMarker, content);
@@ -1073,7 +1084,7 @@ const setupSearchEvents = () => {
                                     }
                                 } catch (e) { }
                             }
-                        }, 900);
+                        }, 300);
                     }
                 });
             });
@@ -1372,7 +1383,8 @@ window.goToCenter = function (centerId) {
         if (window.closeSearchPanel) window.closeSearchPanel();
         // 타겟 마커가 지도에 표시되도록 보장
         targetMarker.setMap(map);
-        map.morph(targetMarker.getPosition(), 15, { duration: 800, easing: 'easeInOutCubic' });
+        map.setCenter(targetMarker.getPosition());
+        map.setZoom(15);
         setTimeout(() => {
             const content = createInfoWindowContent(targetMarker.centerData);
             infoWindowManager.openInfoWindow(map, targetMarker, content);
@@ -1383,7 +1395,7 @@ window.goToCenter = function (centerId) {
                     if (updateDocFn && incFn) updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1) }).catch(() => { });
                 } catch (e) { }
             }
-        }, 900);
+        }, 300);
     }
 };
 
