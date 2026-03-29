@@ -6,11 +6,14 @@
 }
 
 body {
-  font-family: 'Noto Sans KR', sans-serif;
-  color: #333;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1e293b;
   line-height: 1.6;
   background-color: #f8f9fa;
   overflow-x: hidden;
+  font-weight: 400;
+  letter-spacing: -0.2px;
+  -webkit-font-smoothing: antialiased;
 }
 
 .container {
@@ -76,13 +79,14 @@ button {
 
 /* 헤더 스타일 */
 .main-header {
-  background: linear-gradient(135deg, #0f2c52 0%, #0a4a8a 50%, #0369a1 100%);
-  color: white;
+  background: #ffffff;
+  color: #1e293b;
   padding: 0;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
   position: sticky;
   top: 0;
   z-index: 1000;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .main-header .container {
@@ -90,21 +94,19 @@ button {
   justify-content: space-between;
   align-items: center;
   position: relative;
-  height: 60px;
+  height: 56px;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  font-size: 1.5rem;
-  font-weight: 700;
   z-index: 1001;
 }
 
 .logo a {
   display: flex;
   align-items: center;
-  color: white;
+  color: #0f172a;
   text-decoration: none;
   gap: 10px;
   white-space: nowrap;
@@ -112,25 +114,27 @@ button {
 
 .logo a:hover {
   text-decoration: none;
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .logo i {
-  font-size: 1.6rem;
-  background: rgba(255, 255, 255, 0.15);
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  font-size: 1.2rem;
+  color: #fff;
+  background: #0077cc;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .logo h1 {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.5px;
   white-space: nowrap;
+  color: #0f172a;
 }
 
 /* 네비게이션 */
@@ -141,7 +145,8 @@ nav {
 nav ul {
   display: flex;
   list-style: none;
-  gap: 4px;
+  gap: 2px;
+  align-items: center;
 }
 
 nav ul li {
@@ -149,39 +154,34 @@ nav ul li {
 }
 
 nav ul li a {
-  color: rgba(255, 255, 255, 0.85);
+  color: #64748b;
   font-weight: 500;
-  font-size: 0.95rem;
-  padding: 7px 5px;
-  /* 박스 느낌을 지우고 텍스트 간격을 조금 줌 */
-  transition: color 0.2s;
+  font-size: 0.88rem;
+  padding: 8px 12px;
+  transition: color 0.2s, background-color 0.2s;
   display: flex;
   align-items: center;
   gap: 6px;
   background: none;
   border: none;
+  border-radius: 8px;
 }
 
 nav ul li a i {
-  font-size: 0.88rem;
-  opacity: 0.85;
+  font-size: 0.82rem;
 }
 
-nav ul li a.active,
 nav ul li a:hover {
-  background: none;
-  color: #fff;
+  background: #f1f5f9;
+  color: #0f172a;
   text-decoration: none;
-  opacity: 1;
 }
 
 nav ul li a.active {
-  background: none;
-  font-weight: 700;
-  border-bottom: 2px solid #fff;
-  /* 밑줄로만 포인트를 줌 (박스 아님) */
-  padding-bottom: 5px;
-  /* 밑줄과의 간격 */
+  background: #eff6ff;
+  color: #0077cc;
+  font-weight: 600;
+  text-decoration: none;
 }
 
 /* 모바일 햄버거 메뉴 */
@@ -189,15 +189,15 @@ nav ul li a.active {
   display: none;
   background: none;
   border: none;
-  color: white;
-  font-size: 1.5rem;
-  padding: 10px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+  color: #334155;
+  font-size: 1.3rem;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
 }
 
 .mobile-menu-toggle:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: #f1f5f9;
 }
 
 /* 검색 및 필터 섹션 */
@@ -1654,13 +1654,13 @@ footer .container {
   /* 헤더 컨테이너 롤백 (로고 중앙 정렬 복구) */
   .main-header .container {
     flex-direction: row;
-    height: 60px;
+    height: 56px;
   }
 
   .mobile-menu-toggle {
     display: block;
     position: absolute;
-    right: 15px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
   }
@@ -1668,17 +1668,19 @@ footer .container {
   /* 네비게이션을 햄버거 메뉴로 변경 */
   nav ul {
     position: fixed;
-    top: 60px;
+    top: 56px;
     left: -100%;
     width: 100%;
-    height: calc(100vh - 60px);
-    background-color: #0077cc;
+    height: calc(100vh - 56px);
+    background-color: #ffffff;
     flex-direction: column;
     justify-content: flex-start;
     align-items: stretch;
-    padding: 20px;
+    padding: 16px;
     transition: left 0.3s ease;
     z-index: 1000;
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   nav ul.show {
@@ -1686,15 +1688,23 @@ footer .container {
   }
 
   nav ul li {
-    margin: 0 0 10px 0;
+    margin: 0 0 4px 0;
     width: 100%;
   }
 
   nav ul li a {
     width: 100%;
-    padding: 15px;
-    border-radius: 8px;
+    padding: 14px 16px;
+    border-radius: 10px;
     justify-content: flex-start;
+    font-size: 0.95rem;
+    color: #334155;
+  }
+
+  nav ul li a:hover,
+  nav ul li a.active {
+    background: #f1f5f9;
+    color: #0077cc;
   }
 
   /* 검색 */
