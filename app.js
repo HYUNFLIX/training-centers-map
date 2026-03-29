@@ -1372,7 +1372,8 @@ document.addEventListener('DOMContentLoaded', () => {
 window.mapApp = {
     applyFilters: () => applyFilters(),
     resetFilters: () => resetAllFilters(),
-    showSampleData: () => generateSampleData()
+    showSampleData: () => generateSampleData(),
+    getAllMarkers: () => allMarkers
 };
 // 외부(인기, 최근 검색어 등)에서 연수원으로 바로 이동하는 전역 함수
 window.goToCenter = function (centerId) {

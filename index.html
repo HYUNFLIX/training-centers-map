@@ -988,33 +988,24 @@
       renderRecentSearches();
     };
 
-    // 인기 연수원 불러오기 (Firestore clickCount 기준 1~5위)
-    window.loadPopularCenters = async function () {
+    // 인기 연수원 불러오기 (이미 로드된 마커 데이터의 clickCount 기준)
+    window.loadPopularCenters = function () {
       const listEl = document.getElementById('popularCentersList');
 
-      // FB 모듈이 로드될 때까지 약간 대기하거나 직접 확인
-      if (!window._fbModules || !window.firebase || !window.firebase.db) {
+      // 마커 데이터가 아직 로드되지 않은 경우 대기
+      if (!window.mapApp || !window.mapApp.getAllMarkers || window.mapApp.getAllMarkers().length === 0) {
         listEl.innerHTML = '<div style="color:#94a3b8;font-size:0.82rem;padding:8px 0;">데이터를 불러오는 중...</div>';
-        setTimeout(window.loadPopularCenters, 1000); // 1초 뒤 재시도
+        setTimeout(window.loadPopularCenters, 1000);
         return;
       }
 
       try {
-        const { query, collection, orderBy, limit, getDocs } = window._fbModules;
-        const db = window.firebase.db;
-
-        const q = query(
-          collection(db, 'trainingCenters'),
-          orderBy('clickCount', 'desc'),
-          limit(5)
-        );
-
-        const querySnapshot = await getDocs(q);
-        const populars = [];
-        querySnapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.clickCount > 0) populars.push({ id: doc.id, ...data });
-        });
+        const markers = window.mapApp.getAllMarkers();
+        const populars = markers
+          .map(m => m.centerData)
+          .filter(c => c.clickCount > 0)
+          .sort((a, b) => (b.clickCount || 0) - (a.clickCount || 0))
+          .slice(0, 5);
 
         if (populars.length === 0) {
           listEl.innerHTML = '<div style="color:#94a3b8;font-size:0.82rem;padding:8px 0;">아직 충분한 클릭 데이터가 없습니다.</div>';
@@ -1033,7 +1024,6 @@
         `).join('');
 
       } catch (e) {
-        console.error("인기 연수원 로드 중 오류:", e);
         listEl.innerHTML = '<div style="color:#ef4444;font-size:0.82rem;padding:8px 0;">순위 정보를 불러오지 못했습니다.</div>';
       }
     };
