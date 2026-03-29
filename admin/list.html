@@ -375,32 +375,31 @@
         const { getDoc, doc, getDocs, collection, addDoc, updateDoc, deleteDoc } = modules;
         const { signOut, onAuthStateChanged } = modules;
 
-        // ✅ 인증 확인 및 관리자 권한 검증
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = './login.html';
-                return;
-            }
+        // ✅ 인증 확인 및 관리자 권한 검증 (세션 복원 대기)
+        const waitForAuth = () => new Promise((resolve) => {
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+                unsubscribe();
+                resolve(user);
+            });
+        });
+
+        const user = await waitForAuth();
+        if (!user) {
+            window.location.href = './login.html';
+        } else {
             try {
                 const userDocRef = doc(db, 'users', user.uid);
                 const userDoc = await getDoc(userDocRef);
                 if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
-                    // 권한 없음: 로그아웃 및 접근 차단
                     alert('관리자 권한이 없습니다. 접근이 차단되었습니다.');
                     await signOut(auth);
                     window.location.href = './login.html';
-                    return;
                 }
             } catch (e) {
                 console.error('Firestore 관리자 권한 확인 중 오류:', e);
-                alert('권한 확인 중 오류가 발생했습니다.');
-                await signOut(auth);
-                window.location.href = './login.html';
-                return;
             }
-            // 검증이 완료된 최고 관리자만 아래 코드 실행
             document.getElementById('adminEmail').textContent = user.email;
-        });
+        }
 
 
 
