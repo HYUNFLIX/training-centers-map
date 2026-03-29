@@ -3,19 +3,31 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // 관리자 여부 확인 함수
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
     // 연수원 데이터 컬렉션
     match /trainingCenters/{centerId} {
       // 모든 사용자(비인증 포함)에게 읽기 허용
       allow read: if true;
 
-      // 쓰기(create, update, delete)는 인증된 사용자만 허용
-      allow write: if request.auth != null;
+      // 쓰기는 관리자만 허용
+      allow write: if isAdmin();
+
+      // clickCount 업데이트는 인증 없이 허용 (조회수)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount']);
     }
 
     // 사용자 컬렉션 (관리자)
     match /users/{userId} {
-      // 자기 자신의 문서만 읽기/쓰기 허용
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // 자기 자신의 문서만 읽기 허용
+      allow read: if request.auth != null && request.auth.uid == userId;
+      // 쓰기는 관리자만 허용 (권한 상승 방지)
+      allow write: if isAdmin();
     }
 
     // 그 외 모든 컬렉션은 접근 차단

@@ -13,6 +13,9 @@ let infoWindowManager = null;
 let firebaseLoaded = false;
 let mapInitialized = false;
 
+// Firebase 모듈 (모듈 스코프, window 노출 없음)
+let _fbModules = null;
+
 // ===== 토스트 알림 관리자 =====
 class ToastManager {
     constructor() {
@@ -114,9 +117,8 @@ async function initializeFirebase() {
         db = getFirestore(app);
         firebaseLoaded = true;
 
-        // 전역으로 노출 (마커 클릭 카운트, 인기 연수원에서 사용)
-        window._fbModules = { doc, updateDoc, increment, query, orderBy, limit, collection, getDocs, setDoc, deleteDoc };
-        window.firebase = { db, collection, getDocs, addDoc };
+        // 모듈 스코프에 저장 (window 노출 제거)
+        _fbModules = { doc, updateDoc, increment, query, orderBy, limit, collection, getDocs, setDoc, deleteDoc, addDoc };
 
         console.log('✅ Firebase 초기화 성공 (SDK v' + FIREBASE_SDK_VERSION + ')');
         return { db, collection, getDocs, addDoc };
@@ -225,9 +227,31 @@ class InfoWindowManager {
     }
 }
 
+// ===== HTML 이스케이프 함수 (XSS 방어) =====
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// ===== URL 검증 함수 (javascript: 프로토콜 차단) =====
+function sanitizeUrl(url) {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (/^javascript:/i.test(trimmed) || /^data:/i.test(trimmed) || /^vbscript:/i.test(trimmed)) {
+        return '';
+    }
+    return trimmed;
+}
+
 // ===== 마커 아이콘 HTML 생성 함수 =====
 const createMarkerContent = (name) => {
-    const truncatedName = name.length > 10 ? name.substring(0, 10) + '...' : name;
+    const safeName = escapeHtml(name);
+    const truncatedName = safeName.length > 10 ? safeName.substring(0, 10) + '...' : safeName;
 
     return `
         <div class="marker-container">
@@ -254,25 +278,25 @@ const createInfoWindowContent = (center) => {
     // 3. 유용한 네이버 부가 정보 (전화번호, 수용인원, 공간 설명)
     let infoHtml = '';
     if (center.phone) {
-        infoHtml += `<div style="font-size: 13px; color: #555; margin-top: 6px;"><i class="fas fa-phone-alt" style="color: #999; width: 16px; text-align: center; margin-right: 4px;"></i> ${center.phone}</div>`;
+        infoHtml += `<div style="font-size: 13px; color: #555; margin-top: 6px;"><i class="fas fa-phone-alt" style="color: #999; width: 16px; text-align: center; margin-right: 4px;"></i> ${escapeHtml(center.phone)}</div>`;
     }
     if (center.capacity) {
-        infoHtml += `<div style="font-size: 13px; color: #555; margin-top: 6px;"><i class="fas fa-users" style="color: #999; width: 16px; text-align: center; margin-right: 4px;"></i> 수용인원: ${center.capacity.toLocaleString()}명</div>`;
+        infoHtml += `<div style="font-size: 13px; color: #555; margin-top: 6px;"><i class="fas fa-users" style="color: #999; width: 16px; text-align: center; margin-right: 4px;"></i> 수용인원: ${Number(center.capacity).toLocaleString()}명</div>`;
     }
     if (center.basicInfo) {
         const infoText = center.basicInfo.length > 55 ? center.basicInfo.substring(0, 55) + '...' : center.basicInfo;
-        infoHtml += `<div style="font-size: 13px; color: #555; margin-top: 6px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: #999; width: 16px; text-align: center; margin-right: 4px;"></i> ${infoText}</div>`;
+        infoHtml += `<div style="font-size: 13px; color: #555; margin-top: 6px; line-height: 1.4;"><i class="fas fa-info-circle" style="color: #999; width: 16px; text-align: center; margin-right: 4px;"></i> ${escapeHtml(infoText)}</div>`;
     }
 
     // 4. 버튼 (길찾기 삭제됨, 홈페이지와 네이버 나란히 배치)
-    let websiteUrl = center.links?.website;
+    let websiteUrl = sanitizeUrl(center.links?.website);
     if (!websiteUrl && center.links?.naver && !center.links.naver.includes('naver.com') && !center.links.naver.includes('naver.me')) {
-        websiteUrl = center.links.naver;
+        websiteUrl = sanitizeUrl(center.links.naver);
     }
 
     let naverMapUrl = `https://map.naver.com/v5/search/${encodeURIComponent(center.name)}`;
     if (center.links?.naver && (center.links.naver.includes('naver.com') || center.links.naver.includes('naver.me'))) {
-        naverMapUrl = center.links.naver;
+        naverMapUrl = sanitizeUrl(center.links.naver);
     }
 
     // 나란히 배치를 위한 flex 박스 설계 (gap: 8px)
@@ -299,13 +323,13 @@ const createInfoWindowContent = (center) => {
         <div class="info-window-container" style="padding: 16px 18px 18px; min-width: 280px; max-width: 320px; font-family: 'Pretendard', 'Noto Sans KR', sans-serif;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
                 <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #111; line-height: 1.3;">
-                    ${center.name}
-                    ${center.branch ? `<span style="font-size: 14px; color: #666; font-weight: 400; margin-left: 4px;">${center.branch}</span>` : ''}
+                    ${escapeHtml(center.name)}
+                    ${center.branch ? `<span style="font-size: 14px; color: #666; font-weight: 400; margin-left: 4px;">${escapeHtml(center.branch)}</span>` : ''}
                 </h3>
             </div>
             
             <div style="font-size: 14px; color: #0077cc; margin-bottom: 12px; font-weight: 500;">
-                ${shortAddress}
+                ${escapeHtml(shortAddress)}
             </div>
             
             <div style="border-top: 1px solid #eee; padding-top: 10px;">
@@ -608,7 +632,7 @@ const createMarkersFromData = async (centersData) => {
                     // Firestore clickCount 증가 (비동기 비시)
                     if (center.id && db) {
                         try {
-                            const { doc: docFn, updateDoc: updateDocFn, increment: incFn, setDoc: setDocFn } = window._fbModules || {};
+                            const { doc: docFn, updateDoc: updateDocFn, increment: incFn, setDoc: setDocFn } = _fbModules || {};
                             if (updateDocFn && incFn) {
                                 updateDocFn(docFn(db, 'trainingCenters', center.id), { clickCount: incFn(1) }).catch(() => { });
                             }
@@ -989,10 +1013,12 @@ const setupSearchEvents = () => {
 
     // 텍스트 하이라이트 함수
     function highlightText(text, query) {
-        if (!text || !query) return text;
+        if (!text || !query) return escapeHtml(text);
 
-        const regex = new RegExp(`(${query})`, 'gi');
-        return text.replace(regex, '<mark style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500;">$1</mark>');
+        const escaped = escapeHtml(text);
+        const escapedQuery = escapeHtml(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escapedQuery})`, 'gi');
+        return escaped.replace(regex, '<mark style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500;">$1</mark>');
     }
 
     // 검색 결과 표시 함수
@@ -1051,7 +1077,7 @@ const setupSearchEvents = () => {
                             // Firestore clickCount 증가
                             if (targetMarker.centerData.id && db) {
                                 try {
-                                    const { doc: docFn, updateDoc: updateDocFn, increment: incFn } = window._fbModules || {};
+                                    const { doc: docFn, updateDoc: updateDocFn, increment: incFn } = _fbModules || {};
                                     if (updateDocFn && incFn) {
                                         updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1) }).catch(() => { });
                                     }
@@ -1389,7 +1415,7 @@ window.goToCenter = function (centerId) {
             // clickCount
             if (targetMarker.centerData.id && db) {
                 try {
-                    const { doc: docFn, updateDoc: updateDocFn, increment: incFn } = window._fbModules || {};
+                    const { doc: docFn, updateDoc: updateDocFn, increment: incFn } = _fbModules || {};
                     if (updateDocFn && incFn) updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1) }).catch(() => { });
                 } catch (e) { }
             }
@@ -1579,13 +1605,35 @@ async function handleAddCenterSubmit(e) {
 
         // 폼 데이터 수집
         const formData = new FormData(addCenterForm);
-        const name = formData.get('name');
-        const address = formData.get('address');
-        const phone = formData.get('phone');
+        const name = formData.get('name')?.trim();
+        const address = formData.get('address')?.trim();
+        const phone = formData.get('phone')?.trim();
         const capacity = formData.get('capacity');
-        const naverUrl = formData.get('naverUrl');
-        const website = formData.get('website');
-        const basicInfo = formData.get('basicInfo');
+        const naverUrl = formData.get('naverUrl')?.trim();
+        const website = formData.get('website')?.trim();
+        const basicInfo = formData.get('basicInfo')?.trim();
+
+        // 입력값 검증
+        if (!name || name.length > 100) {
+            toast.error('연수원 이름을 올바르게 입력해주세요 (최대 100자).');
+            return;
+        }
+        if (!address || address.length > 200) {
+            toast.error('주소를 올바르게 입력해주세요 (최대 200자).');
+            return;
+        }
+        if (capacity && (isNaN(parseInt(capacity)) || parseInt(capacity) < 0 || parseInt(capacity) > 100000)) {
+            toast.error('수용인원을 올바르게 입력해주세요.');
+            return;
+        }
+        if (website && !sanitizeUrl(website)) {
+            toast.error('올바른 웹사이트 URL을 입력해주세요.');
+            return;
+        }
+        if (naverUrl && !sanitizeUrl(naverUrl)) {
+            toast.error('올바른 네이버 URL을 입력해주세요.');
+            return;
+        }
 
         console.log('📝 연수원 추가 시작:', name);
 
@@ -1607,8 +1655,8 @@ async function handleAddCenterSubmit(e) {
             capacity: capacity ? parseInt(capacity) : null,
             basicInfo: basicInfo || null,
             links: {
-                naver: naverUrl || null,
-                website: website || null
+                naver: sanitizeUrl(naverUrl) || null,
+                website: sanitizeUrl(website) || null
             },
             createdAt: new Date().toISOString(),
             createdBy: 'user' // 추후 인증 시스템 추가 시 변경 가능
@@ -1648,8 +1696,8 @@ async function handleAddCenterSubmit(e) {
 // Firebase에 저장 (공통 설정 사용)
 async function saveToFirebase(centerData) {
     // 이미 초기화된 Firebase 인스턴스 사용
-    if (window.firebase && window.firebase.db && window.firebase.addDoc) {
-        const { db, collection, addDoc } = window.firebase;
+    if (_fbModules && db && _fbModules.addDoc) {
+        const { collection, addDoc } = _fbModules;
         const docRef = await addDoc(collection(db, COLLECTIONS.TRAINING_CENTERS), centerData);
         return docRef;
     }

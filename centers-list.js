@@ -5,6 +5,24 @@ import { initializeFirebaseApp, COLLECTIONS } from './firebase-config.js';
 
 console.log('🚀 centers-list.js 로딩 시작 (공통 설정 사용)');
 
+// ===== HTML 이스케이프 함수 (XSS 방어) =====
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function sanitizeUrl(url) {
+    if (!url) return '';
+    const trimmed = url.trim();
+    if (/^javascript:/i.test(trimmed) || /^data:/i.test(trimmed) || /^vbscript:/i.test(trimmed)) return '';
+    return trimmed;
+}
+
 // ==================== 전역 상태 ====================
 const state = {
   allCenters: [],
@@ -369,14 +387,14 @@ function render() {
 
 function getNaverUrl(center) {
   const n = center.links?.naver;
-  if (n && (n.includes('naver.com') || n.includes('naver.me'))) return n;
+  if (n && (n.includes('naver.com') || n.includes('naver.me'))) return sanitizeUrl(n);
   return `https://map.naver.com/v5/search/${encodeURIComponent(center.name)}`;
 }
 
 function getWebsiteUrl(center) {
-  if (center.links?.website) return center.links.website;
+  if (center.links?.website) return sanitizeUrl(center.links.website);
   const n = center.links?.naver;
-  if (n && !n.includes('naver.com') && !n.includes('naver.me')) return n;
+  if (n && !n.includes('naver.com') && !n.includes('naver.me')) return sanitizeUrl(n);
   return '';
 }
 
@@ -405,11 +423,11 @@ function renderTable(centers) {
     return `
             <tr>
               <td>
-                <span class="center-name">${center.name}</span>
-                ${center.branch ? `<span class="center-branch">${center.branch}</span>` : ''}
+                <span class="center-name">${escapeHtml(center.name)}</span>
+                ${center.branch ? `<span class="center-branch">${escapeHtml(center.branch)}</span>` : ''}
               </td>
-              <td><span class="badge badge-region">${center.region}</span></td>
-              <td><span style="color: #334155;">${center.address || '<span style="color: #cbd5e1; font-size: 0.9em;">주소 미등록</span>'}</span></td>
+              <td><span class="badge badge-region">${escapeHtml(center.region)}</span></td>
+              <td><span style="color: #334155;">${center.address ? escapeHtml(center.address) : '<span style="color: #cbd5e1; font-size: 0.9em;">주소 미등록</span>'}</span></td>
               <td>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
                   ${websiteUrl ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f1f5f9;color:#334155;border-radius:6px;font-size:0.82em;font-weight:600;text-decoration:none;border:1px solid #e2e8f0;white-space:nowrap;"><i class="fas fa-home" style="font-size:0.85em;"></i> 홈페이지</a>` : ''}
@@ -435,13 +453,13 @@ function renderCards(centers) {
     return `
         <div class="center-card">
           <div class="card-header">
-            <div class="card-title">${center.name}</div>
-            ${center.branch ? `<span class="center-branch">${center.branch}</span>` : ''}
+            <div class="card-title">${escapeHtml(center.name)}</div>
+            ${center.branch ? `<span class="center-branch">${escapeHtml(center.branch)}</span>` : ''}
           </div>
           <div class="card-info-list">
             <div class="card-info">
               <i class="fas fa-map-marker-alt"></i>
-              <span><span class="badge badge-region" style="margin-right:6px;">${center.region}</span> ${center.address || '-'}</span>
+              <span><span class="badge badge-region" style="margin-right:6px;">${escapeHtml(center.region)}</span> ${escapeHtml(center.address) || '-'}</span>
             </div>
           </div>
           <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
