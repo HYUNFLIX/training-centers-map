@@ -202,22 +202,22 @@
         const user = await waitForAuth();
         if (!user) {
             window.location.href = './login.html';
-        } else {
-            try {
-                const userDocRef = doc(db, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
-                if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
-                    alert('관리자 권한이 없습니다. 접근이 차단되었습니다.');
-                    await signOut(auth);
-                    window.location.href = './login.html';
-                } else {
-                    document.getElementById('adminEmail').textContent = user.email;
-                }
-            } catch (e) {
-                console.error('Firestore 인증 오류:', e);
-                // 네트워크 오류 시 튕기지 않고 재시도 안내
-                document.getElementById('last-updated').textContent = '인증 오류 - 새로고침해주세요';
+            throw new Error('not authenticated');
+        }
+        try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+                alert('관리자 권한이 없습니다. 접근이 차단되었습니다.');
+                await signOut(auth);
+                window.location.href = './login.html';
+                throw new Error('not admin');
             }
+            document.getElementById('adminEmail').textContent = user.email;
+        } catch (e) {
+            if (e.message === 'not admin') throw e;
+            console.error('Firestore 인증 오류:', e);
+            document.getElementById('last-updated').textContent = '인증 오류 - 새로고침해주세요';
         }
 
         // 헬퍼 함수: 날짜 포맷

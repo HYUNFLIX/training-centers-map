@@ -224,24 +224,26 @@
         const user = await waitForAuth();
         if (!user) {
             window.location.href = './login.html';
-        } else {
-            try {
-                const userDocRef = doc(db, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
-                if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
-                    alert('관리자 권한이 없습니다.');
-                    await signOut(auth);
-                    window.location.href = './login.html';
-                } else {
-                    document.getElementById('adminEmail').textContent = user.email;
-                }
-            } catch (e) {
-                console.error('인증 오류:', e);
-                document.getElementById('last-updated').textContent = '인증 오류 - 새로고침해주세요';
+            throw new Error('not authenticated');
+        }
+        try {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+                alert('관리자 권한이 없습니다.');
+                await signOut(auth);
+                window.location.href = './login.html';
+                throw new Error('not admin');
             }
+            document.getElementById('adminEmail').textContent = user.email;
+        } catch (e) {
+            if (e.message === 'not admin') throw e;
+            console.error('인증 오류:', e);
+            document.getElementById('last-updated').textContent = '인증 오류 - 새로고침해주세요';
         }
 
         let charts = {};
+        let sortHeadersBound = false;
 
         Chart.defaults.font.family = "'Pretendard', 'Noto Sans KR', sans-serif";
         Chart.defaults.color = '#64748b';
@@ -541,10 +543,13 @@
 
             renderClickTable('views');
 
-            // 헤더 클릭으로 정렬
-            document.querySelectorAll('[data-sort]').forEach(th => {
-                th.addEventListener('click', () => renderClickTable(th.dataset.sort));
-            });
+            // 헤더 클릭으로 정렬 (1회만 등록)
+            if (!sortHeadersBound) {
+                sortHeadersBound = true;
+                document.querySelectorAll('[data-sort]').forEach(th => {
+                    th.addEventListener('click', () => renderClickTable(th.dataset.sort));
+                });
+            }
         }
 
         // ===== 실시간 데이터 리스너 =====
