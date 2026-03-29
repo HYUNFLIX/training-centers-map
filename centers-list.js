@@ -217,14 +217,18 @@ async function loadFirebaseSDK() {
   return { db, collection, getDocs };
 }
 
-// 외부 링크 클릭 추적
+// 외부 링크 클릭 추적 + 조회수/시간 기록
 window._trackLinkClick = window._trackLinkClick || function (centerId, linkType) {
   if (!centerId || !_listDb || !_listFbModules) return;
   try {
     const { doc, updateDoc, increment } = _listFbModules;
     if (updateDoc && increment) {
       const field = linkType === 'website' ? 'websiteClickCount' : 'naverClickCount';
-      updateDoc(doc(_listDb, 'trainingCenters', centerId), { [field]: increment(1) }).catch(() => { });
+      updateDoc(doc(_listDb, 'trainingCenters', centerId), {
+        [field]: increment(1),
+        clickCount: increment(1),
+        lastViewedAt: new Date()
+      }).catch(() => { });
     }
   } catch (e) { }
 };

@@ -23,7 +23,11 @@ window._trackLinkClick = function (centerId, linkType) {
         const { doc: docFn, updateDoc: updateDocFn, increment: incFn } = _fbModules;
         if (updateDocFn && incFn) {
             const field = linkType === 'website' ? 'websiteClickCount' : 'naverClickCount';
-            updateDocFn(docFn(db, 'trainingCenters', centerId), { [field]: incFn(1) }).catch(() => { });
+            updateDocFn(docFn(db, 'trainingCenters', centerId), {
+                [field]: incFn(1),
+                clickCount: incFn(1),
+                lastViewedAt: new Date()
+            }).catch(() => { });
         }
     } catch (e) { }
 };

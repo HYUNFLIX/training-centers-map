@@ -19,9 +19,8 @@ service cloud.firestore {
       allow write: if isAdmin();
 
       // 조회수/클릭 카운터 업데이트는 인증 없이 허용
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount', 'lastViewedAt'])
-                     || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['websiteClickCount'])
-                     || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['naverClickCount']);
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['clickCount', 'lastViewedAt', 'websiteClickCount', 'naverClickCount']);
     }
 
     // 사이트 통계 컬렉션
