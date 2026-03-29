@@ -705,7 +705,7 @@ const createMarkersFromData = async (centersData) => {
                 naver.maps.Event.addListener(marker, 'click', function () {
                     const content = createInfoWindowContent(center);
                     infoWindowManager.openInfoWindow(map, marker, content);
-                    // Firestore clickCount 증가 (비동기 비시)
+                    // Firestore clickCount 증가
                     if (center.id && db) {
                         try {
                             const { doc: docFn, updateDoc: updateDocFn, increment: incFn, setDoc: setDocFn } = _fbModules || {};
@@ -714,6 +714,9 @@ const createMarkersFromData = async (centersData) => {
                             }
                         } catch (e) { }
                     }
+                    // 로컬 데이터 업데이트 & 인기 목록 갱신
+                    center.clickCount = (center.clickCount || 0) + 1;
+                    if (window.loadPopularCenters) window.loadPopularCenters();
                 });
 
                 allMarkers.push(marker);
@@ -1175,6 +1178,9 @@ const setupSearchEvents = () => {
                                     }
                                 } catch (e) { }
                             }
+                            // 로컬 데이터 업데이트 & 인기 목록 갱신
+                            targetMarker.centerData.clickCount = (targetMarker.centerData.clickCount || 0) + 1;
+                            if (window.loadPopularCenters) window.loadPopularCenters();
                         }, 300);
                     }
                 });
@@ -1487,6 +1493,9 @@ window.goToCenter = function (centerId) {
                     if (updateDocFn && incFn) updateDocFn(docFn(db, 'trainingCenters', targetMarker.centerData.id), { clickCount: incFn(1), lastViewedAt: new Date() }).catch(() => { });
                 } catch (e) { }
             }
+            // 로컬 데이터 업데이트 & 인기 목록 갱신
+            targetMarker.centerData.clickCount = (targetMarker.centerData.clickCount || 0) + 1;
+            if (window.loadPopularCenters) window.loadPopularCenters();
         }, 300);
     }
 };
