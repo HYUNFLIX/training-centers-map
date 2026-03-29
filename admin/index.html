@@ -364,24 +364,24 @@
         }
 
         // ===== 실시간 데이터 리스너 =====
-        if (!isAuthorized) return;
-        loadVisitStats();
+        if (isAuthorized) {
+            loadVisitStats();
 
-        onSnapshot(collection(db, "trainingCenters"), (snapshot) => {
-            const allCenters = [];
-            snapshot.forEach((d) => {
-                allCenters.push({ id: d.id, ...d.data() });
+            onSnapshot(collection(db, "trainingCenters"), (snapshot) => {
+                const allCenters = [];
+                snapshot.forEach((d) => {
+                    allCenters.push({ id: d.id, ...d.data() });
+                });
+                try {
+                    sessionStorage.setItem('centersCache', JSON.stringify(allCenters));
+                    sessionStorage.setItem('centersCacheTime', Date.now().toString());
+                } catch (e) { }
+                renderStats(allCenters);
+            }, (error) => {
+                console.error("실시간 데이터 오류:", error);
+                document.getElementById('last-updated').textContent = "연결 오류";
             });
-            // sessionStorage 캐시 (analytics 페이지에서 재사용)
-            try {
-                sessionStorage.setItem('centersCache', JSON.stringify(allCenters));
-                sessionStorage.setItem('centersCacheTime', Date.now().toString());
-            } catch (e) { }
-            renderStats(allCenters);
-        }, (error) => {
-            console.error("실시간 데이터 오류:", error);
-            document.getElementById('last-updated').textContent = "연결 오류";
-        });
+        }
 
         // 로그아웃 이벤트
         document.getElementById('logoutBtn').addEventListener('click', () => {

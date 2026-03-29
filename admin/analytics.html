@@ -554,18 +554,18 @@
         }
 
         // ===== 실시간 데이터 리스너 =====
-        if (!isAuthorized) return;
-
-        onSnapshot(collection(db, "trainingCenters"), (snapshot) => {
-            const allCenters = [];
-            snapshot.forEach((d) => {
-                allCenters.push({ id: d.id, ...d.data() });
+        if (isAuthorized) {
+            onSnapshot(collection(db, "trainingCenters"), (snapshot) => {
+                const allCenters = [];
+                snapshot.forEach((d) => {
+                    allCenters.push({ id: d.id, ...d.data() });
+                });
+                renderAnalytics(allCenters);
+            }, (error) => {
+                console.error("실시간 데이터 오류:", error);
+                document.getElementById('last-updated').textContent = "연결 오류";
             });
-            renderAnalytics(allCenters);
-        }, (error) => {
-            console.error("실시간 데이터 오류:", error);
-            document.getElementById('last-updated').textContent = "연결 오류";
-        });
+        }
 
         document.getElementById('logoutBtn').addEventListener('click', () => {
             signOut(auth).then(() => window.location.href = './login.html');
