@@ -592,10 +592,11 @@ const createMarkersFromData = async (centersData) => {
 
         // 마커 생성
         centersData.forEach((center, index) => {
-            // location 객체 또는 최상위 lat/lng 모두 지원
-            const lat = center.location?.lat ?? center.lat;
-            const lng = center.location?.lng ?? center.lng;
-            if (lat && lng) {
+            // location 객체, GeoPoint, 또는 최상위 lat/lng 모두 지원
+            const loc = center.location;
+            const lat = loc?.lat ?? loc?.latitude ?? loc?._lat ?? center.lat;
+            const lng = loc?.lng ?? loc?.longitude ?? loc?._long ?? center.lng;
+            if (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) {
                 const marker = new naver.maps.Marker({
                     position: new naver.maps.LatLng(lat, lng),
                     map: null, // 클러스터러가 관리

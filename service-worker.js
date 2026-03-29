@@ -62,6 +62,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // POST 요청과 비-HTTP(S) 스킴은 캐싱 불가 - 그대로 통과
+  if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
+    return;
+  }
+
   // Firebase, 네이버 지도 API, 폰트는 네트워크 우선 전략
   if (
     url.origin.includes('firebase') ||
