@@ -177,12 +177,7 @@
                     <div class="w-2 h-6 bg-emerald-500 rounded-full mr-3"></div>
                     <h3 class="font-bold text-slate-800 text-lg">연수원별 클릭 분석</h3>
                 </div>
-                <select id="clickSortSelect" class="text-sm border border-slate-200 rounded-lg px-3 py-1.5 text-slate-600 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="total">외부클릭 합계순</option>
-                    <option value="naver">네이버 클릭순</option>
-                    <option value="website">홈페이지 클릭순</option>
-                    <option value="conversion">전환율순</option>
-                </select>
+                <span id="clickSortLabel" class="text-xs text-slate-400 font-medium">헤더를 클릭하여 정렬</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -191,10 +186,10 @@
                             <th class="text-left py-2 px-3 font-medium">#</th>
                             <th class="text-left py-2 px-3 font-medium">연수원명</th>
                             <th class="text-left py-2 px-3 font-medium">지역</th>
-                            <th class="text-right py-2 px-3 font-medium">조회수</th>
-                            <th class="text-right py-2 px-3 font-medium">네이버</th>
-                            <th class="text-right py-2 px-3 font-medium">홈페이지</th>
-                            <th class="text-right py-2 px-3 font-medium">전환율</th>
+                            <th class="text-right py-2 px-3 font-medium cursor-pointer hover:text-blue-600 transition-colors select-none" data-sort="views">조회수 <span class="sort-arrow"></span></th>
+                            <th class="text-right py-2 px-3 font-medium cursor-pointer hover:text-blue-600 transition-colors select-none" data-sort="naver">네이버 <span class="sort-arrow"></span></th>
+                            <th class="text-right py-2 px-3 font-medium cursor-pointer hover:text-blue-600 transition-colors select-none" data-sort="website">홈페이지 <span class="sort-arrow"></span></th>
+                            <th class="text-right py-2 px-3 font-medium cursor-pointer hover:text-blue-600 transition-colors select-none" data-sort="conversion">전환율 <span class="sort-arrow"></span></th>
                             <th class="py-2 px-3 font-medium">비율</th>
                         </tr>
                     </thead>
@@ -509,10 +504,16 @@
                         conversion: (c.clickCount || 0) > 0 ? ((c.naverClickCount || 0) + (c.websiteClickCount || 0)) / (c.clickCount || 1) * 100 : 0
                     }));
 
-                if (sortBy === 'naver') clickData.sort((a, b) => b.naver - a.naver);
+                if (sortBy === 'views') clickData.sort((a, b) => b.views - a.views);
+                else if (sortBy === 'naver') clickData.sort((a, b) => b.naver - a.naver);
                 else if (sortBy === 'website') clickData.sort((a, b) => b.website - a.website);
                 else if (sortBy === 'conversion') clickData.sort((a, b) => b.conversion - a.conversion);
                 else clickData.sort((a, b) => b.total - a.total);
+
+                // 정렬 화살표 업데이트
+                document.querySelectorAll('[data-sort] .sort-arrow').forEach(el => el.textContent = '');
+                const activeHeader = document.querySelector(`[data-sort="${sortBy}"] .sort-arrow`);
+                if (activeHeader) activeHeader.textContent = ' ▼';
 
                 const maxTotal = Math.max(...clickData.map(c => c.views), 1);
 
@@ -538,8 +539,12 @@
                 `).join('') : '<tr><td colspan="8" class="text-center py-4 text-slate-400">클릭 데이터가 없습니다.</td></tr>';
             }
 
-            renderClickTable();
-            document.getElementById('clickSortSelect').addEventListener('change', (e) => renderClickTable(e.target.value));
+            renderClickTable('views');
+
+            // 헤더 클릭으로 정렬
+            document.querySelectorAll('[data-sort]').forEach(th => {
+                th.addEventListener('click', () => renderClickTable(th.dataset.sort));
+            });
         }
 
         // 데이터 로드 (sessionStorage 캐시 활용)
