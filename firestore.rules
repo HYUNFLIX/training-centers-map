@@ -18,8 +18,10 @@ service cloud.firestore {
       // 쓰기는 관리자만 허용
       allow write: if isAdmin();
 
-      // clickCount 업데이트는 인증 없이 허용 (조회수)
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount']);
+      // 조회수/클릭 카운터 업데이트는 인증 없이 허용
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clickCount'])
+                     || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['websiteClickCount'])
+                     || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['naverClickCount']);
     }
 
     // 사용자 컬렉션 (관리자)

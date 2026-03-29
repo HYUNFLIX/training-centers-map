@@ -188,12 +188,29 @@ async function loadFromFirebase(shouldShowToast = true) {
   }
 }
 
+let _listDb = null;
+let _listFbModules = null;
+
 async function loadFirebaseSDK() {
   // 공통 initializeFirebaseApp() 사용 (싱글톤 - 중복 초기화 방지)
   const { db, modules } = await initializeFirebaseApp();
   const { collection, getDocs } = modules;
+  _listDb = db;
+  _listFbModules = modules;
   return { db, collection, getDocs };
 }
+
+// 외부 링크 클릭 추적
+window._trackLinkClick = window._trackLinkClick || function (centerId, linkType) {
+  if (!centerId || !_listDb || !_listFbModules) return;
+  try {
+    const { doc, updateDoc, increment } = _listFbModules;
+    if (updateDoc && increment) {
+      const field = linkType === 'website' ? 'websiteClickCount' : 'naverClickCount';
+      updateDoc(doc(_listDb, 'trainingCenters', centerId), { [field]: increment(1) }).catch(() => { });
+    }
+  } catch (e) { }
+};
 
 function getSampleData() {
   return [
@@ -422,8 +439,8 @@ function renderTable(centers) {
               <td><span style="color: #334155;">${center.address ? escapeHtml(center.address) : '<span style="color: #cbd5e1; font-size: 0.9em;">주소 미등록</span>'}</span></td>
               <td>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                  ${websiteUrl ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f1f5f9;color:#334155;border-radius:6px;font-size:0.82em;font-weight:600;text-decoration:none;border:1px solid #e2e8f0;white-space:nowrap;"><i class="fas fa-home" style="font-size:0.85em;"></i> 홈페이지</a>` : ''}
-                  <a href="${naverUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#03C75A;color:#fff;border-radius:6px;font-size:0.82em;font-weight:600;text-decoration:none;white-space:nowrap;"><i class="fas fa-search" style="font-size:0.85em;"></i> 네이버로 이동</a>
+                  ${websiteUrl ? `<a href="${websiteUrl}" target="_blank" rel="noopener" onclick="window._trackLinkClick('${center.id}','website')" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f1f5f9;color:#334155;border-radius:6px;font-size:0.82em;font-weight:600;text-decoration:none;border:1px solid #e2e8f0;white-space:nowrap;"><i class="fas fa-home" style="font-size:0.85em;"></i> 홈페이지</a>` : ''}
+                  <a href="${naverUrl}" target="_blank" rel="noopener" onclick="window._trackLinkClick('${center.id}','naver')" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#03C75A;color:#fff;border-radius:6px;font-size:0.82em;font-weight:600;text-decoration:none;white-space:nowrap;"><i class="fas fa-search" style="font-size:0.85em;"></i> 네이버로 이동</a>
                 </div>
               </td>
             </tr>`;
@@ -455,8 +472,8 @@ function renderCards(centers) {
             </div>
           </div>
           <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
-            ${websiteUrl ? `<a href="${websiteUrl}" target="_blank" rel="noopener" style="flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#f1f5f9;color:#334155;border-radius:8px;font-size:0.85em;font-weight:600;text-decoration:none;border:1px solid #e2e8f0;"><i class="fas fa-home"></i> 홈페이지</a>` : ''}
-            <a href="${naverUrl}" target="_blank" rel="noopener" style="flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#03C75A;color:#fff;border-radius:8px;font-size:0.85em;font-weight:600;text-decoration:none;"><i class="fas fa-search"></i> 네이버로 이동</a>
+            ${websiteUrl ? `<a href="${websiteUrl}" target="_blank" rel="noopener" onclick="window._trackLinkClick('${center.id}','website')" style="flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#f1f5f9;color:#334155;border-radius:8px;font-size:0.85em;font-weight:600;text-decoration:none;border:1px solid #e2e8f0;"><i class="fas fa-home"></i> 홈페이지</a>` : ''}
+            <a href="${naverUrl}" target="_blank" rel="noopener" onclick="window._trackLinkClick('${center.id}','naver')" style="flex:1;min-width:90px;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 10px;background:#03C75A;color:#fff;border-radius:8px;font-size:0.85em;font-weight:600;text-decoration:none;"><i class="fas fa-search"></i> 네이버로 이동</a>
           </div>
         </div>`;
   }).join('')

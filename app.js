@@ -16,6 +16,18 @@ let mapInitialized = false;
 // Firebase 모듈 (모듈 스코프, window 노출 없음)
 let _fbModules = null;
 
+// ===== 외부 링크 클릭 추적 =====
+window._trackLinkClick = function (centerId, linkType) {
+    if (!centerId || !db || !_fbModules) return;
+    try {
+        const { doc: docFn, updateDoc: updateDocFn, increment: incFn } = _fbModules;
+        if (updateDocFn && incFn) {
+            const field = linkType === 'website' ? 'websiteClickCount' : 'naverClickCount';
+            updateDocFn(docFn(db, 'trainingCenters', centerId), { [field]: incFn(1) }).catch(() => { });
+        }
+    } catch (e) { }
+};
+
 // ===== 토스트 알림 관리자 =====
 class ToastManager {
     constructor() {
@@ -298,7 +310,7 @@ const createInfoWindowContent = (center) => {
     // 홈페이지 버튼 (존재할 경우에만 표시, 회색 톤)
     if (websiteUrl) {
         buttonsHtml += `
-            <a href="${websiteUrl}" target="_blank" rel="noopener noreferrer" style="flex: 1; display: flex; align-items: center; justify-content: center; background-color: #f1f3f5; color: #333; height: 38px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.2s;">
+            <a href="${websiteUrl}" target="_blank" rel="noopener noreferrer" onclick="window._trackLinkClick('${center.id}','website')" style="flex: 1; display: flex; align-items: center; justify-content: center; background-color: #f1f3f5; color: #333; height: 38px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.2s;">
                 <i class="fas fa-home" style="margin-right: 6px; color: #666;"></i> 홈페이지
             </a>
         `;
@@ -306,7 +318,7 @@ const createInfoWindowContent = (center) => {
 
     // 네이버로 이동 버튼 (항상 표시, 메인 액션인 초록색)
     buttonsHtml += `
-        <a href="${naverMapUrl}" target="_blank" rel="noopener noreferrer" style="flex: 1; display: flex; align-items: center; justify-content: center; background-color: #03c75a; color: white; height: 38px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.2s;">
+        <a href="${naverMapUrl}" target="_blank" rel="noopener noreferrer" onclick="window._trackLinkClick('${center.id}','naver')" style="flex: 1; display: flex; align-items: center; justify-content: center; background-color: #03c75a; color: white; height: 38px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.2s;">
             <i class="fas fa-search" style="margin-right: 6px;"></i> 네이버로 이동
         </a>
     `;

@@ -223,7 +223,7 @@
             </div>
 
             <!-- 조회수 요약 미니 카드 -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
                 <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
                     <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">평균 조회수</div>
                     <div class="text-2xl font-bold text-slate-800" id="click-avg">-</div>
@@ -239,6 +239,14 @@
                 <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
                     <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">미조회 연수원</div>
                     <div class="text-2xl font-bold text-amber-600" id="click-zero">-</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
+                    <div class="text-xs font-semibold text-green-400 uppercase tracking-wider mb-1">네이버 클릭</div>
+                    <div class="text-2xl font-bold text-green-600" id="click-naver">-</div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">홈페이지 클릭</div>
+                    <div class="text-2xl font-bold text-blue-600" id="click-website">-</div>
                 </div>
             </div>
 
@@ -284,15 +292,66 @@
                 </div>
             </div>
 
-            <!-- 조회수 분포 히스토그램 -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-                <div class="flex items-center mb-4">
-                    <div class="w-2 h-6 bg-sky-400 rounded-full mr-3"></div>
-                    <h3 class="font-bold text-slate-800 text-lg">조회수 분포</h3>
-                    <span class="text-xs text-slate-400 ml-2">연수원별 조회수 구간 분포</span>
+            <!-- 전환 퍼널 + 조회수 분포 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- 전환 퍼널: 조회 → 네이버 → 홈페이지 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                    <div class="flex items-center mb-4">
+                        <div class="w-2 h-6 bg-indigo-400 rounded-full mr-3"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">전환 퍼널</h3>
+                        <span class="text-xs text-slate-400 ml-2">정보창 조회 → 외부 링크 클릭</span>
+                    </div>
+                    <div class="relative h-56 w-full">
+                        <canvas id="funnelCanvas"></canvas>
+                    </div>
                 </div>
-                <div class="relative h-56 w-full">
-                    <canvas id="clickDistCanvas"></canvas>
+
+                <!-- 조회수 분포 히스토그램 -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                    <div class="flex items-center mb-4">
+                        <div class="w-2 h-6 bg-sky-400 rounded-full mr-3"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">조회수 분포</h3>
+                        <span class="text-xs text-slate-400 ml-2">연수원별 조회수 구간 분포</span>
+                    </div>
+                    <div class="relative h-56 w-full">
+                        <canvas id="clickDistCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 연수원별 클릭 상세 분석 테이블 -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="w-2 h-6 bg-teal-400 rounded-full mr-3"></div>
+                        <h3 class="font-bold text-slate-800 text-lg">연수원별 클릭 분석</h3>
+                        <span class="text-xs text-slate-400 ml-2">조회수 1회 이상인 연수원</span>
+                    </div>
+                    <select id="clickSortSelect" class="text-xs border border-slate-200 rounded-lg px-2 py-1 text-slate-600 bg-slate-50">
+                        <option value="total">전체 클릭순</option>
+                        <option value="naver">네이버 클릭순</option>
+                        <option value="website">홈페이지 클릭순</option>
+                        <option value="conversion">전환율순</option>
+                    </select>
+                </div>
+                <div class="overflow-x-auto max-h-[400px] overflow-y-auto">
+                    <table class="w-full text-sm" id="clickAnalysisTable">
+                        <thead class="sticky top-0 bg-slate-50">
+                            <tr class="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-200">
+                                <th class="text-left py-2 px-3">#</th>
+                                <th class="text-left py-2 px-3">연수원명</th>
+                                <th class="text-left py-2 px-3">지역</th>
+                                <th class="text-right py-2 px-3">조회수</th>
+                                <th class="text-right py-2 px-3">네이버</th>
+                                <th class="text-right py-2 px-3">홈페이지</th>
+                                <th class="text-right py-2 px-3">전환율</th>
+                                <th class="text-left py-2 px-3 w-32">비율</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clickAnalysisBody">
+                            <tr><td colspan="8" class="text-center py-4 text-slate-400">로딩 중...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -372,11 +431,16 @@
             document.getElementById('stat-regions').textContent = Object.keys(regionMap).length;
             document.getElementById('stat-clicks').innerHTML = `${totalClicks.toLocaleString()}<span class="text-lg font-normal text-slate-400 ml-1">회</span>`;
 
+            const totalNaverClicks = centers.reduce((a, c) => a + (c.naverClickCount || 0), 0);
+            const totalWebsiteClicks = centers.reduce((a, c) => a + (c.websiteClickCount || 0), 0);
+
             // 조회수 미니 카드
             document.getElementById('click-avg').textContent = avgClicks.toFixed(1);
             document.getElementById('click-median').textContent = medianClicks.toLocaleString();
             document.getElementById('click-max').textContent = maxClicks.toLocaleString();
             document.getElementById('click-zero').textContent = `${zeroClickCount}개`;
+            document.getElementById('click-naver').textContent = totalNaverClicks.toLocaleString();
+            document.getElementById('click-website').textContent = totalWebsiteClicks.toLocaleString();
 
 
             // Chart.js 공통 옵션
@@ -560,6 +624,18 @@
                     badgeColor: 'bg-sky-50 text-sky-600'
                 });
             }
+            // 전환율 인사이트
+            if (totalClicks > 0 && (totalNaverClicks > 0 || totalWebsiteClicks > 0)) {
+                const overallConversion = ((totalNaverClicks + totalWebsiteClicks) / totalClicks * 100).toFixed(1);
+                const naverRate = (totalNaverClicks / totalClicks * 100).toFixed(1);
+                insights.push({
+                    icon: 'bg-green-100 text-green-600',
+                    title: '외부 링크 전환율',
+                    desc: `정보창 조회 중 <strong>${overallConversion}%</strong>가 외부 링크를 클릭합니다. 네이버 ${naverRate}% · 홈페이지 ${(totalWebsiteClicks / totalClicks * 100).toFixed(1)}%`,
+                    badge: overallConversion > 20 ? '우수' : overallConversion > 10 ? '보통' : '낮음',
+                    badgeColor: overallConversion > 20 ? 'bg-emerald-50 text-emerald-600' : overallConversion > 10 ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600'
+                });
+            }
             // 평균 vs 중앙값 비교
             if (medianClicks > 0 && avgClicks > 0) {
                 const skew = avgClicks / medianClicks;
@@ -588,6 +664,88 @@
                     <p class="text-xs text-slate-500 leading-relaxed">${ins.desc}</p>
                 </div>
             `).join('') : '<div class="text-sm text-slate-400 text-center py-4">분석할 데이터가 부족합니다.</div>';
+
+            // 전환 퍼널 차트
+            if (charts.funnel) charts.funnel.destroy();
+            charts.funnel = new Chart(document.getElementById('funnelCanvas'), {
+                type: 'bar',
+                data: {
+                    labels: ['정보창 조회', '네이버 클릭', '홈페이지 클릭'],
+                    datasets: [{
+                        label: '클릭 수',
+                        data: [totalClicks, totalNaverClicks, totalWebsiteClicks],
+                        backgroundColor: ['#6366f1', '#03c75a', '#64748b'],
+                        borderRadius: 6,
+                        barPercentage: 0.5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function (ctx) {
+                                    if (ctx.dataIndex === 0) return '';
+                                    const rate = totalClicks > 0 ? (ctx.raw / totalClicks * 100).toFixed(1) : 0;
+                                    return `전환율: ${rate}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' }, ticks: { precision: 0 } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 연수원별 클릭 분석 테이블
+            function renderClickTable(sortBy = 'total') {
+                const clickData = centers
+                    .filter(c => (c.clickCount || 0) > 0)
+                    .map(c => ({
+                        name: c.name,
+                        region: c.region || '-',
+                        views: c.clickCount || 0,
+                        naver: c.naverClickCount || 0,
+                        website: c.websiteClickCount || 0,
+                        total: (c.naverClickCount || 0) + (c.websiteClickCount || 0),
+                        conversion: (c.clickCount || 0) > 0 ? ((c.naverClickCount || 0) + (c.websiteClickCount || 0)) / (c.clickCount || 1) * 100 : 0
+                    }));
+
+                if (sortBy === 'naver') clickData.sort((a, b) => b.naver - a.naver);
+                else if (sortBy === 'website') clickData.sort((a, b) => b.website - a.website);
+                else if (sortBy === 'conversion') clickData.sort((a, b) => b.conversion - a.conversion);
+                else clickData.sort((a, b) => b.total - a.total);
+
+                const maxTotal = Math.max(...clickData.map(c => c.views), 1);
+
+                document.getElementById('clickAnalysisBody').innerHTML = clickData.length > 0 ? clickData.map((c, i) => `
+                    <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                        <td class="py-2 px-3 text-slate-400 text-xs">${i + 1}</td>
+                        <td class="py-2 px-3 font-semibold text-slate-700 truncate max-w-[160px]">${c.name}</td>
+                        <td class="py-2 px-3 text-slate-500">${c.region}</td>
+                        <td class="py-2 px-3 text-right font-medium text-slate-700">${c.views.toLocaleString()}</td>
+                        <td class="py-2 px-3 text-right font-medium text-green-600">${c.naver > 0 ? c.naver.toLocaleString() : '<span class="text-slate-300">-</span>'}</td>
+                        <td class="py-2 px-3 text-right font-medium text-blue-600">${c.website > 0 ? c.website.toLocaleString() : '<span class="text-slate-300">-</span>'}</td>
+                        <td class="py-2 px-3 text-right">
+                            <span class="text-xs font-semibold px-1.5 py-0.5 rounded ${c.conversion > 30 ? 'bg-emerald-50 text-emerald-600' : c.conversion > 10 ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-400'}">${c.conversion.toFixed(1)}%</span>
+                        </td>
+                        <td class="py-2 px-3">
+                            <div class="flex items-center gap-0.5 h-3">
+                                <div class="h-full bg-green-400 rounded-l" style="width: ${(c.naver / maxTotal * 100).toFixed(0)}%" title="네이버 ${c.naver}"></div>
+                                <div class="h-full bg-blue-400" style="width: ${(c.website / maxTotal * 100).toFixed(0)}%" title="홈페이지 ${c.website}"></div>
+                                <div class="h-full bg-slate-200 rounded-r" style="width: ${((c.views - c.naver - c.website) / maxTotal * 100).toFixed(0)}%" title="조회만 ${c.views - c.naver - c.website}"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('') : '<tr><td colspan="8" class="text-center py-4 text-slate-400">클릭 데이터가 없습니다.</td></tr>';
+            }
+
+            renderClickTable();
+            document.getElementById('clickSortSelect').addEventListener('change', (e) => renderClickTable(e.target.value));
 
             // 최근 조회된 연수원
             const recentViews = [...centers]
