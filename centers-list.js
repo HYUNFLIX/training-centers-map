@@ -3,7 +3,6 @@
 // ===== Firebase 공통 설정 import =====
 import { initializeFirebaseApp, COLLECTIONS } from './firebase-config.js';
 
-console.log('🚀 centers-list.js 로딩 시작 (공통 설정 사용)');
 
 // ===== HTML 이스케이프 함수 (XSS 방어) =====
 function escapeHtml(str) {
@@ -56,7 +55,6 @@ const elements = {
 
 // ==================== 초기화 ====================
 async function init() {
-  console.log('📝 초기화 시작');
 
   // DOM 요소 가져오기
   elements.searchInput = document.getElementById('searchInput');
@@ -89,7 +87,6 @@ async function init() {
   // 데이터 로드
   await loadData();
 
-  console.log('✅ 초기화 완료');
 }
 
 // ==================== 이벤트 리스너 ====================
@@ -128,12 +125,10 @@ function setupEventListeners() {
 
 // ==================== 데이터 로드 ====================
 async function loadData() {
-  console.log('📦 데이터 로딩 시작');
 
   // 1. 캐시 확인
   const cached = getCachedData();
   if (cached && cached.length > 0) {
-    console.log(`⚡ 캐시에서 ${cached.length}개 로드`);
     state.allCenters = cached;
     applyFiltersAndRender();
     updateStats();
@@ -169,7 +164,6 @@ async function loadFromFirebase(shouldShowToast = true) {
       centers.push({ id: doc.id, ...doc.data() });
     });
 
-    console.log(`✅ Firebase에서 ${centers.length}개 로드`);
 
     if (centers.length > 0) {
       state.allCenters = centers;
@@ -198,7 +192,6 @@ async function loadFirebaseSDK() {
   // 공통 initializeFirebaseApp() 사용 (싱글톤 - 중복 초기화 방지)
   const { db, modules } = await initializeFirebaseApp();
   const { collection, getDocs } = modules;
-  console.log('✅ Firebase SDK 로드 완료 (공통 설정 사용)');
   return { db, collection, getDocs };
 }
 
@@ -256,7 +249,6 @@ function setCachedData(data) {
   try {
     localStorage.setItem('centers-cache', JSON.stringify(data));
     localStorage.setItem('centers-cache-time', Date.now().toString());
-    console.log('💾 캐시 저장 완료');
   } catch (error) {
     console.error('캐시 저장 실패:', error);
   }
@@ -590,4 +582,3 @@ if (document.readyState === 'loading') {
   init();
 }
 
-console.log('✅ centers-list.js 로드 완료');

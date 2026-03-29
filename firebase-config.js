@@ -70,7 +70,6 @@ export async function initializeFirebaseApp() {
         firestoreDb = modules.getFirestore(firebaseApp);
         firebaseAuth = modules.getAuth(firebaseApp);
 
-        console.log('✅ Firebase 초기화 성공 (공통 설정 사용)');
 
         return {
             app: firebaseApp,
@@ -90,4 +89,3 @@ export const COLLECTIONS = {
     USERS: 'users'
 };
 
-console.log('✅ firebase-config.js 로드 완료');

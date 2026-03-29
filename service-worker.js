@@ -19,16 +19,13 @@ const STATIC_ASSETS = [
 
 // Service Worker 설치
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] 설치 중...');
 
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[Service Worker] 정적 리소스 캐싱 중...');
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        console.log('[Service Worker] 설치 완료');
         return self.skipWaiting(); // 새 Service Worker 즉시 활성화
       })
       .catch((error) => {
@@ -39,7 +36,6 @@ self.addEventListener('install', (event) => {
 
 // Service Worker 활성화
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] 활성화 중...');
 
   event.waitUntil(
     caches.keys()
@@ -51,13 +47,11 @@ self.addEventListener('activate', (event) => {
               return cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE;
             })
             .map((cacheName) => {
-              console.log('[Service Worker] 오래된 캐시 삭제:', cacheName);
               return caches.delete(cacheName);
             })
         );
       })
       .then(() => {
-        console.log('[Service Worker] 활성화 완료');
         return self.clients.claim(); // 즉시 페이지 제어
       })
   );
@@ -112,7 +106,6 @@ async function cacheFirst(request) {
   const cachedResponse = await caches.match(request);
 
   if (cachedResponse) {
-    console.log('[Service Worker] 캐시에서 반환:', request.url);
     return cachedResponse;
   }
 
@@ -123,7 +116,6 @@ async function cacheFirst(request) {
     if (networkResponse && networkResponse.status === 200) {
       const cache = await caches.open(RUNTIME_CACHE);
       cache.put(request, networkResponse.clone());
-      console.log('[Service Worker] 새 리소스 캐싱:', request.url);
     }
 
     return networkResponse;
@@ -152,12 +144,10 @@ async function networkFirst(request) {
 
     return networkResponse;
   } catch (error) {
-    console.log('[Service Worker] 네트워크 실패, 캐시 확인:', request.url);
 
     const cachedResponse = await caches.match(request);
 
     if (cachedResponse) {
-      console.log('[Service Worker] 캐시에서 반환:', request.url);
       return cachedResponse;
     }
 
@@ -175,7 +165,6 @@ async function networkFirst(request) {
 
 // 백그라운드 동기화 (선택사항)
 self.addEventListener('sync', (event) => {
-  console.log('[Service Worker] 백그라운드 동기화:', event.tag);
 
   if (event.tag === 'sync-centers') {
     event.waitUntil(syncCentersData());
@@ -185,7 +174,6 @@ self.addEventListener('sync', (event) => {
 // 연수원 데이터 동기화
 async function syncCentersData() {
   try {
-    console.log('[Service Worker] 연수원 데이터 동기화 시작');
     // 여기에 Firebase에서 데이터를 가져와 캐시하는 로직 추가 가능
     return Promise.resolve();
   } catch (error) {
@@ -196,7 +184,6 @@ async function syncCentersData() {
 
 // 푸시 알림 (선택사항)
 self.addEventListener('push', (event) => {
-  console.log('[Service Worker] 푸시 알림 수신:', event);
 
   const options = {
     body: event.data ? event.data.text() : '새로운 연수원 정보가 업데이트되었습니다!',
@@ -226,7 +213,6 @@ self.addEventListener('push', (event) => {
 
 // 알림 클릭 처리
 self.addEventListener('notificationclick', (event) => {
-  console.log('[Service Worker] 알림 클릭:', event.action);
 
   event.notification.close();
 
@@ -237,4 +223,3 @@ self.addEventListener('notificationclick', (event) => {
   }
 });
 
-console.log('[Service Worker] 로드 완료');

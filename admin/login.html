@@ -99,11 +99,7 @@
 
                 window.location.href = './index.html';
             } catch (error) {
-                console.error('Login error full:', error);
-
-                // 디버깅 목적으로 에러 객체 자체를 화면에 출력 (임시)
-                errorElement.textContent = `오류: ${error.code} - ${error.message}`;
-                // errorElement.textContent = getErrorMessage(error.code);
+                errorElement.textContent = getErrorMessage(error.code);
 
                 errorElement.style.display = 'block';
                 submitButton.disabled = false;
@@ -115,8 +111,8 @@
             switch (errorCode) {
                 case 'auth/invalid-email': return '유효하지 않은 이메일 주소입니다.';
                 case 'auth/user-disabled': return '해당 계정이 비활성화되었습니다.';
-                case 'auth/user-not-found': return '등록되지 않은 이메일입니다.';
-                case 'auth/wrong-password': return '잘못된 비밀번호입니다.';
+                case 'auth/user-not-found': return '이메일 또는 비밀번호가 올바르지 않습니다.';
+                case 'auth/wrong-password': return '이메일 또는 비밀번호가 올바르지 않습니다.';
                 case 'auth/invalid-credential': return '이메일 또는 비밀번호가 올바르지 않습니다.';
                 case 'auth/invalid-api-key': return '서버 설정 오류가 발생했습니다.';
                 case 'auth/network-request-failed': return '네트워크 연결을 확인해주세요.';

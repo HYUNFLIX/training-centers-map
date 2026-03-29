@@ -70,7 +70,6 @@ class ToastManager {
             setTimeout(() => this.remove(toast), duration);
         }
 
-        console.log(`📢 토스트 알림 [${type}]: ${message}`);
         return toast;
     }
 
@@ -106,7 +105,6 @@ const toast = new ToastManager();
 // ===== Firebase 초기화 (안전한 에러 처리) =====
 async function initializeFirebase() {
     try {
-        console.log('🔥 Firebase 초기화 시도... (공통 설정 사용)');
 
         // 공통 설정에서 가져온 URL 사용
         const { initializeApp } = await import(getFirebaseUrl('app'));
@@ -120,7 +118,6 @@ async function initializeFirebase() {
         // 모듈 스코프에 저장 (window 노출 제거)
         _fbModules = { doc, updateDoc, increment, query, orderBy, limit, collection, getDocs, setDoc, deleteDoc, addDoc };
 
-        console.log('✅ Firebase 초기화 성공 (SDK v' + FIREBASE_SDK_VERSION + ')');
         return { db, collection, getDocs, addDoc };
 
     } catch (error) {
@@ -137,7 +134,6 @@ class InfoWindowManager {
         this.currentInfoWindow = null;
         this.currentMarker = null;
         this.setupEventDelegation();
-        console.log('✅ 정보창 관리자 초기화 완료');
     }
 
     setupEventDelegation() {
@@ -148,7 +144,6 @@ class InfoWindowManager {
                 event.preventDefault();
                 event.stopPropagation();
                 this.closeCurrentInfoWindow();
-                console.log('🔽 정보창 닫힘');
             }
         });
 
@@ -192,12 +187,10 @@ class InfoWindowManager {
                         e.preventDefault();
                         e.stopPropagation();
                         this.closeCurrentInfoWindow();
-                        console.log('🔽 정보창 닫힘 (X 버튼)');
                     };
                 }
             }, 100);
 
-            console.log('🔼 정보창 열림:', marker.getTitle());
             return infoWindow;
 
         } catch (error) {
@@ -343,7 +336,6 @@ const createInfoWindowContent = (center) => {
 
 // ===== 샘플 데이터 생성 =====
 const generateSampleData = () => {
-    console.log('📋 샘플 데이터 생성');
 
     return [
         {
@@ -464,7 +456,6 @@ const generateSampleData = () => {
 // ===== 지도 초기화 함수 =====
 const initMap = async () => {
     try {
-        console.log('🗺️ 지도 초기화 시작');
         showLoadingMessage('');
 
         // 네이버 지도 API 로드 확인
@@ -505,7 +496,6 @@ const initMap = async () => {
             }
         });
 
-        console.log('✅ 지도 생성 완료');
 
         // 정보창 관리자 초기화
         infoWindowManager = new InfoWindowManager();
@@ -527,7 +517,6 @@ const initMap = async () => {
         mapInitialized = true;
         hideMapLoading();
 
-        console.log('🎉 지도 초기화 완료');
 
     } catch (error) {
         console.error('❌ 지도 초기화 실패:', error);
@@ -539,7 +528,6 @@ const initMap = async () => {
 // ===== 연수원 데이터 로드 =====
 const loadCenters = async () => {
     try {
-        console.log('📊 연수원 데이터 로드 시작');
 
         let centersData = [];
 
@@ -559,7 +547,6 @@ const loadCenters = async () => {
                     centersData.push(center);
                 });
 
-                console.log(`✅ Firebase에서 ${centersData.length}개 연수원 로드 완료`);
 
             } catch (firebaseError) {
                 console.warn('⚠️ Firebase 데이터 로드 실패, 샘플 데이터 사용:', firebaseError);
@@ -567,7 +554,6 @@ const loadCenters = async () => {
                 toast.warning('데이터 로드 실패. 샘플 데이터를 표시합니다.', 'Firebase 오류', 6000);
             }
         } else {
-            console.log('📋 Firebase 연결 실패, 샘플 데이터 사용');
             centersData = generateSampleData();
         }
 
@@ -583,7 +569,6 @@ const loadCenters = async () => {
         // 결과 카운트 업데이트
         updateResultsCount(centersData.length);
 
-        console.log(`🎯 총 ${centersData.length}개 연수원 마커 생성 완료`);
 
     } catch (error) {
         console.error('❌ 데이터 로드 실패:', error);
@@ -593,7 +578,6 @@ const loadCenters = async () => {
             const sampleData = generateSampleData();
             await createMarkersFromData(sampleData);
             updateResultsCount(sampleData.length);
-            console.log('📋 샘플 데이터로 복구 완료');
         } catch (sampleError) {
             console.error('❌ 샘플 데이터 복구도 실패:', sampleError);
             showError('연수원 데이터를 불러올 수 없습니다. 페이지를 새로고침해주세요.');
@@ -646,7 +630,6 @@ const createMarkersFromData = async (centersData) => {
             }
         });
 
-        console.log(`📍 ${allMarkers.length}개 마커 생성 완료`);
 
         // 마커 클러스터링 적용
         await applyMarkerClustering();
@@ -663,7 +646,6 @@ const createMarkersFromData = async (centersData) => {
 const applyMarkerClustering = async () => {
     try {
         if (typeof MarkerClustering !== 'undefined' && allMarkers.length > 0) {
-            console.log('🔗 마커 클러스터링 적용 중...');
 
             clusterer = new MarkerClustering({
                 minClusterSize: 2,
@@ -748,7 +730,6 @@ const applyMarkerClustering = async () => {
                                         easing: 'easeOutCubic'
                                     });
 
-                                    console.log(`📍 클러스터 클릭: ${count}개 마커, 줌 ${currentZoom} → ${newZoom}`);
                                 }
                             });
                         }
@@ -756,7 +737,6 @@ const applyMarkerClustering = async () => {
                 }
             });
 
-            console.log('✅ 마커 클러스터링 적용 완료');
 
         } else {
             console.warn('⚠️ MarkerClustering 라이브러리 없음, 개별 마커 표시');
@@ -815,7 +795,6 @@ const setupMapControlEvents = () => {
                             });
                         }, 1000);
 
-                        console.log('📍 현재 위치로 이동');
 
                         currentLocationBtn.disabled = false;
                         currentLocationBtn.innerHTML = '<i class="fas fa-location-arrow"></i>';
@@ -880,7 +859,6 @@ const setupMapControlEvents = () => {
 
             infoWindowManager.closeCurrentInfoWindow();
             resetAllFilters();
-            console.log('🏠 지도 초기 위치로 복귀');
         });
     }
 };
@@ -1178,7 +1156,6 @@ const applyFilters = () => {
     // 결과 카운트 업데이트
     updateResultsCount(filteredMarkers.length);
 
-    console.log(`🔎 필터 적용: ${filteredMarkers.length}개 결과`);
 };
 
 // ===== 모든 필터 초기화 =====
@@ -1213,7 +1190,6 @@ const resetAllFilters = () => {
     filteredMarkers = [...allMarkers];
     updateResultsCount(allMarkers.length);
 
-    console.log('🔄 모든 필터 초기화');
 };
 
 // ===== 로고 클릭 이벤트 설정 =====
@@ -1238,7 +1214,6 @@ const setupLogoClickEvent = () => {
                 // 모든 필터 초기화
                 resetAllFilters();
 
-                console.log('🏠 로고 클릭 - 초기 상태로 복귀');
             }
         });
     }
@@ -1265,7 +1240,6 @@ const handleUrlParams = () => {
                     infoWindowManager.openInfoWindow(map, targetMarker, content);
                 }, 1200);
 
-                console.log('🎯 URL 파라미터로 특정 연수원 표시:', targetMarker.getTitle());
             }
         }, 1000);
     }
@@ -1295,7 +1269,6 @@ const hideMapLoading = () => {
         window.hideMapLoading();
     }
 
-    console.log('✅ 지도 로딩 완료');
 };
 
 // ===== 결과 카운트 업데이트 =====
@@ -1313,7 +1286,6 @@ const updateResultsCount = (count) => {
         }
     });
 
-    console.log(`📊 표시 중인 연수원: ${count}개`);
 };
 
 // ===== 에러 표시 =====
@@ -1358,12 +1330,10 @@ const showError = (message) => {
 
 // ===== 페이지 로드 후 초기화 =====
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOM 로드 완료 - 지도 초기화 준비');
 
     // 네이버 지도 API 로드 대기
     const checkNaverMaps = (attempts = 0) => {
         if (typeof naver !== 'undefined' && naver.maps) {
-            console.log('✅ 네이버 지도 API 로드 완료');
             initMap();
         } else if (attempts < 50) { // 5초간 대기
             setTimeout(() => checkNaverMaps(attempts + 1), 100);
@@ -1378,23 +1348,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-
-// ===== 디버깅을 위한 전역 함수들 =====
-window.debugInfo = {
-    getCurrentInfoWindow: () => infoWindowManager?.getCurrentInfoWindow(),
-    getCurrentMarker: () => infoWindowManager?.getCurrentMarker(),
-    closeInfoWindow: () => infoWindowManager?.closeCurrentInfoWindow(),
-    getMarkerCount: () => allMarkers.length,
-    getFilteredMarkerCount: () => filteredMarkers.length,
-    getAllMarkers: () => allMarkers,
-    getFilteredMarkers: () => filteredMarkers,
-    getMap: () => map,
-    isMapInitialized: () => mapInitialized,
-    isFirebaseLoaded: () => firebaseLoaded,
-    applyFilters: () => applyFilters(),
-    resetFilters: () => resetAllFilters(),
-    showSampleData: () => generateSampleData()
-};
 
 // index.html 등 외부에서 접근 가능한 전역 mapApp 객체 노출
 window.mapApp = {
@@ -1459,7 +1412,6 @@ window.addEventListener('unhandledrejection', (event) => {
     }
 })();
 
-console.log('✅ 완전히 개선된 app.js 로드 완료 - 모든 문제 해결됨');
 // ==================== 연수원 추가 기능 ====================
 let addCenterModal = null;
 let addCenterForm = null;
@@ -1509,7 +1461,6 @@ function initAddCenterModal() {
     // 폼 제출
     addCenterForm.addEventListener('submit', handleAddCenterSubmit);
 
-    console.log('✅ 연수원 추가 모달 초기화 완료');
 }
 
 // 모달 열기
@@ -1517,7 +1468,6 @@ function openAddCenterModal() {
     addCenterModal.classList.add('active');
     addCenterModal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden'; // 스크롤 방지
-    console.log('📝 연수원 추가 모달 열림');
 }
 
 // 모달 닫기
@@ -1526,7 +1476,6 @@ function closeAddCenterModal() {
     addCenterModal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = ''; // 스크롤 복원
     addCenterForm.reset(); // 폼 리셋
-    console.log('✖️ 연수원 추가 모달 닫힘');
 }
 
 // 주소 → 좌표 변환 (네이버 Geocoding)
@@ -1635,12 +1584,10 @@ async function handleAddCenterSubmit(e) {
             return;
         }
 
-        console.log('📝 연수원 추가 시작:', name);
 
         // 주소 → 좌표 변환
         toast.show('주소를 좌표로 변환하는 중...', 'info', '위치 검색');
         const location = await geocodeAddress(address);
-        console.log('📍 좌표 변환 완료:', location);
 
         // 지역 추출
         const region = extractRegion(address);
@@ -1665,7 +1612,6 @@ async function handleAddCenterSubmit(e) {
         // Firebase에 저장
         toast.show('Firebase에 저장하는 중...', 'info', '데이터 저장');
         const docRef = await saveToFirebase(centerData);
-        console.log('💾 Firebase 저장 완료:', docRef.id);
 
         // 지도에 마커 추가
         centerData.id = docRef.id;
@@ -1746,7 +1692,6 @@ function addMarkerToMap(centerData) {
     map.setCenter(new naver.maps.LatLng(centerData.location.lat, centerData.location.lng));
     map.setZoom(15);
 
-    console.log('📍 지도에 마커 추가 완료:', centerData.name);
 }
 
 // DOMContentLoaded 이벤트에 모달 초기화 추가
@@ -1757,7 +1702,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 
-console.log('✅ 연수원 추가 기능 로드 완료');
 
 // 주소 자동완성 초기화
 let addressSearchTimeout = null;
@@ -1838,7 +1782,6 @@ function initAddressAutocomplete() {
         });
     }
 
-    console.log('✅ 주소 자동완성 초기화 완료');
 }
 
 // 주소 검색 (네이버 Geocoding API)
@@ -1898,11 +1841,9 @@ async function searchAddress(query, suggestionsDiv) {
                 suggestionsDiv.innerHTML = '';
                 selectedAddressSuggestion = -1;
 
-                console.log('📍 주소 선택:', address);
                 toast.show('주소가 선택되었습니다', 'success', '선택 완료');
             });
         });
     });
 }
 
-console.log('✅ 네이버 주소 검색 기능 로드 완료');

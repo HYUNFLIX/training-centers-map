@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /centers-list.html
+Disallow: /admin/
+Disallow: /scripts/
+
+Sitemap: https://yeogi.app/sitemap.xml
