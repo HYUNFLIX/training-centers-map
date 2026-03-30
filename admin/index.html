@@ -305,10 +305,14 @@
                 return 0;
             };
 
-            // 최근 조회된 연수원
+            // 최근 조회된 연수원 (lastViewedAt 우선, 없으면 updatedAt/createdAt 사용)
             const recentViews = [...centers]
-                .filter(c => c.clickCount && c.clickCount > 0 && c.lastViewedAt)
-                .sort((a, b) => toMs(b.lastViewedAt) - toMs(a.lastViewedAt))
+                .filter(c => c.clickCount && c.clickCount > 0)
+                .sort((a, b) => {
+                    const dateA = a.lastViewedAt || a.updatedAt || a.createdAt;
+                    const dateB = b.lastViewedAt || b.updatedAt || b.createdAt;
+                    return toMs(dateB) - toMs(dateA);
+                })
                 .slice(0, 10);
 
             document.getElementById('recent-views-list').innerHTML = recentViews.length > 0 ? recentViews.map((c, i) => {
